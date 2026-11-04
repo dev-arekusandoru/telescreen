@@ -5,7 +5,7 @@ Self-hosted family wall-calendar and chores for two people: a big color-coded ca
 ## Start using it
 
 1. **Configure**: `cp .env.example .env`, then set `HOMEHUB_SECRET_KEY` (`openssl rand -hex 32`; keep it, losing it means reconnecting accounts), `HOMEHUB_TRUST_NETWORK=1` (the app is only reachable on your tailnet) and optionally `HOMEHUB_TIMEZONE`.
-2. **Run**: `docker compose up -d --build` (serves `127.0.0.1:8788`, data in `./data`).
+2. **Run**: `mkdir -p data && docker compose up -d --build` (serves `127.0.0.1:8788`, data in `./data`). Create `data/` yourself first: if Docker creates it, it is root-owned and the container (user `node`, uid 1000) cannot write the database. Fix an existing one with `sudo chown -R 1000:1000 data`. Check it is up with `docker compose ps` (healthy) and `curl http://127.0.0.1:8788/api/v1/health` before serving it.
 3. **HTTPS on your tailnet**: `tailscale serve --bg 8788`, then open `https://<machine>.<tailnet>.ts.net`. If 443 is already taken by another app, use a separate HTTPS port: `tailscale serve --bg --https=8444 8788` and open `https://<machine>.<tailnet>.ts.net:8444`. Set `HOMEHUB_PUBLIC_URL` to that exact URL (including any port) in `.env` if you use Google.
 4. **iCloud**: create an app-specific password at appleid.apple.com, then Settings > Accounts > Add iCloud ([details](#icloud)).
 5. **Google**: create the OAuth client in your own Cloud project, add `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` to `.env`, `docker compose up -d`, then Settings > Accounts > Add Google ([steps](#google)).
@@ -75,6 +75,7 @@ Google calendars with the *Reader* role (holidays, shared read-only) are read-on
 
 ```sh
 cp .env.example .env          # set HOMEHUB_SECRET_KEY
+mkdir -p data                 # must be writable by uid 1000 (the container's `node` user)
 docker compose up -d --build  # serves on 127.0.0.1:8788, data in ./data
 tailscale serve --bg 8788     # HTTPS on your tailnet (needed for the screen wake lock)
 # 443 already used by another app? Serve on another HTTPS port instead:
