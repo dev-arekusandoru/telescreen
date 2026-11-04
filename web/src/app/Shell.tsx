@@ -1,5 +1,8 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { useSettings } from "@/features/queries";
+import { TonightCard } from "@/screens/meals/TonightCard";
+import { NowPlayingCard } from "@/screens/music/NowPlayingCard";
+import { WeatherCard } from "@/screens/weather/WeatherCard";
 import { ToastProvider } from "@/ui/toast";
 import styles from "./Shell.module.css";
 import { visibleTabs, type Tab } from "./tabs";
@@ -24,7 +27,8 @@ export function Shell() {
   const tabs = visibleTabs(settings?.modules);
   useWakeLock(settings?.keepAwake ?? true);
   // Right column (>= 1280px, SPEC §8): only exists while a module that fills it is enabled.
-  const showSide = settings?.modules.meals === true || settings?.modules.music === true;
+  const showSide =
+    settings?.modules.weather === true || settings?.modules.meals === true || settings?.modules.music === true;
   return (
     <div className={styles.app} data-side={showSide ? "on" : undefined}>
       <nav className={styles.rail} aria-label="Primary">
@@ -40,18 +44,13 @@ export function Shell() {
       </main>
       {showSide ? (
         <aside className={styles.side} aria-label="At a glance">
+          {settings?.modules.weather ? <WeatherCard /> : null}
           {settings?.modules.meals ? (
             <section className={styles.sideCard}>
-              <h2>Tonight</h2>
-              <p>No meal planned.</p>
+              <TonightCard />
             </section>
           ) : null}
-          {settings?.modules.music ? (
-            <section className={styles.sideCard}>
-              <h2>Now playing</h2>
-              <p>Nothing playing.</p>
-            </section>
-          ) : null}
+          {settings?.modules.music ? <NowPlayingCard /> : null}
         </aside>
       ) : null}
       <nav className={styles.tabbar} aria-label="Primary">

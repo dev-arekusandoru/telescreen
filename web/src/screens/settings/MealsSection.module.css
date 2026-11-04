@@ -1,0 +1,71 @@
+.sec {
+  margin-bottom: 22px;
+}
+
+.sec h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 10px;
+  min-height: 64px;
+}
+
+.row > svg {
+  font-size: 24px;
+  color: var(--muted);
+  flex: none;
+}
+
+.row b {
+  font-size: 15px;
+}
+
+.row small {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.statusText {
+  min-width: 0;
+}
+
+.url {
+  overflow-wrap: anywhere;
+  font-family: var(--font);
+}
+
+.end {
+  margin-left: auto;
+  flex: none;
+}
+
+.btn {
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 599px) {
+  .row {
+    flex-wrap: wrap;
+  }
+}

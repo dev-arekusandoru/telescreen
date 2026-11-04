@@ -14,5 +14,7 @@ services:
       HOMEHUB_DATA_DIR: /data
       PORT: "8788"
       HOST: 0.0.0.0
+      # Provider credentials come from `env_file: .env` above (GOOGLE_*, SPOTIFY_*,
+      # PANTRYPAL_*); nothing needs to be repeated here.
     volumes:
       - ./data:/data

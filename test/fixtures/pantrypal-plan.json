@@ -1,0 +1,297 @@
+{
+  "id": "plan_fixture",
+  "householdId": "hh_fixture",
+  "weekStart": "2026-11-02",
+  "title": "Week of Mon Nov 2 - Sun Nov 8, 2026",
+  "status": "active",
+  "notes": "Recorded from PantryPal GET /api/v1/plans/current (planViewSchema).",
+  "createdAt": "2026-11-01T18:02:11.000Z",
+  "updatedAt": "2026-11-02T09:14:56.349Z",
+  "days": [
+    {
+      "date": "2026-11-02",
+      "meals": {
+        "breakfast": [
+          {
+            "id": "slot_b_mon",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-02",
+            "mealType": "breakfast",
+            "kind": "meal",
+            "cookEventId": "ce_oats",
+            "cookEvent": {
+              "id": "ce_oats",
+              "recipeId": "rcp_oats",
+              "recipeTitle": "Overnight Oats",
+              "cookDate": "2026-11-01",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": null,
+            "notes": null,
+            "position": 0,
+            "isLeftover": true
+          }
+        ],
+        "lunch": [],
+        "dinner": [
+          {
+            "id": "slot_d_mon",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-02",
+            "mealType": "dinner",
+            "kind": "freeform",
+            "cookEventId": null,
+            "cookEvent": null,
+            "servings": null,
+            "label": "Costco chicken Alfredo",
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    },
+    {
+      "date": "2026-11-03",
+      "meals": {
+        "breakfast": [
+          {
+            "id": "slot_b_tue",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-03",
+            "mealType": "breakfast",
+            "kind": "meal",
+            "cookEventId": "ce_oats",
+            "cookEvent": {
+              "id": "ce_oats",
+              "recipeId": "rcp_oats",
+              "recipeTitle": "Overnight Oats",
+              "cookDate": "2026-11-01",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": null,
+            "notes": null,
+            "position": 0,
+            "isLeftover": true
+          }
+        ],
+        "lunch": [
+          {
+            "id": "slot_l_tue",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-03",
+            "mealType": "lunch",
+            "kind": "meal",
+            "cookEventId": "ce_chili",
+            "cookEvent": {
+              "id": "ce_chili",
+              "recipeId": "rcp_chili",
+              "recipeTitle": "Smoky Chili",
+              "cookDate": "2026-11-01",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": "Lunch batch A",
+            "notes": null,
+            "position": 0,
+            "isLeftover": true
+          }
+        ],
+        "dinner": [
+          {
+            "id": "slot_d_tue",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-03",
+            "mealType": "dinner",
+            "kind": "meal",
+            "cookEventId": "ce_lemon",
+            "cookEvent": {
+              "id": "ce_lemon",
+              "recipeId": "rcp_lemon",
+              "recipeTitle": "Lemon chicken with roasted veg",
+              "cookDate": "2026-11-03",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": null,
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    },
+    {
+      "date": "2026-11-04",
+      "meals": {
+        "breakfast": [
+          {
+            "id": "slot_b_wed",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-04",
+            "mealType": "breakfast",
+            "kind": "freeform",
+            "cookEventId": null,
+            "cookEvent": null,
+            "servings": null,
+            "label": "Toast and jam",
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "lunch": [],
+        "dinner": [
+          {
+            "id": "slot_d_wed",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-04",
+            "mealType": "dinner",
+            "kind": "meal",
+            "cookEventId": "ce_skillet",
+            "cookEvent": {
+              "id": "ce_skillet",
+              "recipeId": "rcp_skillet",
+              "recipeTitle": "One-pan skillet pasta",
+              "cookDate": "2026-11-04",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": null,
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    },
+    {
+      "date": "2026-11-05",
+      "meals": {
+        "breakfast": [],
+        "lunch": [
+          {
+            "id": "slot_l_thu",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-05",
+            "mealType": "lunch",
+            "kind": "meal",
+            "cookEventId": "ce_soup",
+            "cookEvent": {
+              "id": "ce_soup",
+              "recipeId": "rcp_soup",
+              "recipeTitle": "Chicken soup",
+              "cookDate": "2026-11-04",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": "Lunch batch B",
+            "notes": null,
+            "position": 0,
+            "isLeftover": true
+          }
+        ],
+        "dinner": [
+          {
+            "id": "slot_d_thu",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-05",
+            "mealType": "dinner",
+            "kind": "skip",
+            "cookEventId": null,
+            "cookEvent": null,
+            "servings": null,
+            "label": "Eating out",
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    },
+    {
+      "date": "2026-11-06",
+      "meals": {
+        "breakfast": [],
+        "lunch": [],
+        "dinner": [
+          {
+            "id": "slot_d_fri",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-06",
+            "mealType": "dinner",
+            "kind": "meal",
+            "cookEventId": "ce_soup",
+            "cookEvent": {
+              "id": "ce_soup",
+              "recipeId": "rcp_soup",
+              "recipeTitle": "Chicken soup",
+              "cookDate": "2026-11-04",
+              "status": "planned"
+            },
+            "servings": 2,
+            "label": null,
+            "notes": null,
+            "position": 0,
+            "isLeftover": true
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    },
+    {
+      "date": "2026-11-07",
+      "meals": { "breakfast": [], "lunch": [], "dinner": [], "snack": [], "dessert": [] }
+    },
+    {
+      "date": "2026-11-08",
+      "meals": {
+        "breakfast": [],
+        "lunch": [],
+        "dinner": [
+          {
+            "id": "slot_d_sun",
+            "householdId": "hh_fixture",
+            "mealPlanId": "plan_fixture",
+            "date": "2026-11-08",
+            "mealType": "dinner",
+            "kind": "freeform",
+            "cookEventId": null,
+            "cookEvent": null,
+            "servings": null,
+            "label": "Fridge clean-out",
+            "notes": null,
+            "position": 0,
+            "isLeftover": false
+          }
+        ],
+        "snack": [],
+        "dessert": []
+      }
+    }
+  ],
+  "cookEvents": [],
+  "prepTasks": [],
+  "warnings": []
+}

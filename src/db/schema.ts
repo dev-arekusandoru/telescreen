@@ -53,6 +53,25 @@ export const accounts = sqliteTable("account", {
   lastError: text("last_error"),
 });
 
+/**
+ * Music-module connection (SPEC §6: Spotify Web API). Separate from `account`
+ * because it has no calendars and a single connection is all the module uses.
+ */
+export const musicConnections = sqliteTable("music_connection", {
+  id: text("id").primaryKey(),
+  provider: text("provider", { enum: ["spotify"] })
+    .notNull()
+    .default("spotify"),
+  /** Spotify display name, for Settings. */
+  label: text("label").notNull(),
+  /** AES-GCM blob from `src/lib/crypto.ts`; never returned by the API. */
+  secretEncrypted: text("secret_encrypted").notNull(),
+  status: text("status", { enum: ["ok", "error", "needs_auth", "disabled"] })
+    .notNull()
+    .default("ok"),
+  lastError: text("last_error"),
+});
+
 export const calendars = sqliteTable(
   "calendar",
   {

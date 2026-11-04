@@ -5,13 +5,15 @@ describe("settings", () => {
   it("returns defaults, then merges a partial PUT", async () => {
     const t = makeTestApp();
     const initial = await t.request<Record<string, unknown>>("GET", "/api/v1/settings");
-    expect(initial.body).toEqual({
+    // toMatchObject (not toEqual): defaults are the contract, but new keys must not break this test.
+    expect(initial.body).toMatchObject({
       weekMode: "rolling",
       idleReturnMinutes: 2,
       syncIntervalMinutes: 5,
       keepAwake: true,
       modules: { weather: false, meals: false, music: false },
       defaultWriteCalendarId: {},
+      weather: { latitude: null, longitude: null, units: "celsius", place: null },
     });
 
     const put = await t.request<Record<string, unknown>>("PUT", "/api/v1/settings", {
@@ -30,10 +32,32 @@ describe("settings", () => {
     });
   });
 
+  it("stores the weather location and leaves other keys alone", async () => {
+    const t = makeTestApp();
+    const put = await t.request("PUT", "/api/v1/settings", {
+      weather: { latitude: 52.52, longitude: 13.405, units: "fahrenheit", place: "Berlin" },
+    });
+    expect(put.status).toBe(200);
+    expect(put.body).toMatchObject({
+      weekMode: "rolling",
+      weather: { latitude: 52.52, longitude: 13.405, units: "fahrenheit", place: "Berlin" },
+    });
+
+    const again = await t.request<Record<string, unknown>>("GET", "/api/v1/settings");
+    expect(again.body).toMatchObject({
+      weather: { latitude: 52.52, longitude: 13.405, units: "fahrenheit", place: "Berlin" },
+    });
+  });
+
   it("validates values", async () => {
     const t = makeTestApp();
     expect((await t.request("PUT", "/api/v1/settings", { weekMode: "monthly" })).status).toBe(400);
     expect((await t.request("PUT", "/api/v1/settings", { syncIntervalMinutes: 0 })).status).toBe(400);
+    expect(
+      (await t.request("PUT", "/api/v1/settings", {
+        weather: { latitude: 100, longitude: 13, units: "celsius", place: null },
+      })).status,
+    ).toBe(400);
   });
 });
 

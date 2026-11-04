@@ -7,7 +7,10 @@ import { registerAccountRoutes } from "./accounts.js";
 import { registerCalendarRoutes } from "./calendars.js";
 import { registerChoreRoutes } from "./chores.js";
 import { registerEventRoutes } from "./events.js";
+import { registerMealsRoutes } from "./meals.js";
+import { registerMusicRoutes } from "./music.js";
 import { registerSettingsRoutes } from "./settings.js";
+import { registerWeatherRoutes } from "./weather.js";
 
 /** The API sub-app mounted at `/api/v1`. */
 export type ApiApp = OpenAPIHono<AppEnv>;
@@ -28,4 +31,7 @@ export const routeRegistrars: Array<(app: ApiApp) => void> = [
   registerAccountRoutes,
   registerCalendarRoutes,
   registerEventRoutes,
+  registerMusicRoutes,
+  registerMealsRoutes,
+  registerWeatherRoutes,
 ];

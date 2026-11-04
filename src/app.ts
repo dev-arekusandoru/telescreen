@@ -6,6 +6,7 @@ import type { Db } from "./db/client.js";
 import { isAppError } from "./lib/errors.js";
 import { healthHandler, healthRoute, packageVersion } from "./routes/health.js";
 import { mountGoogleCallback } from "./routes/googleCallback.js";
+import { mountSpotifyCallback } from "./routes/spotifyCallback.js";
 import { routeRegistrars } from "./routes/index.js";
 import { createWebMiddleware } from "./web.js";
 
@@ -67,6 +68,7 @@ export function createApp(options: CreateAppOptions): App {
   });
   app.route("/api/v1", api);
   mountGoogleCallback(app, { db, now });
+  mountSpotifyCallback(app, { db, now });
 
   app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
     type: "http",
@@ -91,6 +93,9 @@ export function createApp(options: CreateAppOptions): App {
       { name: "accounts", description: "Calendar accounts (Google, iCloud) and sync" },
       { name: "calendars", description: "Discovered calendars, member mapping" },
       { name: "events", description: "Expanded calendar events and writes" },
+      { name: "meals", description: "Read-only PantryPal meal plans" },
+      { name: "weather", description: "Open-Meteo current conditions and forecast" },
+      { name: "music", description: "Spotify now playing and playback control" },
     ],
     security: [{ bearerAuth: [] }],
   });

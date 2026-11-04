@@ -1,0 +1,292 @@
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { defaultSettings, renderAt, stubApi } from "@/test/api";
+
+interface Track {
+  id: string;
+  title: string;
+  artists: string[];
+  album: string | null;
+  albumArtUrl: string | null;
+  durationMs: number;
+  progressMs: number;
+  isPlaying: boolean;
+}
+
+interface Device {
+  id: string | null;
+  name: string;
+  type: string;
+  volumePercent: number | null;
+  isActive: boolean;
+}
+
+const TRACK: Track = {
+  id: "track-1",
+  title: "Golden Hour",
+  artists: ["JVKE"],
+  album: "Golden Hour",
+  albumArtUrl: "https://img.example/640.jpg",
+  durationMs: 208_000,
+  progressMs: 42_000,
+  isPlaying: true,
+};
+
+const KITCHEN: Device = { id: "dev-1", name: "Kitchen", type: "Speaker", volumePercent: 40, isActive: true };
+const OFFICE: Device = { id: "dev-2", name: "Office", type: "Computer", volumePercent: 25, isActive: false };
+
+let player: { track: Track | null; device: Device | null };
+let connection: {
+  connected: boolean;
+  configured: boolean;
+  label: string | null;
+  status: "ok" | "error" | "needs_auth" | null;
+  lastError: string | null;
+};
+let nowPlayingError: { status: number; body: unknown } | null;
+let musicEnabled: boolean;
+let calls: Array<{ method: string; path: string; body: unknown }>;
+
+const json = (data: unknown, status = 200) =>
+  new Response(status === 204 ? null : JSON.stringify(data), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+
+beforeEach(() => {
+  localStorage.clear();
+  stubApi();
+  // Radix Select needs the pointer-capture API jsdom does not implement.
+  Element.prototype.scrollIntoView = vi.fn();
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+  Element.prototype.setPointerCapture = vi.fn();
+  Element.prototype.releasePointerCapture = vi.fn();
+  const base = globalThis.fetch;
+  player = { track: TRACK, device: KITCHEN };
+  connection = { connected: true, configured: true, label: "Alex", status: "ok", lastError: null };
+  nowPlayingError = null;
+  musicEnabled = false;
+  calls = [];
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: Request | string, init?: RequestInit) => {
+      const req = typeof input === "string" ? new Request(input, init) : input;
+      const path = new URL(req.url).pathname.replace("/api/v1", "");
+      const body = req.method === "GET" ? undefined : await req.clone().json().catch(() => undefined);
+      if (path === "/settings" && req.method === "GET") {
+        const settings = defaultSettings();
+        return json({ ...settings, modules: { ...settings.modules, music: musicEnabled } });
+      }
+      if (path === "/music/connection" && req.method === "GET") return json(connection);
+      if (path === "/music/now-playing") {
+        if (nowPlayingError) return json(nowPlayingError.body, nowPlayingError.status);
+        return json(player);
+      }
+      if (path === "/music/devices" && req.method === "GET") return json({ devices: [KITCHEN, OFFICE] });
+      if (path === "/music/connect/start") {
+        calls.push({ method: req.method, path, body });
+        // Same-document URL: jsdom implements hash navigation, so the test stays quiet.
+        return json({ authUrl: "http://localhost/#spotify-authorized" });
+      }
+      if (path.startsWith("/music/")) {
+        calls.push({ method: req.method, path, body });
+        const pause = path === "/music/pause";
+        const play = path === "/music/play";
+        if ((pause || play) && player.track) {
+          player = { ...player, track: { ...player.track, isPlaying: play } };
+        }
+        if (path === "/music/next" && player.track) {
+          player = { ...player, track: { ...player.track, id: "track-2", title: "Next Song" } };
+        }
+        if (path === "/music/device" && body && typeof body === "object" && "deviceId" in body) {
+          const target = body.deviceId === OFFICE.id ? OFFICE : KITCHEN;
+          // Transferring starts playback: Spotify reports a track afterwards.
+          player = { track: player.track ?? { ...TRACK, isPlaying: true }, device: { ...target, isActive: true } };
+        }
+        return json(null, 204);
+      }
+      return base(input, init);
+    }),
+  );
+});
+afterEach(() => vi.unstubAllGlobals());
+
+/** Render a route and return queries scoped to the page (the card lives outside <main>). */
+async function renderMain(path: string) {
+  renderAt(path);
+  const main = await screen.findByRole("main");
+  return within(main);
+}
+
+describe("Music tab", () => {
+  it("shows the current track with art, artists and progress", async () => {
+    const view = await renderMain("/music");
+    expect(await view.findByText("Golden Hour")).toBeInTheDocument();
+    expect(view.getByText("JVKE")).toBeInTheDocument();
+    expect(view.getByRole("img", { name: /Golden Hour cover/ })).toHaveAttribute(
+      "src",
+      "https://img.example/640.jpg",
+    );
+    const progress = view.getByRole("progressbar", { name: "Track progress" });
+    expect(progress).toHaveAttribute("aria-valuemax", "208000");
+    expect(Number(progress.getAttribute("aria-valuenow"))).toBeGreaterThanOrEqual(42_000);
+    expect(view.getByRole("button", { name: "Previous track" })).toBeInTheDocument();
+    expect(view.getByRole("button", { name: "Next track" })).toBeInTheDocument();
+  });
+
+  it("pauses and resumes with optimistic controls", async () => {
+    const view = await renderMain("/music");
+    await userEvent.click(await view.findByRole("button", { name: "Pause" }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/pause", body: undefined }));
+    expect(await view.findByRole("button", { name: "Play" })).toBeInTheDocument();
+
+    await userEvent.click(view.getByRole("button", { name: "Play" }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/play", body: undefined }));
+    expect(await view.findByRole("button", { name: "Pause" })).toBeInTheDocument();
+  });
+
+  it("flips play/pause optimistically before Spotify answers", async () => {
+    const outer = globalThis.fetch;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: Request | string, init?: RequestInit) => {
+        const req = typeof input === "string" ? new Request(input, init) : input;
+        if (new URL(req.url).pathname === "/api/v1/music/pause") {
+          calls.push({ method: "POST", path: "/music/pause", body: undefined });
+          await gate;
+          return json(null, 204);
+        }
+        return outer(input, init);
+      }),
+    );
+
+    renderAt("/music");
+    await userEvent.click(await screen.findByRole("button", { name: "Pause" }));
+    // The optimistic cache update flips the control while the request is still in flight.
+    expect(await screen.findByRole("button", { name: "Play" })).toBeInTheDocument();
+    release();
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/pause", body: undefined }));
+  });
+
+  it("skips forward and back", async () => {
+    const view = await renderMain("/music");
+    await userEvent.click(await view.findByRole("button", { name: "Next track" }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/next", body: undefined }));
+    expect(await view.findByText("Next Song")).toBeInTheDocument();
+
+    await userEvent.click(view.getByRole("button", { name: "Previous track" }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/previous", body: undefined }));
+  });
+
+  it("sets the volume with the slider", async () => {
+    const view = await renderMain("/music");
+    const slider = await view.findByRole("slider", { name: "Volume" });
+    expect(slider).toHaveAttribute("aria-valuenow", "40");
+    slider.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await waitFor(() =>
+      expect(calls).toContainEqual({ method: "PUT", path: "/music/volume", body: { percent: 41 } }),
+    );
+  });
+
+  it("transfers playback to a device picked from the list", async () => {
+    const view = await renderMain("/music");
+    const picker = await view.findByRole("combobox", { name: "Spotify device" });
+    expect(picker).toHaveTextContent("Kitchen");
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole("option", { name: "Office" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({ method: "PUT", path: "/music/device", body: { deviceId: "dev-2" } }),
+    );
+  });
+
+  it("offers the device picker when nothing is active", async () => {
+    player = { track: null, device: null };
+    const view = await renderMain("/music");
+    expect(await view.findByText(/Pick one below/)).toBeInTheDocument();
+    const picker = view.getByRole("combobox", { name: "Spotify device" });
+    expect(picker).toHaveTextContent("No active device");
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole("option", { name: "Kitchen" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({ method: "PUT", path: "/music/device", body: { deviceId: "dev-1" } }),
+    );
+    expect(await view.findByText("Golden Hour")).toBeInTheDocument();
+  });
+});
+
+describe("connection states", () => {
+  it("asks to reconnect when Spotify rejected the stored token", async () => {
+    nowPlayingError = {
+      status: 422,
+      body: { error: { code: "unprocessable", message: "Reconnect", details: { reason: "needs_reconnect" } } },
+    };
+    const view = await renderMain("/music");
+    expect(await view.findByText(/needs reconnecting/i)).toBeInTheDocument();
+    expect(view.getByRole("link", { name: "Open Settings" })).toHaveAttribute("href", "/settings");
+  });
+
+  it("points to Settings when Spotify is not connected", async () => {
+    connection = { connected: false, configured: true, label: null, status: null, lastError: null };
+    const view = await renderMain("/music");
+    expect(await view.findByText(/not connected/i)).toBeInTheDocument();
+    expect(view.getByRole("link", { name: "Connect in Settings" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Pause" })).toBeNull());
+  });
+
+  it("says Unavailable when the upstream is down", async () => {
+    nowPlayingError = {
+      status: 502,
+      body: { error: { code: "provider_error", message: "Spotify request failed", details: { reason: "provider_error" } } },
+    };
+    const view = await renderMain("/music");
+    expect(await view.findByText("Unavailable")).toBeInTheDocument();
+  });
+});
+
+describe("right column card", () => {
+  it("renders the now playing card when the module is enabled", async () => {
+    musicEnabled = true;
+    await renderMain("/music");
+    const aside = await screen.findByRole("complementary", { name: "At a glance" });
+    expect(within(aside).getByRole("heading", { name: /Now playing/ })).toBeInTheDocument();
+    expect(await within(aside).findByText("Golden Hour")).toBeInTheDocument();
+    expect(within(aside).getByRole("button", { name: "Pause" })).toBeInTheDocument();
+  });
+});
+
+describe("Settings > Music", () => {
+  it("connects Spotify through the OAuth start endpoint", async () => {
+    connection = { connected: false, configured: true, label: null, status: null, lastError: null };
+    renderAt("/settings");
+    const section = await screen.findByRole("region", { name: "Music" });
+    expect(within(section).getByText(/Not connected/i)).toBeInTheDocument();
+    await userEvent.click(within(section).getByRole("button", { name: /Connect Spotify/ }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/connect/start", body: undefined }));
+  });
+
+  it("shows the connected account and disconnects after confirming", async () => {
+    renderAt("/settings");
+    const section = await screen.findByRole("region", { name: "Music" });
+    expect(await within(section).findByText(/Connected/)).toBeInTheDocument();
+    expect(within(section).getByText(/Alex/)).toBeInTheDocument();
+
+    await userEvent.click(within(section).getByRole("button", { name: "Disconnect" }));
+    await userEvent.click(within(section).getByRole("button", { name: "Disconnect" }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "DELETE", path: "/music/connection", body: undefined }));
+  });
+
+  it("disables connecting when the server has no client id", async () => {
+    connection = { connected: false, configured: false, label: null, status: null, lastError: null };
+    renderAt("/settings");
+    const section = await screen.findByRole("region", { name: "Music" });
+    expect(within(section).getByText(/SPOTIFY_CLIENT_ID/)).toBeInTheDocument();
+    expect(within(section).getByRole("button", { name: /Connect Spotify/ })).toBeDisabled();
+  });
+});

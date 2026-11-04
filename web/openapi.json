@@ -37,6 +37,18 @@
     {
       "name": "events",
       "description": "Expanded calendar events and writes"
+    },
+    {
+      "name": "meals",
+      "description": "Read-only PantryPal meal plans"
+    },
+    {
+      "name": "weather",
+      "description": "Open-Meteo current conditions and forecast"
+    },
+    {
+      "name": "music",
+      "description": "Spotify now playing and playback control"
     }
   ],
   "security": [
@@ -255,6 +267,9 @@
               ]
             },
             "description": "Member id → default calendar id for new events (null = none)."
+          },
+          "weather": {
+            "$ref": "#/components/schemas/WeatherSettings"
           }
         },
         "required": [
@@ -263,7 +278,8 @@
           "syncIntervalMinutes",
           "keepAwake",
           "modules",
-          "defaultWriteCalendarId"
+          "defaultWriteCalendarId",
+          "weather"
         ]
       },
       "ModuleFlags": {
@@ -285,6 +301,54 @@
           "music"
         ],
         "description": "Optional module flags; disabled modules are hidden from navigation."
+      },
+      "WeatherSettings": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Null until a location is set."
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Null until a location is set."
+          },
+          "units": {
+            "$ref": "#/components/schemas/WeatherUnits"
+          },
+          "place": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80,
+            "description": "Optional label shown next to the forecast."
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "units",
+          "place"
+        ],
+        "description": "Location and units for the Weather module."
+      },
+      "WeatherUnits": {
+        "type": "string",
+        "enum": [
+          "celsius",
+          "fahrenheit"
+        ]
       },
       "UpdateSettingsInput": {
         "type": "object",
@@ -325,6 +389,9 @@
               ]
             },
             "description": "Member id → default calendar id for new events (null = none)."
+          },
+          "weather": {
+            "$ref": "#/components/schemas/WeatherSettings"
           }
         }
       },
@@ -1299,6 +1366,614 @@
             ]
           }
         }
+      },
+      "MusicConnection": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "false when SPOTIFY_CLIENT_ID is unset; connecting is unavailable."
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Spotify display name of the connected account."
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ok",
+              "error",
+              "needs_auth",
+              null
+            ]
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "connected",
+          "configured",
+          "label",
+          "status",
+          "lastError"
+        ]
+      },
+      "MusicConnectStart": {
+        "type": "object",
+        "properties": {
+          "authUrl": {
+            "type": "string",
+            "description": "Send the browser here to grant Spotify access."
+          }
+        },
+        "required": [
+          "authUrl"
+        ]
+      },
+      "NowPlaying": {
+        "type": "object",
+        "properties": {
+          "track": {
+            "$ref": "#/components/schemas/PlaybackTrack"
+          },
+          "device": {
+            "$ref": "#/components/schemas/MusicDeviceOrNull"
+          }
+        },
+        "required": [
+          "track",
+          "device"
+        ]
+      },
+      "PlaybackTrack": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "artists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "album": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "albumArtUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "progressMs": {
+            "type": "integer"
+          },
+          "isPlaying": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "artists",
+          "album",
+          "albumArtUrl",
+          "durationMs",
+          "progressMs",
+          "isPlaying"
+        ],
+        "description": "null when nothing is playing: paused on no device, an ad, or no active device at all."
+      },
+      "MusicDeviceOrNull": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null for restricted devices (Spotify groups); they cannot receive playback."
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "Spotify device type, e.g. Computer, Smartphone, Speaker."
+          },
+          "volumePercent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "volumePercent",
+          "isActive"
+        ]
+      },
+      "MusicDeviceList": {
+        "type": "object",
+        "properties": {
+          "devices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MusicDevice"
+            }
+          }
+        },
+        "required": [
+          "devices"
+        ]
+      },
+      "MusicDevice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null for restricted devices (Spotify groups); they cannot receive playback."
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "Spotify device type, e.g. Computer, Smartphone, Speaker."
+          },
+          "volumePercent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "volumePercent",
+          "isActive"
+        ]
+      },
+      "MusicVolumeInput": {
+        "type": "object",
+        "properties": {
+          "percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "percent"
+        ]
+      },
+      "MusicDeviceInput": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Non-null id from GET /music/devices."
+          }
+        },
+        "required": [
+          "deviceId"
+        ]
+      },
+      "MealsCurrent": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "First day of the plan week (household week start)."
+          },
+          "week": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MealDay"
+            },
+            "description": "Seven days starting at weekStart, or [] when no plan exists."
+          },
+          "tonight": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "slot": {
+                "$ref": "#/components/schemas/MealSlot"
+              },
+              "title": {
+                "type": "string",
+                "description": "Display text: recipe title or the freeform/skip label."
+              },
+              "recipeId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "PantryPal recipe id; null for freeform and skip."
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Deep link into the PantryPal web app; null when there is no recipe."
+              },
+              "skipped": {
+                "type": "boolean",
+                "description": "True for `skip` slots (intentionally no meal)."
+              }
+            },
+            "required": [
+              "slot",
+              "title",
+              "recipeId",
+              "url"
+            ],
+            "description": "Today's dinner, else the last planned meal today; null when none."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "ISO instant of the PantryPal response this data came from."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when PantryPal is unreachable and this is the last good response."
+          }
+        },
+        "required": [
+          "weekStart",
+          "week",
+          "tonight",
+          "fetchedAt",
+          "stale"
+        ]
+      },
+      "MealDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "meals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MealItem"
+            },
+            "description": "In PantryPal meal order; empty slots are omitted."
+          }
+        },
+        "required": [
+          "date",
+          "meals"
+        ]
+      },
+      "MealItem": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "$ref": "#/components/schemas/MealSlot"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display text: recipe title or the freeform/skip label."
+          },
+          "recipeId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "PantryPal recipe id; null for freeform and skip."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Deep link into the PantryPal web app; null when there is no recipe."
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "True for `skip` slots (intentionally no meal)."
+          }
+        },
+        "required": [
+          "slot",
+          "title",
+          "recipeId",
+          "url"
+        ]
+      },
+      "MealSlot": {
+        "type": "string",
+        "enum": [
+          "breakfast",
+          "lunch",
+          "dinner",
+          "snack",
+          "dessert"
+        ],
+        "description": "Eating occasion.",
+        "example": "dinner"
+      },
+      "MealsStatus": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Settings > Modules > Meals."
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "PANTRYPAL_URL is set."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "PantryPal base URL from the environment."
+          },
+          "publicUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Base URL used for recipe deep links (PANTRYPAL_PUBLIC_URL or url)."
+          },
+          "tokenConfigured": {
+            "type": "boolean",
+            "description": "PANTRYPAL_TOKEN is set (optional on a trusted network)."
+          }
+        },
+        "required": [
+          "enabled",
+          "configured",
+          "url",
+          "publicUrl",
+          "tokenConfigured"
+        ]
+      },
+      "MealsTestResult": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "weekStart": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Plan week start when PantryPal answered with a plan."
+          }
+        },
+        "required": [
+          "ok",
+          "message",
+          "weekStart"
+        ]
+      },
+      "Weather": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "units": {
+            "$ref": "#/components/schemas/WeatherUnits"
+          },
+          "place": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "current": {
+            "$ref": "#/components/schemas/WeatherCurrent"
+          },
+          "today": {
+            "$ref": "#/components/schemas/WeatherDay"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherDay"
+            },
+            "description": "Five days, starting with today."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "ISO instant the upstream data was fetched."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when upstream failed and the last cached payload is being served."
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "timezone",
+          "units",
+          "place",
+          "current",
+          "today",
+          "days",
+          "fetchedAt",
+          "stale"
+        ]
+      },
+      "WeatherCurrent": {
+        "type": "object",
+        "properties": {
+          "temperature": {
+            "type": "number"
+          },
+          "code": {
+            "type": "integer"
+          },
+          "label": {
+            "type": "string"
+          },
+          "group": {
+            "$ref": "#/components/schemas/WeatherGroup"
+          },
+          "isDay": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "temperature",
+          "code",
+          "label",
+          "group",
+          "isDay"
+        ]
+      },
+      "WeatherGroup": {
+        "type": "string",
+        "enum": [
+          "clear",
+          "mainly_clear",
+          "partly_cloudy",
+          "overcast",
+          "fog",
+          "drizzle",
+          "rain",
+          "snow",
+          "showers",
+          "snow_showers",
+          "thunderstorm",
+          "unknown"
+        ]
+      },
+      "WeatherDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD in the household time zone."
+          },
+          "code": {
+            "type": "integer",
+            "description": "WMO weather interpretation code."
+          },
+          "label": {
+            "type": "string"
+          },
+          "group": {
+            "$ref": "#/components/schemas/WeatherGroup"
+          },
+          "high": {
+            "type": "number"
+          },
+          "low": {
+            "type": "number"
+          },
+          "precipProbability": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "code",
+          "label",
+          "group",
+          "high",
+          "low",
+          "precipProbability"
+        ]
+      },
+      "WeatherError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
       }
     },
     "parameters": {}
@@ -2300,6 +2975,302 @@
         "responses": {
           "204": {
             "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/music/connection": {
+      "get": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Spotify connection status",
+        "description": "Whether Spotify is connected and configured. Drives Settings > Music. Never includes tokens; 204 responses from Spotify surface as a typed `no_active_device` error on the playback routes.",
+        "responses": {
+          "200": {
+            "description": "Connection status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicConnection"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Disconnect Spotify",
+        "description": "Forgets the stored refresh token. Nothing changes in the Spotify account.",
+        "responses": {
+          "204": {
+            "description": "Disconnected"
+          }
+        }
+      }
+    },
+    "/api/v1/music/connect/start": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Start Spotify OAuth (PKCE)",
+        "description": "Returns the Spotify consent URL; the browser comes back through /auth/spotify/callback. 422 when SPOTIFY_CLIENT_ID is unset.",
+        "responses": {
+          "200": {
+            "description": "Consent URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicConnectStart"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/music/now-playing": {
+      "get": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Current playback",
+        "description": "Track, artists, album art and progress from Spotify `GET /me/player`, plus the active device. `track` is null when nothing is playing or no device is active. 422 `not_connected` / `needs_reconnect`; 503 `rate_limited` (details.retryAfterSeconds).",
+        "responses": {
+          "200": {
+            "description": "Playback state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NowPlaying"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/music/devices": {
+      "get": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Available Spotify Connect devices",
+        "description": "Drives the device picker. `id` is null for restricted devices, which cannot receive playback.",
+        "responses": {
+          "200": {
+            "description": "Devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicDeviceList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/music/play": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Resume playback",
+        "description": "422 `no_active_device` when Spotify has no active device; 403 `premium_required` without Premium.",
+        "responses": {
+          "204": {
+            "description": "Command accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/music/pause": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Pause playback",
+        "responses": {
+          "204": {
+            "description": "Command accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/music/next": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Skip to the next track",
+        "responses": {
+          "204": {
+            "description": "Command accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/music/previous": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Go back to the previous track",
+        "responses": {
+          "204": {
+            "description": "Command accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/music/volume": {
+      "put": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Set the active device's volume",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicVolumeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Volume set"
+          }
+        }
+      }
+    },
+    "/api/v1/music/device": {
+      "put": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Transfer playback to a device",
+        "description": "Moves playback to `deviceId` (from GET /music/devices) and starts it there.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicDeviceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Playback transferred"
+          }
+        }
+      }
+    },
+    "/api/v1/meals/current": {
+      "get": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "This week's meals from PantryPal",
+        "description": "Server-to-server read of PantryPal `GET /api/v1/plans/current`, normalized to days × meals. Cached for 5 minutes; the last good response is served (stale: true) when PantryPal is unreachable. Recipe URLs deep-link into the PantryPal web app. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.",
+        "responses": {
+          "200": {
+            "description": "Current week",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsCurrent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meals module disabled"
+          },
+          "503": {
+            "description": "PantryPal not configured or unreachable and no cached response"
+          }
+        }
+      }
+    },
+    "/api/v1/meals/status": {
+      "get": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "PantryPal configuration status",
+        "description": "Environment configuration for the Meals module (no network call).",
+        "responses": {
+          "200": {
+            "description": "Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meals/test": {
+      "post": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "Test the connection to PantryPal",
+        "description": "Fetches the current plan once, bypassing the cache. Never fails: the result is in the body.",
+        "responses": {
+          "200": {
+            "description": "Reachability result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsTestResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/weather": {
+      "get": {
+        "tags": [
+          "weather"
+        ],
+        "summary": "Current weather and a 5-day forecast",
+        "description": "Open-Meteo (no API key) for the location in Settings, in the household time zone. Cached 15 minutes; serves the last cached payload flagged `stale` when upstream fails.",
+        "responses": {
+          "200": {
+            "description": "Weather",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Weather"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Module disabled, no location configured, or upstream unreachable with no cache",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherError"
+                }
+              }
+            }
           }
         }
       }

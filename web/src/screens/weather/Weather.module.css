@@ -1,0 +1,229 @@
+/* Header chip (calendar header) and right-column card share this module. */
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 10px;
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: var(--fs-base);
+  transition: var(--dur);
+}
+
+.chip:hover {
+  background: var(--surface2);
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.chipIcon {
+  font-size: 24px;
+  color: var(--accent);
+  flex: none;
+}
+
+.chipTemp {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chipLabel {
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .chipLabel {
+    display: none;
+  }
+}
+
+/* Popover */
+.pop {
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  padding: 14px 16px 16px;
+  z-index: 50;
+}
+
+.pop:focus-visible {
+  outline: none;
+}
+
+.pop[data-state="open"] {
+  animation: popIn 0.18s var(--ease);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.popHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.popPlace {
+  display: block;
+  font-size: 16px;
+}
+
+.popHead small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin-top: 2px;
+}
+
+.popNow {
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 1;
+  flex: none;
+}
+
+/* Five-day strip */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 2px;
+  border-radius: 12px;
+  font-size: var(--fs-small);
+}
+
+.day:first-child {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.dayName {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.dayIcon {
+  font-size: 24px;
+  margin: 2px 0;
+}
+
+.high {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.low {
+  color: var(--muted);
+}
+
+.precip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.precip svg {
+  font-size: 12px;
+}
+
+.stale {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Right-column card (Shell aside, >= 1280px) */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.place {
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  margin-left: auto;
+}
+
+.now {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-base);
+  margin-bottom: 10px;
+}
+
+.nowIcon {
+  font-size: 26px;
+  color: var(--accent);
+  flex: none;
+}
+
+.now b {
+  font-family: var(--display);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.now span {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.nowRange {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.unavailable {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .pop[data-state="open"] {
+    animation: none;
+    transition: none;
+  }
+}

@@ -55,6 +55,18 @@ test("calendar: create an event from the + sheet", async ({ page }, testInfo) =>
   await page.getByRole("button", { name: "Add event" }).click();
   const sheet = page.getByRole("dialog");
   await sheet.getByRole("textbox", { name: "Title" }).fill(title);
+  // Pin a daytime slot on today: near midnight the "next hour" default spills into
+  // tomorrow, and the phone opens in Day view, so the event would not be on screen.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  await sheet.getByLabel("Starts").fill(today);
+  await sheet.getByLabel("Time").first().fill("09:00");
+  await sheet.getByLabel("Ends").fill(today);
+  await sheet.getByLabel("Time").nth(1).fill("10:00");
   await sheet.getByRole("button", { name: /^Add (to .* calendar|event)$/ }).click();
   await expect(sheet).toBeHidden();
   await expect(page.getByText(title).first()).toBeVisible();

@@ -44,5 +44,8 @@
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   },
-  "description": "HomeHub web app. Everything is bundled by Vite, so all packages are devDependencies and `pnpm prune --prod` strips them from the runtime image."
+  "description": "HomeHub web app. Everything is bundled by Vite, so all packages are devDependencies and `pnpm prune --prod` strips them from the runtime image.",
+  "dependencies": {
+    "@radix-ui/react-slider": "^1.6.1"
+  }
 }

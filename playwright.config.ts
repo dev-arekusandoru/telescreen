@@ -23,8 +23,21 @@ export default defineConfig({
     serviceWorkers: "block",
   },
   projects: [
-    { name: "ipad-1180x820", use: { viewport: { width: 1180, height: 820 }, hasTouch: true } },
-    { name: "phone-390x844", use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
+    {
+      name: "ipad-1180x820",
+      testIgnore: /right-column/,
+      use: { viewport: { width: 1180, height: 820 }, hasTouch: true },
+    },
+    {
+      name: "phone-390x844",
+      testIgnore: /right-column/,
+      use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
+    },
+    {
+      name: "wall-1440x900",
+      testMatch: /right-column/,
+      use: { viewport: { width: 1440, height: 900 }, hasTouch: true },
+    },
   ],
   webServer: [
     {

@@ -1,7 +1,8 @@
 import { createRouter } from "@tanstack/react-router";
 import { calendarRoute } from "@/screens/calendar/route";
 import { choresRoute } from "@/screens/chores/route";
-import { mealsRoute, musicRoute } from "@/screens/soon/route";
+import { mealsRoute } from "@/screens/meals/route";
+import { musicRoute } from "@/screens/music/route";
 import { settingsRoute } from "@/screens/settings/route";
 import { indexRoute, rootRoute, shellRoute } from "./routes";
 

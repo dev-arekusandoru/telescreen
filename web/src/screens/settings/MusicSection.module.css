@@ -1,0 +1,107 @@
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.main b,
+.main small {
+  overflow-wrap: anywhere;
+}
+
+.warn {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--accent) !important;
+}
+
+.warn svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--muted);
+  white-space: nowrap;
+  flex: none;
+}
+
+.badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--member-sage);
+}
+
+.badgeWarn {
+  color: var(--accent);
+}
+
+.badgeWarn::before {
+  background: var(--accent);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn svg {
+  font-size: 20px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.danger {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.confirm {
+  display: flex;
+  gap: 8px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin: -2px 2px 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 599px) {
+  .actions {
+    margin-left: 0;
+    flex: 1 1 100%;
+  }
+  .btn {
+    flex: 1;
+  }
+}

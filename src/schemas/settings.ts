@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { weatherSettingsSchema } from "./weather.js";
 
 export const modulesSchema = z
   .object({
@@ -22,6 +23,7 @@ export const settingsSchema = z
     defaultWriteCalendarId: z
       .record(z.string(), z.string().nullable())
       .describe("Member id → default calendar id for new events (null = none)."),
+    weather: weatherSettingsSchema.describe("Location and units for the Weather module."),
   })
   .openapi("Settings");
 
@@ -34,6 +36,7 @@ export const SETTING_DEFAULTS: Settings = {
   keepAwake: true,
   modules: { weather: false, meals: false, music: false },
   defaultWriteCalendarId: {},
+  weather: { latitude: null, longitude: null, units: "celsius", place: null },
 };
 
 /** PUT body: any subset of keys; `modules` and `defaultWriteCalendarId` are replaced as given. */

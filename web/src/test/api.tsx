@@ -18,6 +18,7 @@ export function defaultSettings() {
     keepAwake: true,
     modules: { weather: false, meals: false, music: false },
     defaultWriteCalendarId: {},
+    weather: { latitude: null, longitude: null, units: "celsius", place: null },
   };
 }
 

@@ -1161,6 +1161,580 @@ export interface paths {
         };
         trace?: never;
     };
+    "/music/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Spotify connection status
+         * @description Whether Spotify is connected and configured. Drives Settings > Music. Never includes tokens; 204 responses from Spotify surface as a typed `no_active_device` error on the playback routes.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Connection status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MusicConnection"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Disconnect Spotify
+         * @description Forgets the stored refresh token. Nothing changes in the Spotify account.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Disconnected */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/connect/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Spotify OAuth (PKCE)
+         * @description Returns the Spotify consent URL; the browser comes back through /auth/spotify/callback. 422 when SPOTIFY_CLIENT_ID is unset.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Consent URL */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MusicConnectStart"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/now-playing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current playback
+         * @description Track, artists, album art and progress from Spotify `GET /me/player`, plus the active device. `track` is null when nothing is playing or no device is active. 422 `not_connected` / `needs_reconnect`; 503 `rate_limited` (details.retryAfterSeconds).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Playback state */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NowPlaying"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Available Spotify Connect devices
+         * @description Drives the device picker. `id` is null for restricted devices, which cannot receive playback.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Devices */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MusicDeviceList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/play": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume playback
+         * @description 422 `no_active_device` when Spotify has no active device; 403 `premium_required` without Premium.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Command accepted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause playback */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Command accepted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Skip to the next track */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Command accepted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/previous": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Go back to the previous track */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Command accepted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/volume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the active device's volume */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MusicVolumeInput"];
+                };
+            };
+            responses: {
+                /** @description Volume set */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Transfer playback to a device
+         * @description Moves playback to `deviceId` (from GET /music/devices) and starts it there.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MusicDeviceInput"];
+                };
+            };
+            responses: {
+                /** @description Playback transferred */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/meals/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This week's meals from PantryPal
+         * @description Server-to-server read of PantryPal `GET /api/v1/plans/current`, normalized to days × meals. Cached for 5 minutes; the last good response is served (stale: true) when PantryPal is unreachable. Recipe URLs deep-link into the PantryPal web app. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Current week */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsCurrent"];
+                    };
+                };
+                /** @description Meals module disabled */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description PantryPal not configured or unreachable and no cached response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/meals/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * PantryPal configuration status
+         * @description Environment configuration for the Meals module (no network call).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsStatus"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/meals/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test the connection to PantryPal
+         * @description Fetches the current plan once, bypassing the cache. Never fails: the result is in the body.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Reachability result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsTestResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/weather": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current weather and a 5-day forecast
+         * @description Open-Meteo (no API key) for the location in Settings, in the household time zone. Cached 15 minutes; serves the last cached payload flagged `stale` when upstream fails.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Weather */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Weather"];
+                    };
+                };
+                /** @description Module disabled, no location configured, or upstream unreachable with no cache */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WeatherError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1225,6 +1799,7 @@ export interface components {
             defaultWriteCalendarId: {
                 [key: string]: string | null;
             };
+            weather: components["schemas"]["WeatherSettings"];
         };
         /** @description Optional module flags; disabled modules are hidden from navigation. */
         ModuleFlags: {
@@ -1232,6 +1807,18 @@ export interface components {
             meals: boolean;
             music: boolean;
         };
+        /** @description Location and units for the Weather module. */
+        WeatherSettings: {
+            /** @description Null until a location is set. */
+            latitude: number | null;
+            /** @description Null until a location is set. */
+            longitude: number | null;
+            units: components["schemas"]["WeatherUnits"];
+            /** @description Optional label shown next to the forecast. */
+            place: string | null;
+        };
+        /** @enum {string} */
+        WeatherUnits: "celsius" | "fahrenheit";
         UpdateSettingsInput: {
             /**
              * @description rolling = 7 days starting today; fixed = week per household weekStart.
@@ -1249,6 +1836,7 @@ export interface components {
             defaultWriteCalendarId?: {
                 [key: string]: string | null;
             };
+            weather?: components["schemas"]["WeatherSettings"];
         };
         ChoreList: components["schemas"]["Chore"][];
         Chore: {
@@ -1469,6 +2057,166 @@ export interface components {
             notes?: string | null;
             /** @enum {string} */
             repeat?: "none" | "daily" | "weekdays" | "weekly" | "monthly" | "yearly" | "custom";
+        };
+        MusicConnection: {
+            connected: boolean;
+            /** @description false when SPOTIFY_CLIENT_ID is unset; connecting is unavailable. */
+            configured: boolean;
+            /** @description Spotify display name of the connected account. */
+            label: string | null;
+            /** @enum {string|null} */
+            status: "ok" | "error" | "needs_auth" | null;
+            lastError: string | null;
+        };
+        MusicConnectStart: {
+            /** @description Send the browser here to grant Spotify access. */
+            authUrl: string;
+        };
+        NowPlaying: {
+            track: components["schemas"]["PlaybackTrack"];
+            device: components["schemas"]["MusicDeviceOrNull"];
+        };
+        /** @description null when nothing is playing: paused on no device, an ad, or no active device at all. */
+        PlaybackTrack: {
+            id: string | null;
+            title: string;
+            artists: string[];
+            album: string | null;
+            albumArtUrl: string | null;
+            durationMs: number;
+            progressMs: number;
+            isPlaying: boolean;
+        } | null;
+        MusicDeviceOrNull: {
+            /** @description null for restricted devices (Spotify groups); they cannot receive playback. */
+            id: string | null;
+            name: string;
+            /** @description Spotify device type, e.g. Computer, Smartphone, Speaker. */
+            type: string;
+            volumePercent: number | null;
+            isActive: boolean;
+        } | null;
+        MusicDeviceList: {
+            devices: components["schemas"]["MusicDevice"][];
+        };
+        MusicDevice: {
+            /** @description null for restricted devices (Spotify groups); they cannot receive playback. */
+            id: string | null;
+            name: string;
+            /** @description Spotify device type, e.g. Computer, Smartphone, Speaker. */
+            type: string;
+            volumePercent: number | null;
+            isActive: boolean;
+        };
+        MusicVolumeInput: {
+            percent: number;
+        };
+        MusicDeviceInput: {
+            /** @description Non-null id from GET /music/devices. */
+            deviceId: string;
+        };
+        MealsCurrent: {
+            /** @description First day of the plan week (household week start). */
+            weekStart: string;
+            /** @description Seven days starting at weekStart, or [] when no plan exists. */
+            week: components["schemas"]["MealDay"][];
+            /** @description Today's dinner, else the last planned meal today; null when none. */
+            tonight: {
+                slot: components["schemas"]["MealSlot"];
+                /** @description Display text: recipe title or the freeform/skip label. */
+                title: string;
+                /** @description PantryPal recipe id; null for freeform and skip. */
+                recipeId: string | null;
+                /** @description Deep link into the PantryPal web app; null when there is no recipe. */
+                url: string | null;
+                /** @description True for `skip` slots (intentionally no meal). */
+                skipped?: boolean;
+            } | null;
+            /** @description ISO instant of the PantryPal response this data came from. */
+            fetchedAt: string;
+            /** @description True when PantryPal is unreachable and this is the last good response. */
+            stale: boolean;
+        };
+        MealDay: {
+            date: string;
+            /** @description In PantryPal meal order; empty slots are omitted. */
+            meals: components["schemas"]["MealItem"][];
+        };
+        MealItem: {
+            slot: components["schemas"]["MealSlot"];
+            /** @description Display text: recipe title or the freeform/skip label. */
+            title: string;
+            /** @description PantryPal recipe id; null for freeform and skip. */
+            recipeId: string | null;
+            /** @description Deep link into the PantryPal web app; null when there is no recipe. */
+            url: string | null;
+            /** @description True for `skip` slots (intentionally no meal). */
+            skipped?: boolean;
+        };
+        /**
+         * @description Eating occasion.
+         * @example dinner
+         * @enum {string}
+         */
+        MealSlot: "breakfast" | "lunch" | "dinner" | "snack" | "dessert";
+        MealsStatus: {
+            /** @description Settings > Modules > Meals. */
+            enabled: boolean;
+            /** @description PANTRYPAL_URL is set. */
+            configured: boolean;
+            /** @description PantryPal base URL from the environment. */
+            url: string | null;
+            /** @description Base URL used for recipe deep links (PANTRYPAL_PUBLIC_URL or url). */
+            publicUrl: string | null;
+            /** @description PANTRYPAL_TOKEN is set (optional on a trusted network). */
+            tokenConfigured: boolean;
+        };
+        MealsTestResult: {
+            ok: boolean;
+            message: string;
+            /** @description Plan week start when PantryPal answered with a plan. */
+            weekStart: string | null;
+        };
+        Weather: {
+            latitude: number;
+            longitude: number;
+            timezone: string;
+            units: components["schemas"]["WeatherUnits"];
+            place: string | null;
+            current: components["schemas"]["WeatherCurrent"];
+            today: components["schemas"]["WeatherDay"];
+            /** @description Five days, starting with today. */
+            days: components["schemas"]["WeatherDay"][];
+            /** @description ISO instant the upstream data was fetched. */
+            fetchedAt: string;
+            /** @description True when upstream failed and the last cached payload is being served. */
+            stale: boolean;
+        };
+        WeatherCurrent: {
+            temperature: number;
+            code: number;
+            label: string;
+            group: components["schemas"]["WeatherGroup"];
+            isDay: boolean;
+        };
+        /** @enum {string} */
+        WeatherGroup: "clear" | "mainly_clear" | "partly_cloudy" | "overcast" | "fog" | "drizzle" | "rain" | "snow" | "showers" | "snow_showers" | "thunderstorm" | "unknown";
+        WeatherDay: {
+            /** @description YYYY-MM-DD in the household time zone. */
+            date: string;
+            /** @description WMO weather interpretation code. */
+            code: number;
+            label: string;
+            group: components["schemas"]["WeatherGroup"];
+            high: number;
+            low: number;
+            precipProbability: number | null;
+        };
+        WeatherError: {
+            error: {
+                code: string;
+                message: string;
+            };
         };
     };
     responses: never;

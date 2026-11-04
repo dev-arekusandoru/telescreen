@@ -67,3 +67,9 @@ Styling: CSS modules + tokens only; no hard-coded colors. Web tests: Vitest + Te
 - Calendar `last_error` and account `status` (`ok | error | needs_auth`) feed the Settings badges and `GET /sync/status`.
 - `/auth/google/callback` is mounted in `app.ts` outside `/api/v1`; the single-use `state` nonce from `POST /accounts/google/start` is its authentication.
 - Tests stub `globalThis.fetch` (`test/fake-caldav.ts` is an in-process CalDAV server; Google fixtures live in `test/fixtures/google/`). `e2e/fake-caldav-server.ts` serves the same fake CalDAV over HTTP (`ICLOUD_CALDAV_URL`) so Playwright can create events end to end.
+
+## Music (Spotify)
+
+`src/music/spotify.ts` is a thin Spotify Web API client: PKCE (`code_verifier` + S256 challenge), authorization-code and refresh-token exchange, access-token refresh (expiry skew, plus one refresh + retry on 401) and typed failures (`no_active_device`, `premium_required`, `needs_auth`, `rate_limited` with `Retry-After`). `services/music.ts` owns the `state` nonce → verifier map, stores the encrypted connection in `music_connection`, persists rotated tokens after each call and maps failures to `AppError` with `details.reason`. `/auth/spotify/callback` is mounted in `app.ts` next to the Google callback; `POST /music/connect/start` and the callback share `routes/oauthPage.ts`.
+
+Web: `features/music.ts` (adaptive polling: 5 s playing, 20 s idle, 60 s hidden; optimistic transport) and `screens/music/` (`MusicPlayer` used by the Music tab and the right-column `NowPlayingCard`). Settings > Music connects/disconnects; the Music tab is hidden until `modules.music` is on.

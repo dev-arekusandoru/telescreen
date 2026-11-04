@@ -20,6 +20,7 @@ import {
 } from "@/features/calendar";
 import { useHousehold, useMembers, useSettings, type Member, type Settings } from "@/features/queries";
 import { PageHeader, SegmentedControl, Surface, cx } from "@/ui";
+import { WeatherChip } from "@/screens/weather/WeatherChip";
 import styles from "./Calendar.module.css";
 import { EventSheet, type SheetInitial } from "./EventSheet";
 import { useIdleReturn, useStoredState } from "./hooks";
@@ -361,6 +362,7 @@ export function CalendarScreen() {
             <span className={styles.familyDot} aria-hidden="true" />
             Family
           </button>
+          <WeatherChip />
           <SegmentedControl label="Calendar view" value={view} onChange={setView} options={VIEWS} />
         </div>
       </PageHeader>
