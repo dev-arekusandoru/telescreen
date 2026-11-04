@@ -2,8 +2,11 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
 import { dbPath, trustNetwork } from "./config.js";
 import { openDb, runMigrations } from "./db/client.js";
+import { makeCtx } from "./context.js";
 import { hasSecretKey } from "./lib/crypto.js";
 import { seedIfEmpty } from "./services/households.js";
+import { startSyncScheduler } from "./services/sync.js";
+import { runChoreTick } from "./services/chores.js";
 import { defaultWebDir, hasWebApp } from "./web.js";
 
 const DEFAULT_PORT = 8788;
@@ -22,6 +25,19 @@ const household = seedIfEmpty(db);
 
 const app = createApp({ db, trustNetwork: trust, ...(serveWeb ? { webDir } : {}) });
 
+// Chores: expire missed occurrences and keep the next two weeks materialized (also done lazily per request).
+const choreCtx = makeCtx(db, household.id);
+const choreTick = (): void => {
+  try {
+    runChoreTick(choreCtx);
+  } catch (error) {
+    console.error("Chore tick failed:", error);
+  }
+};
+choreTick();
+const choreTimer = setInterval(choreTick, 15 * 60_000);
+choreTimer.unref();
+
 if (trust) {
   console.log("HOMEHUB_TRUST_NETWORK is on: /api/v1 requests without a token act as the household.");
 }
@@ -34,6 +50,8 @@ console.log(
     : `Web app not found at ${webDir}; serving the API only (build it with \`pnpm build\`).`,
 );
 
+const stopSync = startSyncScheduler(makeCtx(db, household.id));
+
 const server = serve({ fetch: app.fetch, port, hostname }, (info) => {
   console.log(`HomeHub listening on http://${hostname}:${info.port} (${household.name}, ${household.timezone})`);
   console.log(`Database: ${file}`);
@@ -43,6 +61,7 @@ let shuttingDown = false;
 function shutdown(signal: string): void {
   if (shuttingDown) return;
   shuttingDown = true;
+  stopSync();
   console.log(`Received ${signal}, shutting down…`);
   const force = setTimeout(() => {
     console.error("Shutdown timed out; exiting.");

@@ -1,0 +1,19 @@
+{
+  "kind": "calendar#events",
+  "nextPageToken": "page-2",
+  "items": [
+    {
+      "id": "weeklysync", "etag": "\"w1\"", "status": "confirmed", "summary": "Team sync", "location": "Zoom",
+      "start": { "dateTime": "2026-10-13T10:00:00+02:00", "timeZone": "Europe/Berlin" },
+      "end": { "dateTime": "2026-10-13T11:00:00+02:00", "timeZone": "Europe/Berlin" },
+      "recurrence": ["RRULE:FREQ=WEEKLY;BYDAY=TU", "EXDATE;TZID=Europe/Berlin:20261110T100000"]
+    },
+    {
+      "id": "weeklysync_20261103T090000Z", "etag": "\"o1\"", "status": "confirmed", "summary": "Team sync (extended)",
+      "recurringEventId": "weeklysync",
+      "originalStartTime": { "dateTime": "2026-11-03T10:00:00+01:00", "timeZone": "Europe/Berlin" },
+      "start": { "dateTime": "2026-11-03T10:00:00+01:00", "timeZone": "Europe/Berlin" },
+      "end": { "dateTime": "2026-11-03T12:00:00+01:00", "timeZone": "Europe/Berlin" }
+    }
+  ]
+}

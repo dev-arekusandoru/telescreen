@@ -1,0 +1,23 @@
+{
+  "kind": "calendar#events",
+  "nextSyncToken": "SYNC-1",
+  "items": [
+    {
+      "id": "weeklysync_20261117T090000Z", "etag": "\"o2\"", "status": "cancelled",
+      "recurringEventId": "weeklysync",
+      "originalStartTime": { "dateTime": "2026-11-17T10:00:00+01:00", "timeZone": "Europe/Berlin" }
+    },
+    {
+      "id": "vacation", "etag": "\"v1\"", "status": "confirmed", "summary": "Vacation",
+      "start": { "date": "2026-11-05" }, "end": { "date": "2026-11-08" }
+    },
+    {
+      "id": "lunch", "etag": "\"l1\"", "status": "confirmed", "summary": "Lunch", "description": "With Sam",
+      "start": { "dateTime": "2026-11-04T12:00:00+01:00" }, "end": { "dateTime": "2026-11-04T13:00:00+01:00" }
+    },
+    {
+      "id": "oldthing", "etag": "\"x1\"", "status": "confirmed", "summary": "Will be removed",
+      "start": { "dateTime": "2026-11-06T12:00:00Z" }, "end": { "dateTime": "2026-11-06T13:00:00Z" }
+    }
+  ]
+}

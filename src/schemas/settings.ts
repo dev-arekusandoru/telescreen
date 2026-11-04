@@ -17,6 +17,7 @@ export const settingsSchema = z
     weekMode: z.enum(["rolling", "fixed"]).describe("rolling = 7 days starting today; fixed = week per household weekStart."),
     idleReturnMinutes: z.number().int().min(0).max(240).describe("Idle minutes before returning to today's Week view; 0 disables."),
     syncIntervalMinutes: z.number().int().min(1).max(1440).describe("Calendar poll interval."),
+    keepAwake: z.boolean().describe("Request the screen wake lock while the app is visible."),
     modules: modulesSchema.describe("Optional module flags; disabled modules are hidden from navigation."),
     defaultWriteCalendarId: z
       .record(z.string(), z.string().nullable())
@@ -30,6 +31,7 @@ export const SETTING_DEFAULTS: Settings = {
   weekMode: "rolling",
   idleReturnMinutes: 2,
   syncIntervalMinutes: 5,
+  keepAwake: true,
   modules: { weather: false, meals: false, music: false },
   defaultWriteCalendarId: {},
 };

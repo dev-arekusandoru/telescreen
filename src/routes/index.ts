@@ -3,6 +3,10 @@ import type { AppEnv } from "../auth/middleware.js";
 import { registerHealthRoutes } from "./health.js";
 import { registerHouseholdRoutes } from "./household.js";
 import { registerMemberRoutes } from "./members.js";
+import { registerAccountRoutes } from "./accounts.js";
+import { registerCalendarRoutes } from "./calendars.js";
+import { registerChoreRoutes } from "./chores.js";
+import { registerEventRoutes } from "./events.js";
 import { registerSettingsRoutes } from "./settings.js";
 
 /** The API sub-app mounted at `/api/v1`. */
@@ -20,4 +24,8 @@ export const routeRegistrars: Array<(app: ApiApp) => void> = [
   registerHouseholdRoutes,
   registerMemberRoutes,
   registerSettingsRoutes,
+  registerChoreRoutes,
+  registerAccountRoutes,
+  registerCalendarRoutes,
+  registerEventRoutes,
 ];

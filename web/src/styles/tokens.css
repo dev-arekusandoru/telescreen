@@ -9,23 +9,23 @@
   --surface: #fbf6ec;
   --surface2: #efe5d2;
   --ink: #2b2118;
-  --muted: #7f705c;
+  --muted: #66584a;
   --line: #e2d6c0;
-  --accent: #c4623f;
+  --accent: #a84c2a;
   --on-accent: #ffffff;
   --scrim: rgba(43, 33, 24, 0.38);
   --shadow: 0 2px 0 var(--line), 0 10px 24px -14px rgba(60, 40, 10, 0.35);
   --shadow-pop: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
 
   /* Member palette (SPEC §8). Keys match `MEMBER_COLORS` on the server. */
-  --member-terracotta: #c4623f;
-  --member-sage: #5f8a6b;
-  --member-ochre: #b8862b;
+  --member-terracotta: #a84c2a;
+  --member-sage: #557f61;
+  --member-ochre: #966a19;
   --member-plum: #8a5a83;
   --member-slate: #5a7690;
-  --member-rose: #b85a6e;
+  --member-rose: #ae546a;
   /* Family / both: neutral ink-on-paper. */
-  --member-family: #8a7a66;
+  --member-family: #75675a;
 
   /* Event fill: member color mixed into the surface by this percentage. */
   --tint: 22%;
@@ -45,6 +45,7 @@
   --dur: 0.2s;
 
   --rail-width: 84px;
+  --side-width: 288px;
   --tap: 44px;
 
   color-scheme: light;
@@ -55,7 +56,7 @@
   --surface: #211b15;
   --surface2: #2b241c;
   --ink: #f1e8d8;
-  --muted: #a09280;
+  --muted: #bcae9b;
   --line: #382e24;
   --accent: #e58d66;
   --on-accent: #1b1510;
@@ -78,7 +79,7 @@
     --surface: #211b15;
     --surface2: #2b241c;
     --ink: #f1e8d8;
-    --muted: #a09280;
+    --muted: #bcae9b;
     --line: #382e24;
     --accent: #e58d66;
     --on-accent: #1b1510;

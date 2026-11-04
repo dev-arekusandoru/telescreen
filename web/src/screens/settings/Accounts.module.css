@@ -1,0 +1,271 @@
+.hint {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin: -4px 0 12px;
+}
+
+.sub {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 2px 8px;
+  font-weight: 600;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.main b,
+.main small {
+  overflow-wrap: anywhere;
+}
+
+.warn {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--accent) !important;
+}
+
+.warn svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--member-sage);
+}
+
+.badgeWarn {
+  color: var(--accent);
+}
+
+.badgeWarn::before {
+  background: var(--accent);
+}
+
+.actions {
+  display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+.addRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ghost svg {
+  font-size: 20px;
+}
+
+.ghost:disabled {
+  opacity: 0.5;
+}
+
+.dangerBtn {
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.spin svg {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin svg {
+    animation: none;
+  }
+}
+
+/* Calendars */
+.calDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--c);
+  flex: none;
+}
+
+.cal {
+  flex-wrap: wrap;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  margin-left: auto;
+}
+
+.lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.defRow b {
+  flex: 1;
+}
+
+/* Dialog */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(3px);
+  z-index: 20;
+  animation: fade var(--dur) var(--ease);
+}
+
+.sheet {
+  position: fixed;
+  z-index: 21;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, 94vw);
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-sheet);
+  padding: 22px;
+  box-shadow: var(--shadow-pop);
+  animation: rise 0.25s var(--ease);
+}
+
+.heading {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-right: 52px;
+}
+
+.close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin-bottom: 16px;
+}
+
+.fld {
+  margin-bottom: 14px;
+}
+
+.fld label {
+  display: block;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.fld input {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 48px;
+  outline: none;
+}
+
+.fld input:focus-visible {
+  border-color: var(--accent);
+}
+
+.error {
+  color: var(--accent);
+  font-size: var(--fs-small);
+  margin-bottom: 12px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translate(-50%, calc(-50% + 24px));
+    opacity: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  .controls {
+    margin-left: 0;
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+}

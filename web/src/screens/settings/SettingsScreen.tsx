@@ -1,7 +1,11 @@
 import { CloudSun, ForkKnife, MusicNotes, SunHorizon, type Icon } from "@phosphor-icons/react";
 import { useTheme, type ThemePreference } from "@/app/theme";
 import { useMembers, useSettings, useUpdateSettings, type ModuleKey } from "@/features/queries";
-import { Avatar, PageHeader, SegmentedControl, Switch, memberColorStyle } from "@/ui";
+import { PageHeader, SegmentedControl, Switch } from "@/ui";
+import { AccountsSection } from "./AccountsSection";
+import { CalendarsSection } from "./CalendarsSection";
+import { GeneralSection } from "./GeneralSection";
+import { MembersSection } from "./MembersSection";
 import styles from "./Settings.module.css";
 
 const THEMES: Array<{ value: ThemePreference; label: string }> = [
@@ -40,19 +44,13 @@ export function SettingsScreen() {
           </div>
         </section>
 
-        <section className={styles.sec}>
-          <h2>Members</h2>
-          {members.map((m) => (
-            <div key={m.id} className={styles.row}>
-              <Avatar colorToken={m.colorToken} initial={m.initial} />
-              <div>
-                <b>{m.name}</b>
-                <small style={{ textTransform: "capitalize" }}>{m.colorToken}</small>
-              </div>
-              <span className={`${styles.dot} ${styles.end}`} style={memberColorStyle(m.colorToken)} />
-            </div>
-          ))}
-        </section>
+        <GeneralSection />
+
+        <MembersSection />
+
+        <AccountsSection />
+
+        <CalendarsSection />
 
         <section className={styles.sec}>
           <h2>Modules</h2>

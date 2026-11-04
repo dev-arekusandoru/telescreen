@@ -296,6 +296,871 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/chores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List chore templates (including archived) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Chores */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a chore */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateChoreInput"];
+                };
+            };
+            responses: {
+                /** @description Created chore */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Chore"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chores/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a chore and its history */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeleteResult"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update or archive a chore (history is preserved) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateChoreInput"];
+                };
+            };
+            responses: {
+                /** @description Updated chore */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Chore"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/chore-occurrences/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per-member done/total for a date */
+        get: {
+            parameters: {
+                query: {
+                    date: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Progress per member */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreProgress"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chore-occurrences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Occurrences due in a date range (materialized on demand) */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                    member?: string;
+                    /** @description Also return still-live open occurrences due before `from` (for Today). */
+                    carryover?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Occurrences */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreOccurrenceList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chore-occurrences/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark an occurrence done (credit to completedBy) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CompleteOccurrenceInput"];
+                };
+            };
+            responses: {
+                /** @description Updated occurrence */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreOccurrence"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chore-occurrences/{id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reopen a done or skipped occurrence */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Updated occurrence */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreOccurrence"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chore-occurrences/{id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Skip an open occurrence */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Updated occurrence */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreOccurrence"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chore-occurrences/{id}/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Override the assignee of one open occurrence */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReassignOccurrenceInput"];
+                };
+            };
+            responses: {
+                /** @description Updated occurrence */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChoreOccurrence"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List connected calendar accounts
+         * @description Never includes credentials.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Accounts */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AccountList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/icloud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connect an iCloud account
+         * @description Validates the Apple ID + app-specific password against caldav.icloud.com, stores them encrypted, and starts a first sync in the background.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateIcloudAccountInput"];
+                };
+            };
+            responses: {
+                /** @description Connected account */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Account"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/google/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Google OAuth
+         * @description Returns the Google consent URL; the browser comes back through /auth/google/callback.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Consent URL */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GoogleAuthStart"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Disconnect an account
+         * @description Removes the account, its calendars and cached events. Nothing is deleted at the provider.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync one account now */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sync status afterwards */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SyncStatus"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync every account now
+         * @description Used when the app regains focus.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sync status afterwards */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SyncStatus"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sync/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sync status
+         * @description Drives the header indicator.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SyncStatus"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/calendars": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List discovered calendars */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Calendars */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CalendarList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/calendars/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Enable/disable a calendar or map it to a member
+         * @description `memberId: null` = Family / Both.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateCalendarInput"];
+                };
+            };
+            responses: {
+                /** @description Updated calendar */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Calendar"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Expanded events in a window
+         * @description Recurring events are expanded server-side (RRULE, EXDATE, overrides). Timed events are UTC instants; all-day events are date-only with an exclusive end.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Window start (ISO instant). */
+                    start: string;
+                    /** @description Window end (ISO instant, exclusive). */
+                    end: string;
+                    /** @description Comma-separated member ids; `family` selects unassigned calendars. Omit for all. */
+                    members?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Event instances */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventInstanceList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create an event
+         * @description Written to the provider first, then cached. 403 for read-only calendars; 502 on provider failure.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateEventInput"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventInstance"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an event or one occurrence */
+        delete: {
+            parameters: {
+                query?: {
+                    /** @description Recurring events: this occurrence or the whole series. */
+                    scope?: "this" | "all";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Edit an event or one occurrence
+         * @description 409 `conflict` when the event changed at the provider (etag precondition failed).
+         */
+        patch: {
+            parameters: {
+                query?: {
+                    /** @description Recurring events: this occurrence or the whole series. */
+                    scope?: "this" | "all";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateEventInput"];
+                };
+            };
+            responses: {
+                /** @description Updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventInstance"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -353,6 +1218,8 @@ export interface components {
             idleReturnMinutes: number;
             /** @description Calendar poll interval. */
             syncIntervalMinutes: number;
+            /** @description Request the screen wake lock while the app is visible. */
+            keepAwake: boolean;
             modules: components["schemas"]["ModuleFlags"];
             /** @description Member id → default calendar id for new events (null = none). */
             defaultWriteCalendarId: {
@@ -375,11 +1242,233 @@ export interface components {
             idleReturnMinutes?: number;
             /** @description Calendar poll interval. */
             syncIntervalMinutes?: number;
+            /** @description Request the screen wake lock while the app is visible. */
+            keepAwake?: boolean;
             modules?: components["schemas"]["ModuleFlags"];
             /** @description Member id → default calendar id for new events (null = none). */
             defaultWriteCalendarId?: {
                 [key: string]: string | null;
             };
+        };
+        ChoreList: components["schemas"]["Chore"][];
+        Chore: {
+            id: string;
+            name: string;
+            icon: string | null;
+            notes: string | null;
+            recurrence: components["schemas"]["ChoreRecurrence"];
+            assignment: components["schemas"]["ChoreAssignment"];
+            /** @description Ordered: the rotation order for `rotating`; the assignee for `fixed`. */
+            memberIds: string[];
+            dueTime: string | null;
+            estimatedMinutes: number | null;
+            archived: boolean;
+        };
+        ChoreRecurrence: {
+            /** @enum {string} */
+            type: "once";
+            date: string;
+        } | {
+            /** @enum {string} */
+            type: "daily";
+            start: string;
+        } | {
+            /** @enum {string} */
+            type: "weekdays";
+            days: number[];
+            start: string;
+        } | {
+            /** @enum {string} */
+            type: "weekly";
+            /** @description 1 = every week, N = every N weeks. */
+            every: number;
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            start: string;
+        } | {
+            /** @enum {string} */
+            type: "monthly";
+            /** @description Day of month; clamped to the month's last day. */
+            day: number;
+            start: string;
+        };
+        /** @enum {string} */
+        ChoreAssignment: "fixed" | "rotating" | "either";
+        CreateChoreInput: {
+            name: string;
+            icon?: string | null;
+            notes?: string | null;
+            recurrence: components["schemas"]["ChoreRecurrenceInput"];
+            assignment: components["schemas"]["ChoreAssignment"];
+            /** @default [] */
+            memberIds: string[];
+            dueTime?: string | null;
+            estimatedMinutes?: number | null;
+        };
+        ChoreRecurrenceInput: {
+            /** @enum {string} */
+            type: "once";
+            date: string;
+        } | {
+            /** @enum {string} */
+            type: "daily";
+            start?: string;
+        } | {
+            /** @enum {string} */
+            type: "weekdays";
+            days: number[];
+            start?: string;
+        } | {
+            /** @enum {string} */
+            type: "weekly";
+            /** @description 1 = every week, N = every N weeks. */
+            every: number;
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            start?: string;
+        } | {
+            /** @enum {string} */
+            type: "monthly";
+            /** @description Day of month; clamped to the month's last day. */
+            day: number;
+            start?: string;
+        };
+        UpdateChoreInput: {
+            name?: string;
+            icon?: string | null;
+            notes?: string | null;
+            recurrence?: components["schemas"]["ChoreRecurrenceInput"];
+            assignment?: components["schemas"]["ChoreAssignment"];
+            memberIds?: string[];
+            dueTime?: string | null;
+            estimatedMinutes?: number | null;
+            archived?: boolean;
+        };
+        ChoreProgress: {
+            memberId: string;
+            done: number;
+            total: number;
+        }[];
+        ChoreOccurrenceList: components["schemas"]["ChoreOccurrence"][];
+        ChoreOccurrence: {
+            id: string;
+            choreId: string;
+            indexN: number;
+            dueDate: string;
+            status: components["schemas"]["ChoreOccurrenceStatus"];
+            /** @description Null for `either` chores until reassigned. */
+            assigneeId: string | null;
+            completedBy: string | null;
+            completedAt: string | null;
+            name: string;
+            icon: string | null;
+            notes: string | null;
+            dueTime: string | null;
+            estimatedMinutes: number | null;
+            assignment: components["schemas"]["ChoreAssignment"];
+            /** @description Rotating chores: who gets the following occurrence. */
+            nextAssigneeId: string | null;
+        };
+        /** @enum {string} */
+        ChoreOccurrenceStatus: "open" | "done" | "missed" | "skipped";
+        CompleteOccurrenceInput: {
+            completedBy: string;
+        };
+        ReassignOccurrenceInput: {
+            memberId: string;
+        };
+        AccountList: components["schemas"]["Account"][];
+        Account: {
+            id: string;
+            /** @enum {string} */
+            provider: "google" | "icloud";
+            label: string;
+            /** @enum {string} */
+            status: "ok" | "error" | "needs_auth";
+            lastError: string | null;
+        };
+        CreateIcloudAccountInput: {
+            label: string;
+            appleId: string;
+            /** @description App-specific password from appleid.apple.com. */
+            appPassword: string;
+        };
+        GoogleAuthStart: {
+            /** @description Send the browser here to grant calendar access. */
+            authUrl: string;
+        };
+        SyncStatus: {
+            /** @description Most recent successful sync across enabled calendars. */
+            lastSyncedAt: string | null;
+            hasErrors: boolean;
+        };
+        CalendarList: components["schemas"]["Calendar"][];
+        Calendar: {
+            id: string;
+            accountId: string;
+            name: string;
+            color: string | null;
+            writable: boolean;
+            enabled: boolean;
+            /** @description NULL = Family / Both. */
+            memberId: string | null;
+            lastSyncedAt: string | null;
+            lastError: string | null;
+        };
+        UpdateCalendarInput: {
+            enabled?: boolean;
+            memberId?: string | null;
+        };
+        EventInstanceList: components["schemas"]["EventInstance"][];
+        EventInstance: {
+            /** @description Opaque instance id; use it for PATCH/DELETE. */
+            id: string;
+            /** @description Id of the series / single event. */
+            eventId: string;
+            calendarId: string;
+            memberId: string | null;
+            title: string;
+            /** @description UTC ISO instant, or `YYYY-MM-DD` when allDay. */
+            start: string;
+            /** @description UTC ISO instant, or exclusive `YYYY-MM-DD` when allDay. */
+            end: string;
+            allDay: boolean;
+            /** @description Original IANA zone of the event, when known. */
+            timeZone: string | null;
+            location: string | null;
+            notes: string | null;
+            recurring: boolean;
+            /** @enum {string} */
+            repeat: "none" | "daily" | "weekdays" | "weekly" | "monthly" | "yearly" | "custom";
+            writable: boolean;
+        };
+        CreateEventInput: {
+            calendarId: string;
+            title: string;
+            /** @description ISO instant, or `YYYY-MM-DD` for all-day. */
+            start: string;
+            /** @description ISO instant, or exclusive `YYYY-MM-DD` for all-day. */
+            end: string;
+            allDay: boolean;
+            location?: string | null;
+            notes?: string | null;
+            /**
+             * @default none
+             * @enum {string}
+             */
+            repeat: "none" | "daily" | "weekdays" | "weekly" | "monthly" | "yearly" | "custom";
+        };
+        UpdateEventInput: {
+            title?: string;
+            /** @description ISO instant, or `YYYY-MM-DD` for all-day. */
+            start?: string;
+            /** @description ISO instant, or exclusive `YYYY-MM-DD` for all-day. */
+            end?: string;
+            allDay?: boolean;
+            location?: string | null;
+            notes?: string | null;
+            /** @enum {string} */
+            repeat?: "none" | "daily" | "weekdays" | "weekly" | "monthly" | "yearly" | "custom";
         };
     };
     responses: never;

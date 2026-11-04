@@ -5,6 +5,8 @@ export type ErrorCode =
   | "validation"
   | "unprocessable"
   | "unauthorized"
+  | "forbidden"
+  | "provider_error"
   | "unavailable";
 
 const HTTP_STATUS: Record<ErrorCode, number> = {
@@ -13,6 +15,8 @@ const HTTP_STATUS: Record<ErrorCode, number> = {
   validation: 400,
   unprocessable: 422,
   unauthorized: 401,
+  forbidden: 403,
+  provider_error: 502,
   unavailable: 503,
 };
 

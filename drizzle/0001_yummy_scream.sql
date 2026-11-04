@@ -1,0 +1,1 @@
+ALTER TABLE `chore` ADD `estimated_minutes` integer;

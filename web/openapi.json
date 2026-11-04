@@ -21,6 +21,22 @@
     {
       "name": "settings",
       "description": "Typed app settings"
+    },
+    {
+      "name": "chores",
+      "description": "Chore templates, occurrences and progress"
+    },
+    {
+      "name": "accounts",
+      "description": "Calendar accounts (Google, iCloud) and sync"
+    },
+    {
+      "name": "calendars",
+      "description": "Discovered calendars, member mapping"
+    },
+    {
+      "name": "events",
+      "description": "Expanded calendar events and writes"
     }
   ],
   "security": [
@@ -223,6 +239,10 @@
             "maximum": 1440,
             "description": "Calendar poll interval."
           },
+          "keepAwake": {
+            "type": "boolean",
+            "description": "Request the screen wake lock while the app is visible."
+          },
           "modules": {
             "$ref": "#/components/schemas/ModuleFlags"
           },
@@ -241,6 +261,7 @@
           "weekMode",
           "idleReturnMinutes",
           "syncIntervalMinutes",
+          "keepAwake",
           "modules",
           "defaultWriteCalendarId"
         ]
@@ -288,6 +309,10 @@
             "maximum": 1440,
             "description": "Calendar poll interval."
           },
+          "keepAwake": {
+            "type": "boolean",
+            "description": "Request the screen wake lock while the app is visible."
+          },
           "modules": {
             "$ref": "#/components/schemas/ModuleFlags"
           },
@@ -300,6 +325,978 @@
               ]
             },
             "description": "Member id → default calendar id for new events (null = none)."
+          }
+        }
+      },
+      "ChoreList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Chore"
+        }
+      },
+      "Chore": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/ChoreRecurrence"
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/ChoreAssignment"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Ordered: the rotation order for `rotating`; the assignee for `fixed`."
+          },
+          "dueTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "estimatedMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "notes",
+          "recurrence",
+          "assignment",
+          "memberIds",
+          "dueTime",
+          "estimatedMinutes",
+          "archived"
+        ]
+      },
+      "ChoreRecurrence": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "once"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "date"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "daily"
+                ]
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "start"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "weekdays"
+                ]
+              },
+              "days": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6,
+                  "description": "0 = Sunday … 6 = Saturday"
+                },
+                "minItems": 1,
+                "maxItems": 7
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "days",
+              "start"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "weekly"
+                ]
+              },
+              "every": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 52,
+                "description": "1 = every week, N = every N weeks."
+              },
+              "weekday": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 6,
+                "description": "0 = Sunday … 6 = Saturday"
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "every",
+              "weekday",
+              "start"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "monthly"
+                ]
+              },
+              "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31,
+                "description": "Day of month; clamped to the month's last day."
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "day",
+              "start"
+            ]
+          }
+        ]
+      },
+      "ChoreAssignment": {
+        "type": "string",
+        "enum": [
+          "fixed",
+          "rotating",
+          "either"
+        ]
+      },
+      "CreateChoreInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 16
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/ChoreRecurrenceInput"
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/ChoreAssignment"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "default": []
+          },
+          "dueTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "estimatedMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "required": [
+          "name",
+          "recurrence",
+          "assignment"
+        ]
+      },
+      "ChoreRecurrenceInput": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "once"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "date"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "daily"
+                ]
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "weekdays"
+                ]
+              },
+              "days": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6,
+                  "description": "0 = Sunday … 6 = Saturday"
+                },
+                "minItems": 1,
+                "maxItems": 7
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "days"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "weekly"
+                ]
+              },
+              "every": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 52,
+                "description": "1 = every week, N = every N weeks."
+              },
+              "weekday": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 6,
+                "description": "0 = Sunday … 6 = Saturday"
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "every",
+              "weekday"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "monthly"
+                ]
+              },
+              "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31,
+                "description": "Day of month; clamped to the month's last day."
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "type",
+              "day"
+            ]
+          }
+        ]
+      },
+      "UpdateChoreInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 16
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/ChoreRecurrenceInput"
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/ChoreAssignment"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12
+          },
+          "dueTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "estimatedMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChoreProgress": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "memberId": {
+              "type": "string"
+            },
+            "done": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "memberId",
+            "done",
+            "total"
+          ]
+        }
+      },
+      "ChoreOccurrenceList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ChoreOccurrence"
+        }
+      },
+      "ChoreOccurrence": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "choreId": {
+            "type": "string"
+          },
+          "indexN": {
+            "type": "integer"
+          },
+          "dueDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChoreOccurrenceStatus"
+          },
+          "assigneeId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Null for `either` chores until reassigned."
+          },
+          "completedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dueTime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "estimatedMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/ChoreAssignment"
+          },
+          "nextAssigneeId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Rotating chores: who gets the following occurrence."
+          }
+        },
+        "required": [
+          "id",
+          "choreId",
+          "indexN",
+          "dueDate",
+          "status",
+          "assigneeId",
+          "completedBy",
+          "completedAt",
+          "name",
+          "icon",
+          "notes",
+          "dueTime",
+          "estimatedMinutes",
+          "assignment",
+          "nextAssigneeId"
+        ]
+      },
+      "ChoreOccurrenceStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "done",
+          "missed",
+          "skipped"
+        ]
+      },
+      "CompleteOccurrenceInput": {
+        "type": "object",
+        "properties": {
+          "completedBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "completedBy"
+        ]
+      },
+      "ReassignOccurrenceInput": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "memberId"
+        ]
+      },
+      "AccountList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Account"
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "google",
+              "icloud"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error",
+              "needs_auth"
+            ]
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "label",
+          "status",
+          "lastError"
+        ]
+      },
+      "CreateIcloudAccountInput": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "appleId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appPassword": {
+            "type": "string",
+            "minLength": 1,
+            "description": "App-specific password from appleid.apple.com."
+          }
+        },
+        "required": [
+          "label",
+          "appleId",
+          "appPassword"
+        ]
+      },
+      "GoogleAuthStart": {
+        "type": "object",
+        "properties": {
+          "authUrl": {
+            "type": "string",
+            "description": "Send the browser here to grant calendar access."
+          }
+        },
+        "required": [
+          "authUrl"
+        ]
+      },
+      "SyncStatus": {
+        "type": "object",
+        "properties": {
+          "lastSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Most recent successful sync across enabled calendars."
+          },
+          "hasErrors": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lastSyncedAt",
+          "hasErrors"
+        ]
+      },
+      "CalendarList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Calendar"
+        }
+      },
+      "Calendar": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "writable": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "memberId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "NULL = Family / Both."
+          },
+          "lastSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "accountId",
+          "name",
+          "color",
+          "writable",
+          "enabled",
+          "memberId",
+          "lastSyncedAt",
+          "lastError"
+        ]
+      },
+      "UpdateCalendarInput": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "memberId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "EventInstanceList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/EventInstance"
+        }
+      },
+      "EventInstance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Opaque instance id; use it for PATCH/DELETE."
+          },
+          "eventId": {
+            "type": "string",
+            "description": "Id of the series / single event."
+          },
+          "calendarId": {
+            "type": "string"
+          },
+          "memberId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "UTC ISO instant, or `YYYY-MM-DD` when allDay."
+          },
+          "end": {
+            "type": "string",
+            "description": "UTC ISO instant, or exclusive `YYYY-MM-DD` when allDay."
+          },
+          "allDay": {
+            "type": "boolean"
+          },
+          "timeZone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Original IANA zone of the event, when known."
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recurring": {
+            "type": "boolean"
+          },
+          "repeat": {
+            "type": "string",
+            "enum": [
+              "none",
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "yearly",
+              "custom"
+            ]
+          },
+          "writable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "calendarId",
+          "memberId",
+          "title",
+          "start",
+          "end",
+          "allDay",
+          "timeZone",
+          "location",
+          "notes",
+          "recurring",
+          "repeat",
+          "writable"
+        ]
+      },
+      "CreateEventInput": {
+        "type": "object",
+        "properties": {
+          "calendarId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO instant, or `YYYY-MM-DD` for all-day."
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO instant, or exclusive `YYYY-MM-DD` for all-day."
+          },
+          "allDay": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "repeat": {
+            "type": "string",
+            "enum": [
+              "none",
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "yearly",
+              "custom"
+            ],
+            "default": "none"
+          }
+        },
+        "required": [
+          "calendarId",
+          "title",
+          "start",
+          "end",
+          "allDay"
+        ]
+      },
+      "UpdateEventInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO instant, or `YYYY-MM-DD` for all-day."
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO instant, or exclusive `YYYY-MM-DD` for all-day."
+          },
+          "allDay": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "repeat": {
+            "type": "string",
+            "enum": [
+              "none",
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "yearly",
+              "custom"
+            ]
           }
         }
       }
@@ -550,6 +1547,759 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/chores": {
+      "get": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "List chore templates (including archived)",
+        "responses": {
+          "200": {
+            "description": "Chores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Create a chore",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChoreInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created chore",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chore"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chores/{id}": {
+      "patch": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Update or archive a chore (history is preserved)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChoreInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated chore",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chore"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Delete a chore and its history",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences/progress": {
+      "get": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Per-member done/total for a date",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "required": true,
+            "name": "date",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Progress per member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreProgress"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences": {
+      "get": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Occurrences due in a date range (materialized on demand)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "required": true,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "required": true,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "member",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "Also return still-live open occurrences due before `from` (for Today)."
+            },
+            "required": false,
+            "description": "Also return still-live open occurrences due before `from` (for Today).",
+            "name": "carryover",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Occurrences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreOccurrenceList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences/{id}/complete": {
+      "post": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Mark an occurrence done (credit to completedBy)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteOccurrenceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated occurrence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreOccurrence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences/{id}/undo": {
+      "post": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Reopen a done or skipped occurrence",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated occurrence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreOccurrence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences/{id}/skip": {
+      "post": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Skip an open occurrence",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated occurrence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreOccurrence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chore-occurrences/{id}/reassign": {
+      "post": {
+        "tags": [
+          "chores"
+        ],
+        "summary": "Override the assignee of one open occurrence",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReassignOccurrenceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated occurrence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoreOccurrence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts": {
+      "get": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "List connected calendar accounts",
+        "description": "Never includes credentials.",
+        "responses": {
+          "200": {
+            "description": "Accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/icloud": {
+      "post": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Connect an iCloud account",
+        "description": "Validates the Apple ID + app-specific password against caldav.icloud.com, stores them encrypted, and starts a first sync in the background.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIcloudAccountInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Connected account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/google/start": {
+      "post": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Start Google OAuth",
+        "description": "Returns the Google consent URL; the browser comes back through /auth/google/callback.",
+        "responses": {
+          "200": {
+            "description": "Consent URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleAuthStart"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/{id}": {
+      "delete": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Disconnect an account",
+        "description": "Removes the account, its calendars and cached events. Nothing is deleted at the provider.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed"
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/{id}/sync": {
+      "post": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Sync one account now",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync status afterwards",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync": {
+      "post": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Sync every account now",
+        "description": "Used when the app regains focus.",
+        "responses": {
+          "200": {
+            "description": "Sync status afterwards",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync/status": {
+      "get": {
+        "tags": [
+          "accounts"
+        ],
+        "summary": "Sync status",
+        "description": "Drives the header indicator.",
+        "responses": {
+          "200": {
+            "description": "Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calendars": {
+      "get": {
+        "tags": [
+          "calendars"
+        ],
+        "summary": "List discovered calendars",
+        "responses": {
+          "200": {
+            "description": "Calendars",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calendars/{id}": {
+      "patch": {
+        "tags": [
+          "calendars"
+        ],
+        "summary": "Enable/disable a calendar or map it to a member",
+        "description": "`memberId: null` = Family / Both.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalendarInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated calendar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Calendar"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Expanded events in a window",
+        "description": "Recurring events are expanded server-side (RRULE, EXDATE, overrides). Timed events are UTC instants; all-day events are date-only with an exclusive end.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Window start (ISO instant)."
+            },
+            "required": true,
+            "description": "Window start (ISO instant).",
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Window end (ISO instant, exclusive)."
+            },
+            "required": true,
+            "description": "Window end (ISO instant, exclusive).",
+            "name": "end",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated member ids; `family` selects unassigned calendars. Omit for all."
+            },
+            "required": false,
+            "description": "Comma-separated member ids; `family` selects unassigned calendars. Omit for all.",
+            "name": "members",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventInstanceList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Create an event",
+        "description": "Written to the provider first, then cached. 403 for read-only calendars; 502 on provider failure.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventInstance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/{id}": {
+      "patch": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Edit an event or one occurrence",
+        "description": "409 `conflict` when the event changed at the provider (etag precondition failed).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "this",
+                "all"
+              ],
+              "default": "all",
+              "description": "Recurring events: this occurrence or the whole series."
+            },
+            "required": false,
+            "description": "Recurring events: this occurrence or the whole series.",
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventInstance"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Delete an event or one occurrence",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "this",
+                "all"
+              ],
+              "default": "all",
+              "description": "Recurring events: this occurrence or the whole series."
+            },
+            "required": false,
+            "description": "Recurring events: this occurrence or the whole series.",
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
           }
         }
       }

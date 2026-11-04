@@ -1,0 +1,15 @@
+{
+  "kind": "calendar#events",
+  "nextSyncToken": "SYNC-2",
+  "items": [
+    {
+      "id": "lunch", "etag": "\"l2\"", "status": "confirmed", "summary": "Lunch (moved)",
+      "start": { "dateTime": "2026-11-04T13:00:00+01:00" }, "end": { "dateTime": "2026-11-04T14:00:00+01:00" }
+    },
+    { "id": "oldthing", "status": "cancelled" },
+    {
+      "id": "newthing", "etag": "\"n1\"", "status": "confirmed", "summary": "New thing",
+      "start": { "date": "2026-11-12" }, "end": { "date": "2026-11-13" }
+    }
+  ]
+}

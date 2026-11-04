@@ -1,19 +1,28 @@
-import { Broom } from "@phosphor-icons/react";
+import { useState } from "react";
 import { longDay } from "@/app/dates";
-import { MemberProgress } from "@/app/MemberProgress";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
-import { ComingSoon, PageHeader } from "@/ui";
+import { PageHeader, SegmentedControl } from "@/ui";
+import { ManageView } from "./ManageView";
+import { TodayView } from "./TodayView";
+import { WeekView } from "./WeekView";
 
-/** Placeholder: M3 adds Today / Week / Manage. */
+type Tab = "today" | "week" | "manage";
+
+const TABS = [
+  { value: "today", label: "Today" },
+  { value: "week", label: "Week" },
+  { value: "manage", label: "Manage" },
+] as const;
+
 export function ChoresScreen() {
   const { now, timeZone } = useHouseholdClock();
+  const [tab, setTab] = useState<Tab>("today");
   return (
     <>
-      <PageHeader title="Chores" subtitle={longDay(now, timeZone)} />
-      <MemberProgress />
-      <ComingSoon icon={Broom} title="Chores are on their way">
-        Recurring and rotating chores with tap-to-complete arrive with the chores milestone.
-      </ComingSoon>
+      <PageHeader title="Chores" subtitle={longDay(now, timeZone)}>
+        <SegmentedControl value={tab} onChange={setTab} options={TABS} label="Chores view" />
+      </PageHeader>
+      {tab === "today" ? <TodayView /> : tab === "week" ? <WeekView /> : <ManageView />}
     </>
   );
 }

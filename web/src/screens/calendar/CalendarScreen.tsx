@@ -1,19 +1,448 @@
-import { CalendarBlank } from "@phosphor-icons/react";
-import { dayAndTime, monthYear } from "@/app/dates";
+import type { DatesSetArg, DayHeaderContentArg, EventClickArg, EventContentArg, EventInput } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import { ArrowsClockwise, CaretLeft, CaretRight, Plus } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { dayAndTime } from "@/app/dates";
 import { MemberProgress } from "@/app/MemberProgress";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
-import { ComingSoon, PageHeader } from "@/ui";
+import {
+  useCalendars,
+  useEventActions,
+  useEvents,
+  useSyncNow,
+  useSyncStatus,
+  type CalendarInfo,
+  type EventInstance,
+} from "@/features/calendar";
+import { useHousehold, useMembers, useSettings, type Member, type Settings } from "@/features/queries";
+import { PageHeader, SegmentedControl, Surface, cx } from "@/ui";
+import styles from "./Calendar.module.css";
+import { EventSheet, type SheetInitial } from "./EventSheet";
+import { useIdleReturn, useStoredState } from "./hooks";
+import { addDays, addMinutes, dateInZone, fcDateToWall, instantToWall, wallToInstant, zoneLabel } from "./tz";
 
-/** Placeholder: M1 mounts FullCalendar inside the Surface and fills the header actions. */
+type View = "week" | "day" | "month" | "schedule";
+
+const VIEWS: ReadonlyArray<{ value: View; label: string }> = [
+  { value: "week", label: "Week" },
+  { value: "day", label: "Day" },
+  { value: "month", label: "Month" },
+  { value: "schedule", label: "Schedule" },
+];
+
+const PLUGINS = [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin];
+
+/** FullCalendar view for each app view. `rolling` = 7 days starting today (custom view below). */
+function fcViewName(view: View, weekMode: Settings["weekMode"]): string {
+  switch (view) {
+    case "week":
+      return weekMode === "fixed" ? "timeGridWeek" : "rolling";
+    case "day":
+      return "timeGridDay";
+    case "month":
+      return "dayGridMonth";
+    case "schedule":
+      return "schedule";
+  }
+}
+
+/** Serif day header (weekday over date) for the time-grid views only; month/list keep the default text. */
+function renderDayHeader(arg: DayHeaderContentArg) {
+  return (
+    <span className={styles.dh}>
+      <small>{utcFormat({ weekday: "short" }, arg.date)}</small>
+      <span className={styles.dn}>{arg.date.getUTCDate()}</span>
+    </span>
+  );
+}
+
+const VIEWS_CONFIG = {
+  timeGrid: { dayHeaderContent: renderDayHeader },
+  rolling: { type: "timeGrid", duration: { days: 7 }, dateAlignment: "day" },
+  schedule: { type: "list", duration: { days: 14 }, dateAlignment: "day" },
+} as const;
+
+const FAMILY = "family";
+const COLOR_CLASSES: Record<string, string | undefined> = {
+  terracotta: styles["c-terracotta"],
+  sage: styles["c-sage"],
+  ochre: styles["c-ochre"],
+  plum: styles["c-plum"],
+  slate: styles["c-slate"],
+  rose: styles["c-rose"],
+};
+
+type SheetState = { kind: "create"; initial: SheetInitial } | { kind: "edit"; event: EventInstance };
+
+const utcFormat = (options: Intl.DateTimeFormatOptions, d: Date) =>
+  new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(d);
+
+function rangeTitle(view: string, arg: DatesSetArg): string {
+  const start = arg.start;
+  const last = new Date(arg.end.getTime() - 86_400_000);
+  if (view === "dayGridMonth") return utcFormat({ month: "long", year: "numeric" }, arg.view.currentStart);
+  if (view === "timeGridDay") return utcFormat({ weekday: "long", month: "short", day: "numeric" }, start);
+  const sameMonth = start.getUTCMonth() === last.getUTCMonth();
+  const a = utcFormat({ month: "short", day: "numeric" }, start);
+  const b = utcFormat(sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }, last);
+  return `${a} – ${b}`;
+}
+
+function relativeAgo(iso: string, now: Date): string {
+  const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `${hours} h ago` : `${Math.round(hours / 24)} d ago`;
+}
+
+function scrolledAncestor(el: EventTarget | null, stop: HTMLElement | null): boolean {
+  let node = el instanceof HTMLElement ? el : null;
+  while (node && node !== stop) {
+    if (node.scrollTop > 0) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
+function scrollTimeFor(wallNow: string): string {
+  const hour = Math.max(0, Number(wallNow.slice(11, 13)) - 1);
+  return `${String(hour).padStart(2, "0")}:00:00`;
+}
+
+/** Default calendar for new events: the active member's configured default, else their first writable one. */
+function pickCalendar(
+  calendars: readonly CalendarInfo[],
+  defaults: Settings["defaultWriteCalendarId"] | undefined,
+  activeMemberId: string | null,
+): string | null {
+  const writable = calendars.filter((c) => c.writable && c.enabled);
+  const preferred = activeMemberId ? defaults?.[activeMemberId] : null;
+  return (
+    writable.find((c) => c.id === preferred)?.id ??
+    writable.find((c) => c.memberId === activeMemberId)?.id ??
+    writable[0]?.id ??
+    null
+  );
+}
+
 export function CalendarScreen() {
   const { now, timeZone } = useHouseholdClock();
+  const { data: household } = useHousehold();
+  const { data: members = [] } = useMembers();
+  const { data: settings } = useSettings();
+  const { data: calendars = [] } = useCalendars();
+  const { data: syncStatus } = useSyncStatus();
+  const sync = useSyncNow();
+  const actions = useEventActions();
+
+  const [view, setView] = useState<View>(() => (globalThis.matchMedia?.("(max-width: 599px)").matches ? "day" : "week"));
+  const [range, setRange] = useState<{ start: string; end: string; wallStart: string } | null>(null);
+  const [title, setTitle] = useState("");
+  const [sheet, setSheet] = useState<SheetState | null>(null);
+  const [hidden, setHidden] = useStoredState<string[]>("hh-cal-hidden", []);
+  const [activeMemberId, setActiveMemberId] = useStoredState<string | null>("hh-cal-active-member", null);
+  const calRef = useRef<FullCalendar>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const touch = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
+
+  const weekMode = settings?.weekMode ?? "rolling";
+  const fcView = fcViewName(view, weekMode);
+  const tz = timeZone;
+  const wallNow = tz ? instantToWall(now, tz) : "";
+  // Scroll position for the first render only (a later change would yank the grid around).
+  const initialScroll = useRef<string | null>(null);
+  if (tz && initialScroll.current === null) initialScroll.current = scrollTimeFor(wallNow);
+  const getNow = useCallback(() => new Date(`${instantToWall(new Date(), tz ?? "UTC")}Z`), [tz]);
+
+  const { data: instances = [] } = useEvents(range);
+
+  const memberById = useMemo(() => new Map(members.map((m: Member) => [m.id, m])), [members]);
+
+  const fcEvents = useMemo<EventInput[]>(() => {
+    if (!tz) return [];
+    const today = wallNow.slice(0, 10);
+    return instances
+      .filter((e) => !hidden.includes(e.memberId ?? FAMILY))
+      .map((e) => {
+        const token = e.memberId ? memberById.get(e.memberId)?.colorToken : undefined;
+        const past = e.allDay ? e.end <= today : new Date(e.end) < now;
+        return {
+          id: e.id,
+          title: e.title,
+          start: e.allDay ? e.start : instantToWall(e.start, tz),
+          end: e.allDay ? e.end : instantToWall(e.end, tz),
+          allDay: e.allDay,
+          editable: false,
+          classNames: [styles.ev, COLOR_CLASSES[token ?? ""] ?? styles["c-family"], past && styles.past].filter(Boolean) as string[],
+          extendedProps: { instance: e },
+        };
+      });
+  }, [instances, hidden, memberById, tz, now, wallNow]);
+
+  useEffect(() => {
+    calRef.current?.getApi().changeView(fcView);
+  }, [fcView]);
+
+  const goToday = useCallback(() => {
+    const api = calRef.current?.getApi();
+    if (!api) return;
+    api.today();
+    api.scrollToTime(scrollTimeFor(wallNow));
+  }, [wallNow]);
+
+  useIdleReturn(settings?.idleReturnMinutes ?? 2, () => {
+    setSheet(null);
+    setView("week");
+    goToday();
+  });
+
+  const onDatesSet = useCallback(
+    (arg: DatesSetArg) => {
+      if (!tz) return;
+      const wallStart = fcDateToWall(arg.start);
+      const next = {
+        start: wallToInstant(wallStart, tz).toISOString(),
+        end: wallToInstant(fcDateToWall(arg.end), tz).toISOString(),
+        wallStart,
+      };
+      setRange((prev) => (prev && prev.start === next.start && prev.end === next.end ? prev : next));
+      setTitle(rangeTitle(arg.view.type, arg));
+    },
+    [tz],
+  );
+
+  function openCreate(initial?: SheetInitial) {
+    if (!tz) return;
+    if (!initial) {
+      const todayInRange = range !== null && range.start <= now.toISOString() && now.toISOString() < range.end;
+      if (todayInRange) {
+        const nextHour = addMinutes(`${wallNow.slice(0, 13)}:00:00`, 60);
+        initial = { start: nextHour, end: addMinutes(nextHour, 60), allDay: false };
+      } else {
+        const start = `${(range?.wallStart ?? wallNow).slice(0, 10)}T09:00:00`;
+        initial = { start, end: addMinutes(start, 60), allDay: false };
+      }
+    }
+    setSheet({ kind: "create", initial });
+  }
+
+  function onDateClick(arg: DateClickArg) {
+    if (arg.view.type === "dayGridMonth") {
+      const api = calRef.current?.getApi();
+      setView("day");
+      api?.changeView("timeGridDay", arg.date);
+      return;
+    }
+    if (arg.allDay) {
+      const date = fcDateToWall(arg.date).slice(0, 10);
+      openCreate({ start: date, end: addDays(date, 1), allDay: true });
+      return;
+    }
+    const start = fcDateToWall(arg.date);
+    openCreate({ start, end: addMinutes(start, 60), allDay: false });
+  }
+
+  function onEventClick(arg: EventClickArg) {
+    const instance = arg.event.extendedProps.instance as EventInstance;
+    if (instance.id.startsWith("tmp-")) return;
+    setSheet({ kind: "edit", event: instance });
+  }
+
+  function toggleMember(id: string) {
+    const nowHidden = !hidden.includes(id);
+    setHidden((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    if (!nowHidden) setActiveMemberId(id);
+  }
+
+  const step = (dir: "prev" | "next") => {
+    const api = calRef.current?.getApi();
+    if (dir === "prev") api?.prev();
+    else api?.next();
+  };
+
+  function onTouchStart(e: TouchEvent) {
+    const t = e.touches[0];
+    touch.current = t ? { x: t.clientX, y: t.clientY, atTop: !scrolledAncestor(e.target, wrapRef.current) } : null;
+  }
+
+  function onTouchEnd(e: TouchEvent) {
+    const start = touch.current;
+    const end = e.changedTouches[0];
+    touch.current = null;
+    if (!start || !end) return;
+    const dx = end.clientX - start.x;
+    const dy = end.clientY - start.y;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > 2 * Math.abs(dy)) {
+      step(dx < 0 ? "next" : "prev");
+    } else if (dy > 90 && Math.abs(dx) < 40 && start.atTop && !sync.isPending) {
+      sync.mutate();
+    }
+  }
+
+  const renderEvent = useCallback((arg: EventContentArg) => {
+    const e = arg.event.extendedProps.instance as EventInstance;
+    const type = arg.view.type;
+    const clock = (d: Date | null) =>
+      d ? utcFormat({ hour: "numeric", minute: "2-digit" }, d) : "";
+    if (type === "listWeek" || type === "schedule" || type.startsWith("list")) {
+      return (
+        <>
+          {e.title}
+          {e.location ? <small>{e.location}</small> : null}
+        </>
+      );
+    }
+    const detail = e.allDay ? "" : `${clock(arg.event.start)} – ${clock(arg.event.end)}${e.location ? ` · ${e.location}` : ""}`;
+    return (
+      <span className={styles.main}>
+        <b>{e.title}</b>
+        {detail ? <small>{detail}</small> : null}
+      </span>
+    );
+  }, []);
+
+  const subtitle = (
+    <>
+      {tz ? `${dayAndTime(now, tz)} ${zoneLabel(now, tz)}` : null}
+      {syncStatus ? (
+        <>
+          {" · "}
+          {syncStatus.hasErrors ? (
+            <span title="Some calendars failed to sync">
+              <span className={styles.syncDot} aria-hidden="true" />
+              Sync problem
+              {syncStatus.lastSyncedAt ? `, last synced ${relativeAgo(syncStatus.lastSyncedAt, now)}` : ""}
+            </span>
+          ) : syncStatus.lastSyncedAt ? (
+            `Synced ${relativeAgo(syncStatus.lastSyncedAt, now)}`
+          ) : (
+            "Not synced yet"
+          )}
+        </>
+      ) : null}
+    </>
+  );
+
+  const sheetCalendarId = pickCalendar(calendars, settings?.defaultWriteCalendarId, activeMemberId);
+
   return (
     <>
-      <PageHeader title={monthYear(now, timeZone)} subtitle={dayAndTime(now, timeZone)} />
-      <MemberProgress />
-      <ComingSoon icon={CalendarBlank} title="Your calendar lands here">
-        Google and iCloud calendars, color-coded by person, arrive with the calendar milestone.
-      </ComingSoon>
+      <PageHeader title={title || " "} subtitle={subtitle}>
+        <div className={styles.controls}>
+          <button type="button" className={styles.circ} aria-label="Previous" onClick={() => step("prev")}>
+            <CaretLeft aria-hidden />
+          </button>
+          <button type="button" className={styles.circ} aria-label="Next" onClick={() => step("next")}>
+            <CaretRight aria-hidden />
+          </button>
+          <button type="button" className={styles.pill} onClick={goToday}>
+            Today
+          </button>
+          <button
+            type="button"
+            className={cx(styles.circ, sync.isPending && styles.spin)}
+            aria-label="Sync calendars"
+            disabled={sync.isPending}
+            onClick={() => sync.mutate()}
+          >
+            <ArrowsClockwise aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={styles.pill}
+            aria-pressed={!hidden.includes(FAMILY)}
+            onClick={() => toggleMember(FAMILY)}
+          >
+            <span className={styles.familyDot} aria-hidden="true" />
+            Family
+          </button>
+          <SegmentedControl label="Calendar view" value={view} onChange={setView} options={VIEWS} />
+        </div>
+      </PageHeader>
+      <MemberProgress hidden={hidden} onToggle={toggleMember} />
+      <Surface>
+        <div ref={wrapRef} className={styles.wrap} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          {tz && household ? (
+            <FullCalendar
+              ref={calRef}
+              plugins={PLUGINS}
+              timeZone="UTC"
+              now={getNow}
+              initialDate={new Date(`${dateInZone(new Date(), tz)}T00:00:00Z`)}
+              initialView={fcView}
+              views={VIEWS_CONFIG}
+              firstDay={household.weekStart}
+              headerToolbar={false}
+              height="100%"
+              events={fcEvents}
+              datesSet={onDatesSet}
+              nowIndicator
+              scrollTime={initialScroll.current ?? "06:00:00"}
+              slotDuration="00:30:00"
+              slotLabelInterval="01:00"
+              slotLabelFormat={{ hour: "numeric", minute: "2-digit", omitZeroMinute: true, meridiem: "short" }}
+              allDayText="all-day"
+              slotEventOverlap={false}
+              eventDisplay="block"
+              dayMaxEvents
+              fixedWeekCount={false}
+              selectable
+              selectMirror
+              unselectAuto
+              longPressDelay={300}
+              selectLongPressDelay={300}
+              dateClick={onDateClick}
+              select={(arg) => {
+                // Single-slot clicks are handled by dateClick; this is for dragged ranges.
+                const span = arg.end.getTime() - arg.start.getTime();
+                const single = arg.allDay ? span <= 86_400_000 : span <= 30 * 60_000;
+                arg.view.calendar.unselect();
+                if (single || arg.view.type === "dayGridMonth") return;
+                const start = fcDateToWall(arg.start);
+                openCreate({ start, end: fcDateToWall(arg.end), allDay: arg.allDay });
+              }}
+              eventClick={onEventClick}
+              moreLinkClick={(arg) => {
+                setView("day");
+                calRef.current?.getApi().changeView("timeGridDay", arg.date);
+                return "none";
+              }}
+              eventContent={renderEvent}
+              dayHeaderFormat={{ weekday: "short" }}
+              dayCellContent={(arg) => String(arg.date.getUTCDate())}
+              listDayFormat={{ weekday: "long" }}
+              listDaySideFormat={{ month: "short", day: "numeric" }}
+              noEventsContent="Nothing scheduled"
+              moreLinkContent={(arg) => `+${arg.num} more`}
+            />
+          ) : null}
+        </div>
+        <button type="button" className={styles.fab} aria-label="Add event" onClick={() => openCreate()}>
+          <Plus weight="bold" aria-hidden />
+        </button>
+      </Surface>
+      {tz ? (
+        <EventSheet
+          open={sheet !== null}
+          onOpenChange={(open) => {
+            if (!open) setSheet(null);
+          }}
+          event={sheet?.kind === "edit" ? sheet.event : null}
+          initial={sheet?.kind === "create" ? sheet.initial : null}
+          calendars={calendars}
+          members={members}
+          defaultCalendarId={sheetCalendarId}
+          timeZone={tz}
+          onCreate={(fields) => actions.create(fields, calendars)}
+          onUpdate={actions.update}
+          onDelete={actions.remove}
+        />
+      ) : null}
     </>
   );
 }

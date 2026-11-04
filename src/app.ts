@@ -5,6 +5,7 @@ import { createAuthMiddleware, type AppEnv } from "./auth/middleware.js";
 import type { Db } from "./db/client.js";
 import { isAppError } from "./lib/errors.js";
 import { healthHandler, healthRoute, packageVersion } from "./routes/health.js";
+import { mountGoogleCallback } from "./routes/googleCallback.js";
 import { routeRegistrars } from "./routes/index.js";
 import { createWebMiddleware } from "./web.js";
 
@@ -65,6 +66,7 @@ export function createApp(options: CreateAppOptions): App {
     return auth(c, next);
   });
   app.route("/api/v1", api);
+  mountGoogleCallback(app, { db, now });
 
   app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
     type: "http",
@@ -85,6 +87,10 @@ export function createApp(options: CreateAppOptions): App {
       { name: "household", description: "The household" },
       { name: "members", description: "Household members" },
       { name: "settings", description: "Typed app settings" },
+      { name: "chores", description: "Chore templates, occurrences and progress" },
+      { name: "accounts", description: "Calendar accounts (Google, iCloud) and sync" },
+      { name: "calendars", description: "Discovered calendars, member mapping" },
+      { name: "events", description: "Expanded calendar events and writes" },
     ],
     security: [{ bearerAuth: [] }],
   });

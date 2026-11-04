@@ -1,0 +1,10 @@
+{
+  "kind": "calendar#events",
+  "nextSyncToken": "SYNC-3",
+  "items": [
+    {
+      "id": "lunch", "etag": "\"l3\"", "status": "confirmed", "summary": "Lunch (resynced)",
+      "start": { "dateTime": "2026-11-04T13:00:00+01:00" }, "end": { "dateTime": "2026-11-04T14:00:00+01:00" }
+    }
+  ]
+}

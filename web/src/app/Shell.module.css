@@ -3,6 +3,8 @@
   grid-template-columns: var(--rail-width) minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
+  /* Standalone PWA with a translucent status bar / notch (viewport-fit=cover). */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 
 /* Left rail (>= 600px) */
@@ -62,6 +64,39 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+
+/* Right column (>= 1280px): rendered only when a module needs it, hidden below. */
+.side {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .app[data-side="on"] {
+    grid-template-columns: var(--rail-width) minmax(0, 1fr) var(--side-width);
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px 26px 20px 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .sideCard {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+  }
+  .sideCard h2 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .sideCard p {
+    color: var(--muted);
+    font-size: var(--fs-small);
+  }
 }
 
 /* Bottom tab bar (< 600px) */

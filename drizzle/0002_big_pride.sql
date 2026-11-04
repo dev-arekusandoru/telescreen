@@ -1,0 +1,1 @@
+ALTER TABLE `calendar` ADD `last_error` text;

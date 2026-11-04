@@ -1,6 +1,9 @@
+import { useChoreProgress } from "@/features/chores";
 import { useMembers } from "@/features/queries";
 import { Avatar, cx, memberColorStyle } from "@/ui";
 import styles from "./MemberProgress.module.css";
+import { localDate } from "./localdate";
+import { useHouseholdClock } from "./useHouseholdClock";
 
 export interface Progress {
   done: number;
@@ -9,11 +12,12 @@ export interface Progress {
 
 /**
  * Header strip with one card per member and their chore progress ("2/3").
- * `progress` is keyed by member id; chores (M3) fill it in. `hidden` member ids render
- * dimmed, and `onToggle` makes cards tappable filter chips (calendar, M1).
+ * Without a `progress` prop (keyed by member id) it shows today's server-side numbers
+ * (`useChoreProgress`). `hidden` member ids render dimmed, and `onToggle` makes cards
+ * tappable filter chips (calendar).
  */
 export function MemberProgress({
-  progress = {},
+  progress: progressProp,
   hidden = [],
   onToggle,
 }: {
@@ -22,6 +26,10 @@ export function MemberProgress({
   onToggle?: (memberId: string) => void;
 }) {
   const { data: members = [] } = useMembers();
+  const { now, timeZone } = useHouseholdClock();
+  const { data: fetched } = useChoreProgress(progressProp === undefined && timeZone ? localDate(now, timeZone) : null);
+  const progress: Record<string, Progress> =
+    progressProp ?? Object.fromEntries((fetched ?? []).map((p) => [p.memberId, { done: p.done, total: p.total }]));
   if (members.length === 0) return null;
   return (
     <div className={styles.people}>

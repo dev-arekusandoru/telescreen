@@ -9,6 +9,7 @@ describe("settings", () => {
       weekMode: "rolling",
       idleReturnMinutes: 2,
       syncIntervalMinutes: 5,
+      keepAwake: true,
       modules: { weather: false, meals: false, music: false },
       defaultWriteCalendarId: {},
     });

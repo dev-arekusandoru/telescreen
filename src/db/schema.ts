@@ -47,7 +47,7 @@ export const accounts = sqliteTable("account", {
   label: text("label").notNull(),
   /** AES-GCM blob from `src/lib/crypto.ts`; never returned by the API. */
   secretEncrypted: text("secret_encrypted").notNull(),
-  status: text("status", { enum: ["ok", "error", "disabled"] })
+  status: text("status", { enum: ["ok", "error", "needs_auth", "disabled"] })
     .notNull()
     .default("ok"),
   lastError: text("last_error"),
@@ -70,6 +70,8 @@ export const calendars = sqliteTable(
     syncToken: text("sync_token"),
     ctag: text("ctag"),
     lastSyncedAt: text("last_synced_at"),
+    /** Last sync failure message; NULL after a successful sync. */
+    lastError: text("last_error"),
   },
   (t) => [uniqueIndex("calendar_account_remote_idx").on(t.accountId, t.remoteId)],
 );
@@ -118,6 +120,8 @@ export const chores = sqliteTable("chore", {
   memberIdsJson: text("member_ids_json").notNull().default("[]"),
   /** HH:MM, display only. */
   dueTime: text("due_time"),
+  /** Estimated minutes (display only). */
+  estimatedMinutes: integer("estimated_minutes"),
   archived: integer("archived", { mode: "boolean" }).notNull().default(false),
 });
 

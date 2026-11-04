@@ -60,3 +60,120 @@
     flex-wrap: wrap;
   }
 }
+
+/* Inputs, buttons and member editing */
+.input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface2);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0 12px;
+  min-height: var(--tap);
+  min-width: 0;
+  width: 220px;
+  max-width: 100%;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--accent);
+}
+
+.err {
+  display: block;
+  color: var(--accent);
+  font-size: var(--fs-small);
+}
+
+.btn {
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.member .input {
+  flex: 1;
+  width: auto;
+}
+
+.swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 44px hit area around a 24px dot */
+.swatch {
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.swatch::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--c);
+  transition: var(--dur);
+}
+
+.swatchOn::before {
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 5px var(--c);
+}
+
+.moves {
+  display: flex;
+}
+
+.iconBtn {
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--muted);
+}
+
+.iconBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.member .iconBtn svg,
+.row .iconBtn svg {
+  font-size: 20px;
+  color: inherit;
+}
+
+@media (max-width: 599px) {
+  .input {
+    width: 100%;
+  }
+  .member .input {
+    flex: 1 1 140px;
+  }
+  .end {
+    margin-left: 0;
+    flex: 1 1 100%;
+    overflow-x: auto;
+  }
+}

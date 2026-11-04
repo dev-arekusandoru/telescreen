@@ -1,0 +1,80 @@
+.viewport {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: max-content;
+  max-width: 94vw;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 60;
+  outline: none;
+}
+
+@media (max-width: 599px) {
+  .viewport {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 12px 12px 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  box-shadow: var(--shadow-pop);
+}
+
+.toast[data-state="open"] {
+  animation: rise var(--dur) var(--ease);
+}
+
+.toast[data-state="closed"] {
+  animation: fade var(--dur) var(--ease) reverse forwards;
+}
+
+.toast[data-swipe="move"] {
+  transform: translateY(var(--radix-toast-swipe-move-y));
+}
+
+.msg {
+  margin: 0;
+}
+
+.action {
+  background: color-mix(in srgb, var(--bg) 22%, transparent);
+  color: inherit;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  min-height: 34px;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none !important;
+  }
+}

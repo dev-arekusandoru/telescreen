@@ -1,0 +1,95 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  min-width: 150px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--surface2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.trigger[data-disabled] {
+  opacity: 0.5;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret {
+  display: grid;
+  color: var(--muted);
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--c);
+  flex: none;
+}
+
+.content {
+  z-index: 30;
+  min-width: var(--radix-select-trigger-width);
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-pop);
+  border: 1px solid var(--line);
+  animation: pop var(--dur) var(--ease);
+}
+
+.viewport {
+  padding: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+.item[data-highlighted] {
+  background: var(--surface2);
+}
+
+.check {
+  margin-left: auto;
+  display: grid;
+  color: var(--accent);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
+  }
+}

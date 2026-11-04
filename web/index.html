@@ -4,8 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>HomeHub</title>
-    <meta name="theme-color" content="#f3ebdd" />
+    <meta name="theme-color" content="#f3ebdd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#17130f" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Family wall-calendar and chores." />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="HomeHub" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <script>
       // Apply the saved theme before first paint so there is no light flash in dark mode.
       // Keep the storage key in sync with src/app/theme.ts.

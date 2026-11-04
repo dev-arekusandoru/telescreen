@@ -12,7 +12,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("app shell", () => {
   it("redirects / to the calendar and shows member progress", async () => {
     renderAt("/");
-    expect(await screen.findByRole("heading", { level: 1, name: /\d{4}/ })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Add event" })).toBeInTheDocument();
     expect(await screen.findByText("Alex")).toBeInTheDocument();
     expect(screen.getByText("Vale")).toBeInTheDocument();
   });

@@ -8,6 +8,20 @@
       "when": 1793758961285,
       "tag": "0000_special_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793759314902,
+      "tag": "0001_yummy_scream",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793759436739,
+      "tag": "0002_big_pride",
+      "breakpoints": true
     }
   ]
 }
