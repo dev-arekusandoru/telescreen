@@ -1,0 +1,42 @@
+{
+  "name": "homehub",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Self-hosted family wall-calendar and chores for two people.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "pnpm build:server && pnpm web:build",
+    "start": "node dist/server.js",
+    "cli": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit && pnpm --filter @homehub/web typecheck",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "build:server": "tsc -p tsconfig.build.json",
+    "test:web": "pnpm --filter @homehub/web test",
+    "test:all": "vitest run && pnpm test:web",
+    "openapi": "tsx scripts/openapi.ts && pnpm --filter @homehub/web openapi:types",
+    "web:dev": "pnpm --filter @homehub/web dev",
+    "web:build": "pnpm --filter @homehub/web build"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "@hono/zod-openapi": "^1.6.3",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

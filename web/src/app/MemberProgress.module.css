@@ -1,0 +1,74 @@
+.people {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.person {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+  transition: var(--dur);
+  text-align: left;
+  min-height: var(--tap);
+}
+
+.person:active {
+  transform: scale(0.98);
+}
+
+.off {
+  opacity: 0.45;
+}
+
+.bar {
+  flex: 1;
+  min-width: 0;
+}
+
+.bar b {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bar em {
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.track {
+  height: 7px;
+  border-radius: 9px;
+  background: var(--surface2);
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.track i {
+  display: block;
+  height: 100%;
+  background: var(--c);
+  border-radius: 9px;
+  transition: width 0.35s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+@media (max-width: 599px) {
+  .people {
+    gap: 8px;
+    overflow-x: auto;
+  }
+  .person {
+    padding: 8px 10px;
+    gap: 8px;
+    min-width: 150px;
+  }
+}

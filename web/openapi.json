@@ -1,0 +1,559 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HomeHub",
+    "version": "0.1.0",
+    "description": "Self-hosted family wall-calendar and chores. /api/v1 routes need a bearer token unless the server runs with HOMEHUB_TRUST_NETWORK=1."
+  },
+  "tags": [
+    {
+      "name": "meta",
+      "description": "Health and API metadata"
+    },
+    {
+      "name": "household",
+      "description": "The household"
+    },
+    {
+      "name": "members",
+      "description": "Household members"
+    },
+    {
+      "name": "settings",
+      "description": "Typed app settings"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API token created with `pnpm cli token create <name>`."
+      }
+    },
+    "schemas": {
+      "Household": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone, e.g. Europe/Berlin. All display uses it."
+          },
+          "weekStart": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 = Sunday … 6 = Saturday."
+          },
+          "themeDefault": {
+            "type": "string",
+            "enum": [
+              "system",
+              "light",
+              "dark"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "timezone",
+          "weekStart",
+          "themeDefault"
+        ]
+      },
+      "UpdateHouseholdInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "weekStart": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "themeDefault": {
+            "type": "string",
+            "enum": [
+              "system",
+              "light",
+              "dark"
+            ]
+          }
+        }
+      },
+      "MemberList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Member"
+        }
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "householdId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "colorToken": {
+            "$ref": "#/components/schemas/MemberColor"
+          },
+          "initial": {
+            "type": "string"
+          },
+          "sort": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "householdId",
+          "name",
+          "colorToken",
+          "initial",
+          "sort"
+        ]
+      },
+      "MemberColor": {
+        "type": "string",
+        "enum": [
+          "terracotta",
+          "sage",
+          "ochre",
+          "plum",
+          "slate",
+          "rose"
+        ]
+      },
+      "CreateMemberInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "colorToken": {
+            "$ref": "#/components/schemas/MemberColor"
+          },
+          "initial": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2,
+            "description": "Defaults to the first letter of the name."
+          }
+        },
+        "required": [
+          "name",
+          "colorToken"
+        ]
+      },
+      "UpdateMemberInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "colorToken": {
+            "$ref": "#/components/schemas/MemberColor"
+          },
+          "initial": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2
+          },
+          "sort": {
+            "type": "integer"
+          }
+        }
+      },
+      "DeleteResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Settings": {
+        "type": "object",
+        "properties": {
+          "weekMode": {
+            "type": "string",
+            "enum": [
+              "rolling",
+              "fixed"
+            ],
+            "description": "rolling = 7 days starting today; fixed = week per household weekStart."
+          },
+          "idleReturnMinutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 240,
+            "description": "Idle minutes before returning to today's Week view; 0 disables."
+          },
+          "syncIntervalMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440,
+            "description": "Calendar poll interval."
+          },
+          "modules": {
+            "$ref": "#/components/schemas/ModuleFlags"
+          },
+          "defaultWriteCalendarId": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": "Member id → default calendar id for new events (null = none)."
+          }
+        },
+        "required": [
+          "weekMode",
+          "idleReturnMinutes",
+          "syncIntervalMinutes",
+          "modules",
+          "defaultWriteCalendarId"
+        ]
+      },
+      "ModuleFlags": {
+        "type": "object",
+        "properties": {
+          "weather": {
+            "type": "boolean"
+          },
+          "meals": {
+            "type": "boolean"
+          },
+          "music": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "weather",
+          "meals",
+          "music"
+        ],
+        "description": "Optional module flags; disabled modules are hidden from navigation."
+      },
+      "UpdateSettingsInput": {
+        "type": "object",
+        "properties": {
+          "weekMode": {
+            "type": "string",
+            "enum": [
+              "rolling",
+              "fixed"
+            ],
+            "description": "rolling = 7 days starting today; fixed = week per household weekStart."
+          },
+          "idleReturnMinutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 240,
+            "description": "Idle minutes before returning to today's Week view; 0 disables."
+          },
+          "syncIntervalMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440,
+            "description": "Calendar poll interval."
+          },
+          "modules": {
+            "$ref": "#/components/schemas/ModuleFlags"
+          },
+          "defaultWriteCalendarId": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": "Member id → default calendar id for new events (null = none)."
+          }
+        }
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Liveness probe",
+        "description": "Public endpoint; requires no authentication.",
+        "responses": {
+          "200": {
+            "description": "Service is running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "version"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/household": {
+      "get": {
+        "tags": [
+          "household"
+        ],
+        "summary": "Get the household",
+        "responses": {
+          "200": {
+            "description": "Household",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Household"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "household"
+        ],
+        "summary": "Update the household",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHouseholdInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated household",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Household"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/members": {
+      "get": {
+        "tags": [
+          "members"
+        ],
+        "summary": "List members",
+        "responses": {
+          "200": {
+            "description": "Members ordered by sort",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "members"
+        ],
+        "summary": "Create a member",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMemberInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/members/{id}": {
+      "patch": {
+        "tags": [
+          "members"
+        ],
+        "summary": "Update a member",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "members"
+        ],
+        "summary": "Delete a member",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get settings",
+        "description": "All settings with defaults applied.",
+        "responses": {
+          "200": {
+            "description": "Settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update settings",
+        "description": "Send any subset of keys; provided keys are replaced, omitted keys keep their value.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resulting settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

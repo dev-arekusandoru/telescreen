@@ -1,0 +1,28 @@
+.sw {
+  width: 50px;
+  height: 30px;
+  border-radius: 99px;
+  background: var(--surface2);
+  position: relative;
+  transition: var(--dur);
+  flex: none;
+}
+
+.sw[data-state="checked"] {
+  background: var(--accent);
+}
+
+.thumb {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--muted);
+  transform: translateX(3px);
+  transition: var(--dur);
+}
+
+.thumb[data-state="checked"] {
+  transform: translateX(23px);
+  background: var(--on-accent);
+}

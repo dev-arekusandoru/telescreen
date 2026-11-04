@@ -1,0 +1,12 @@
+.av {
+  width: var(--size, 34px);
+  height: var(--size, 34px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: calc(var(--size, 34px) * 0.41);
+  color: var(--on-accent);
+  background: var(--c);
+  flex: none;
+}

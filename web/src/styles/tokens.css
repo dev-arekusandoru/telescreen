@@ -1,0 +1,97 @@
+/*
+ * Design tokens: "Warm and Editorial" (ported from mockups/editorial.html).
+ * Light = cream paper, dark = warm charcoal-brown.
+ * Theme is selected by <html data-theme="system|light|dark">; "system" follows
+ * prefers-color-scheme. Add new tokens to BOTH dark blocks below (CSS cannot share them).
+ */
+:root {
+  --bg: #f3ebdd;
+  --surface: #fbf6ec;
+  --surface2: #efe5d2;
+  --ink: #2b2118;
+  --muted: #7f705c;
+  --line: #e2d6c0;
+  --accent: #c4623f;
+  --on-accent: #ffffff;
+  --scrim: rgba(43, 33, 24, 0.38);
+  --shadow: 0 2px 0 var(--line), 0 10px 24px -14px rgba(60, 40, 10, 0.35);
+  --shadow-pop: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+
+  /* Member palette (SPEC §8). Keys match `MEMBER_COLORS` on the server. */
+  --member-terracotta: #c4623f;
+  --member-sage: #5f8a6b;
+  --member-ochre: #b8862b;
+  --member-plum: #8a5a83;
+  --member-slate: #5a7690;
+  --member-rose: #b85a6e;
+  /* Family / both: neutral ink-on-paper. */
+  --member-family: #8a7a66;
+
+  /* Event fill: member color mixed into the surface by this percentage. */
+  --tint: 22%;
+
+  --radius: 18px;
+  --radius-lg: 22px;
+  --radius-sheet: 26px;
+  --radius-event: 10px;
+
+  --display: "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-small: 13px;
+  --fs-base: 15px;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur: 0.2s;
+
+  --rail-width: 84px;
+  --tap: 44px;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #17130f;
+  --surface: #211b15;
+  --surface2: #2b241c;
+  --ink: #f1e8d8;
+  --muted: #a09280;
+  --line: #382e24;
+  --accent: #e58d66;
+  --on-accent: #1b1510;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --shadow: 0 0 0 1px var(--line), 0 12px 28px -16px rgba(0, 0, 0, 0.7);
+  --member-terracotta: #e58d66;
+  --member-sage: #8fbf9c;
+  --member-ochre: #e0b04f;
+  --member-plum: #c28bbb;
+  --member-slate: #8fb0cc;
+  --member-rose: #e08a9d;
+  --member-family: #a89a86;
+  --tint: 24%;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17130f;
+    --surface: #211b15;
+    --surface2: #2b241c;
+    --ink: #f1e8d8;
+    --muted: #a09280;
+    --line: #382e24;
+    --accent: #e58d66;
+    --on-accent: #1b1510;
+    --scrim: rgba(0, 0, 0, 0.6);
+    --shadow: 0 0 0 1px var(--line), 0 12px 28px -16px rgba(0, 0, 0, 0.7);
+    --member-terracotta: #e58d66;
+    --member-sage: #8fbf9c;
+    --member-ochre: #e0b04f;
+    --member-plum: #c28bbb;
+    --member-slate: #8fb0cc;
+    --member-rose: #e08a9d;
+    --member-family: #a89a86;
+    --tint: 24%;
+    color-scheme: dark;
+  }
+}

@@ -1,0 +1,30 @@
+.seg {
+  display: inline-flex;
+  background: var(--surface2);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.item {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  min-height: 36px;
+  transition: var(--dur);
+}
+
+.item[data-state="on"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+@media (max-width: 599px) {
+  .item {
+    padding: 7px 11px;
+    font-size: 12.5px;
+  }
+}
