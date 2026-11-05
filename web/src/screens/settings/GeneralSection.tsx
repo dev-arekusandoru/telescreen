@@ -1,6 +1,9 @@
-import { Clock, CalendarDots, ArrowsClockwise, Globe, House, MoonStars, CalendarBlank, type Icon } from "@phosphor-icons/react";
+import { Clock, CalendarDots, ArrowsClockwise, CloudCheck, Globe, House, MoonStars, CalendarBlank, type Icon } from "@phosphor-icons/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { ago } from "@/app/dates";
+import { useNow } from "@/app/useNow";
 import { wakeLockSupported } from "@/app/wakeLock";
+import { useSyncStatus } from "@/features/calendar";
 import { useUpdateHousehold } from "@/features/household";
 import { useHousehold, useSettings, useUpdateSettings } from "@/features/queries";
 import { SegmentedControl, Switch } from "@/ui";
@@ -103,6 +106,8 @@ export function GeneralSection() {
   const { data: household } = useHousehold();
   const updateSettings = useUpdateSettings();
   const updateHousehold = useUpdateHousehold();
+  const { data: syncStatus } = useSyncStatus();
+  const now = useNow();
   const busy = !settings || updateSettings.isPending;
   const hhError = updateHousehold.error?.message;
 
@@ -171,6 +176,16 @@ export function GeneralSection() {
           options={SYNC_OPTIONS}
           onChange={(v) => !busy && updateSettings.mutate({ syncIntervalMinutes: Number(v) })}
         />
+      </Row>
+
+      <Row icon={CloudCheck} title="Last sync" hint="Calendars sync in the background; refresh any time from the sidebar">
+        <small>
+          {syncStatus?.hasErrors
+            ? `Sync problem${syncStatus.lastSyncedAt ? ` · last synced ${ago(syncStatus.lastSyncedAt, now)}` : ""}`
+            : syncStatus?.lastSyncedAt
+              ? `Synced ${ago(syncStatus.lastSyncedAt, now)}`
+              : "Not synced yet"}
+        </small>
       </Row>
 
       <Row

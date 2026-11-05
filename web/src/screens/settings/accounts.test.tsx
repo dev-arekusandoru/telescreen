@@ -2,7 +2,6 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderAt, stubApi } from "@/test/api";
-import { ago } from "./CalendarsSection";
 
 const ACCOUNTS = [
   { id: "acc_i", provider: "icloud", label: "Home iCloud", status: "ok", lastError: null },
@@ -113,16 +112,5 @@ describe("Settings: accounts and calendars", () => {
     renderAt("/settings");
     expect(await screen.findByRole("combobox", { name: "Default calendar for Alex" })).toHaveTextContent("Ask each time");
     expect(screen.getByRole("combobox", { name: "Default calendar for Vale" })).toBeInTheDocument();
-  });
-});
-
-describe("ago", () => {
-  const now = new Date("2026-11-03T12:00:00Z");
-  it("formats relative times", () => {
-    expect(ago(null, now)).toBe("never");
-    expect(ago("2026-11-03T11:59:40Z", now)).toBe("just now");
-    expect(ago("2026-11-03T11:55:00Z", now)).toBe("5 min ago");
-    expect(ago("2026-11-03T09:00:00Z", now)).toBe("3 h ago");
-    expect(ago("2026-11-01T12:00:00Z", now)).toBe("2 d ago");
   });
 });

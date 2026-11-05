@@ -3,84 +3,109 @@
  * injected at runtime; every rule here is scoped under `.wrap` so it wins and nothing leaks.
  */
 
-/* ---------- header controls ---------- */
+/* ---------- header controls (one compact row) ---------- */
 .controls {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex: none;
+  min-width: 0;
 }
 
-.circ {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+/* Joined prev/next chevrons. */
+.navGroup {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  flex: none;
+}
+
+.chev {
+  width: 28px;
+  height: 30px;
   display: grid;
   place-items: center;
-  font-size: 20px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
+  font-size: 15px;
+  color: var(--ink);
+  border-radius: 999px;
   transition: var(--dur);
 }
 
-.circ:active,
-.pill:active {
-  transform: scale(0.94);
+.chev + .chev {
+  border-left: 1px solid var(--line);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
-.pill {
-  height: 40px;
-  padding: 0 16px;
+.chev:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.chev:active {
+  transform: scale(0.92);
+}
+
+/* "Today": only meaningful off-range, but always present so the row never shifts. */
+.today {
+  height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   transition: var(--dur);
+  flex: none;
 }
 
-.pill[aria-pressed="false"] {
-  opacity: 0.45;
+.today:active {
+  transform: scale(0.94);
 }
 
-.familyDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--member-family);
+.todayIdle {
+  visibility: hidden;
+  pointer-events: none;
 }
 
-.spin svg {
-  animation: spin 0.9s linear infinite;
+/* Weather is the first thing to go when the header narrows (the icon-only chip is still
+   reachable on the right column of wide layouts). */
+.wx {
+  display: flex;
+  flex: none;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@media (max-width: 1023px) {
+  .wx {
+    display: none;
   }
 }
 
-.syncDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  margin-right: 6px;
-  vertical-align: middle;
+@media (max-width: 860px) {
+  .controls {
+    gap: 6px;
+  }
+  .chev {
+    width: 26px;
+    height: 28px;
+    font-size: 14px;
+  }
+  .today {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12.5px;
+  }
 }
 
-@media (max-width: 599px) {
-  .circ {
-    width: 36px;
-    height: 36px;
-  }
-  .pill {
-    height: 36px;
-    padding: 0 12px;
+/* Narrower than the tablet target: the controls get their own row (and wrap internally on phones). */
+@media (max-width: 767px) {
+  .controls {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 6px;
   }
 }
 

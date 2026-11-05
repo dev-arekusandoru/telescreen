@@ -58,8 +58,12 @@ server-side only, never returned by the API. Encryption key via `HOMEHUB_SECRET_
 | Month | `dayGrid` | Event dots/chips; tap a day opens Day |
 | Agenda ("Schedule") | `list` | Grouped by day |
 
-Shared: all-day strip, "now" line, per-person filter chips (tap to show/hide), swipe/arrow navigation,
-"Today" button. Idle for 2 min returns to today's Week view (wall-display behavior; setting).
+Shared: all-day strip, "now" line, per-person chips in the header (a ring around the avatar shows
+today's chore progress; tap opens the member's tasks and the only show/hide filter), swipe/arrow
+navigation and a "Today" button that appears only while today is off-screen. The header is a single
+compact row (title + clock, joined prev/next chevrons, member chips, weather, view switcher) so the
+calendar gets the height; the last view mode is remembered per device. Idle for 2 min returns to
+today's Week view (wall-display behavior; setting).
 
 ### 4.2 Sources and sync
 | Provider | Method | Setup |
@@ -75,8 +79,9 @@ Shared: all-day strip, "now" line, per-person filter chips (tap to show/hide), s
   window and returns plain instances; the client never parses RRULE.
 - Time zones: all instants stored UTC + original TZ; display in the **household time zone**. All-day
   events stay date-only.
-- Failures: a calendar with sync errors shows a small warning badge in Settings and a muted dot on
-  the header; stale data remains visible with "last synced" time.
+- Failures: a calendar with sync errors shows a small warning badge in Settings; the rail's refresh
+  button carries the last-synced state (and error) in its tooltip, Settings > General repeats it, and
+  stale data stays visible.
 
 ### 4.3 Calendar-to-person mapping (decided: option 1)
 Each connected calendar is linked once, in Settings, to **one member or "Family/Both"**. Events
@@ -120,7 +125,7 @@ A **chore** is a template; an **occurrence** is one due instance with a status.
 - **Today**: grouped by member plus Shared; large check circles; per-member progress bar (the Skylight header idiom).
 - **Week**: grid of days x members, quick overview.
 - **Manage**: create/edit/archive templates; rotation editor.
-- Calendar header always shows the compact per-member progress; chores can later optionally appear as all-day items on the calendar (off by default).
+- The calendar header shows each member's progress as a ring around their avatar (done/total for today); tapping it opens their task list and the calendar show/hide filter. Chores can later optionally appear as all-day items on the calendar (off by default).
 
 ## 6. Later modules (specified now so the shell leaves room)
 | Module | Approach | Notes |
@@ -149,7 +154,8 @@ chore_occurrence(id, chore_id, index_n, due_date, assignee_id NULL,
       status['open'|'done'|'missed'|'skipped'], completed_by NULL, completed_at NULL)
 setting(key, value_json)   -- week mode, idle return, sync interval, module flags
 ```
-Theme override (System/Light/Dark) is per-device (`localStorage`), not in the DB.
+Theme override (System/Light/Dark) and the last calendar view mode are per-device (`localStorage`),
+not in the DB.
 
 ## 8. Design language (direction: Warm and Editorial)
 
@@ -159,8 +165,8 @@ Theme override (System/Light/Dark) is per-device (`localStorage`), not in the DB
 - **Type**: display serif (candidate: Fraunces Variable) for headings/dates; humanist sans (Inter Variable) for UI. Minimum text 13px on wall display; event titles 14px+; touch targets >= 44px.
 - **Icons**: Phosphor. Regular weight at rest, fill/duotone on active/selected. 24px nav, 20px inline.
 - **Shape/motion**: 18px card radius, 10px event radius; 150-250ms ease-out; tap feedback via scale 0.98; check-off animates fill + strike. Respect `prefers-reduced-motion`.
-- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (header, member progress, 7-day calendar). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (tonight's meal, now playing); below that it is hidden so the 7-day week stays legible. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
-- **Phone (portrait, post-MVP-friendly)**: bottom tab bar, Day view default, member progress as a horizontal strip, event sheet as a bottom sheet. Reference in the mockup.
+- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (one compact header row, member ring chips inside it, 7-day calendar filling the rest). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (tonight's meal, now playing); below that it is hidden so the 7-day week stays legible. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
+- **Phone (portrait, post-MVP-friendly)**: bottom tab bar, Day view default, member ring chips in the (wrapping) header, event sheet as a bottom sheet. Reference in the mockup.
 - **Wall-display details**: no hover dependence; "now" line; dim tint for past events; no burn-in-prone static high-contrast chrome in dark mode (accent used sparingly).
 
 ## 9. API sketch (`/api/v1`, OpenAPI generated)

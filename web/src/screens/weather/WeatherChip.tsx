@@ -29,7 +29,6 @@ export function WeatherChip() {
         >
           <Icon className={styles.chipIcon} weight="fill" aria-hidden />
           <span className={styles.chipTemp}>{degrees(data.current.temperature)}</span>
-          <span className={styles.chipLabel}>{data.current.label}</span>
         </button>
       </Popover.Trigger>
       <Popover.Portal>

@@ -25,8 +25,78 @@
   flex: 1;
 }
 
+/* Single compact row: small title, muted clock beside it, controls never wrap out of the row. */
+.dense {
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  min-height: 34px;
+}
+
+.dense .titles {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+}
+
+.dense .title {
+  font-size: 21px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+}
+
+.dense .sub {
+  margin: 0;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+}
+
+.dense .spacer {
+  flex: 1 1 0;
+  min-width: 4px;
+}
+
+@media (max-width: 1023px) {
+  .dense .sub {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .dense {
+    gap: 8px;
+    min-height: 32px;
+  }
+  .dense .title {
+    font-size: 18px;
+  }
+}
+
 @media (max-width: 599px) {
   .title {
     font-size: 26px;
+  }
+}
+
+/* Below the tablet width the four view labels plus the title cannot share one line without
+   truncating: the dense header wraps to a title row and a controls row instead. */
+@media (max-width: 767px) {
+  .dense {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .dense .spacer {
+    display: none;
+  }
+  .dense .titles {
+    flex: 1 1 100%;
   }
 }

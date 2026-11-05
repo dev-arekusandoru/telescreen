@@ -10,11 +10,12 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("app shell", () => {
-  it("redirects / to the calendar and shows member progress", async () => {
+  it("redirects / to the calendar and shows the member chips", async () => {
     renderAt("/");
     expect(await screen.findByRole("button", { name: "Add event" })).toBeInTheDocument();
-    expect(await screen.findByText("Alex")).toBeInTheDocument();
-    expect(screen.getByText("Vale")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /^Alex: \d+ of \d+ chores/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Vale: \d+ of \d+ chores/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show everyone on the calendar" })).toBeInTheDocument();
   });
 
   it("hides Meals and Music until their module is enabled", async () => {

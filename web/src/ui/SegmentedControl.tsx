@@ -1,4 +1,5 @@
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import { cx } from "./cx";
 import styles from "./SegmentedControl.module.css";
 
 export interface SegmentedOption<T extends string> {
@@ -12,16 +13,19 @@ export function SegmentedControl<T extends string>({
   onChange,
   options,
   label,
+  small = false,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: ReadonlyArray<SegmentedOption<T>>;
   label: string;
+  /** Tighter padding/type for dense headers. */
+  small?: boolean;
 }) {
   return (
     <ToggleGroup.Root
       type="single"
-      className={styles.seg}
+      className={cx(styles.seg, small && styles.small)}
       value={value}
       aria-label={label}
       onValueChange={(next) => {

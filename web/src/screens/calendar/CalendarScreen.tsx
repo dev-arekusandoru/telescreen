@@ -4,17 +4,16 @@ import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction"
 import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { ArrowsClockwise, CaretLeft, CaretRight, Plus } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Plus } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { dayAndTime } from "@/app/dates";
-import { MemberProgress } from "@/app/MemberProgress";
+import { MemberChips } from "@/app/MemberChips";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
 import {
   useCalendars,
   useEventActions,
   useEvents,
   useSyncNow,
-  useSyncStatus,
   type CalendarInfo,
   type EventInstance,
 } from "@/features/calendar";
@@ -93,14 +92,6 @@ function rangeTitle(view: string, arg: DatesSetArg): string {
   return `${a} – ${b}`;
 }
 
-function relativeAgo(iso: string, now: Date): string {
-  const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  return hours < 24 ? `${hours} h ago` : `${Math.round(hours / 24)} d ago`;
-}
-
 function scrolledAncestor(el: EventTarget | null, stop: HTMLElement | null): boolean {
   let node = el instanceof HTMLElement ? el : null;
   while (node && node !== stop) {
@@ -137,11 +128,14 @@ export function CalendarScreen() {
   const { data: members = [] } = useMembers();
   const { data: settings } = useSettings();
   const { data: calendars = [] } = useCalendars();
-  const { data: syncStatus } = useSyncStatus();
   const sync = useSyncNow();
   const actions = useEventActions();
 
-  const [view, setView] = useState<View>(() => (globalThis.matchMedia?.("(max-width: 599px)").matches ? "day" : "week"));
+  // View mode survives reloads; an unknown stored value (or none) falls back to Day on phones, Week elsewhere.
+  const [storedViewId, setView] = useStoredState<string>("hh-cal-view", "");
+  const view: View =
+    VIEWS.find((v) => v.value === storedViewId)?.value ??
+    (globalThis.matchMedia?.("(max-width: 599px)").matches ? "day" : "week");
   const [range, setRange] = useState<{ start: string; end: string; wallStart: string } | null>(null);
   const [title, setTitle] = useState("");
   const [sheet, setSheet] = useState<SheetState | null>(null);
@@ -161,6 +155,10 @@ export function CalendarScreen() {
   const getNow = useCallback(() => new Date(`${instantToWall(new Date(), tz ?? "UTC")}Z`), [tz]);
 
   const { data: instances = [] } = useEvents(range);
+
+  // Whether "Today" is redundant (today is inside the visible range); computed once for both
+  // the header button and the new-event default time.
+  const todayInRange = range !== null && range.start <= now.toISOString() && now.toISOString() < range.end;
 
   const memberById = useMemo(() => new Map(members.map((m: Member) => [m.id, m])), [members]);
 
@@ -220,7 +218,6 @@ export function CalendarScreen() {
   function openCreate(initial?: SheetInitial) {
     if (!tz) return;
     if (!initial) {
-      const todayInRange = range !== null && range.start <= now.toISOString() && now.toISOString() < range.end;
       if (todayInRange) {
         const nextHour = addMinutes(`${wallNow.slice(0, 13)}:00:00`, 60);
         initial = { start: nextHour, end: addMinutes(nextHour, 60), allDay: false };
@@ -307,66 +304,41 @@ export function CalendarScreen() {
     );
   }, []);
 
-  const subtitle = (
-    <>
-      {tz ? `${dayAndTime(now, tz)} ${zoneLabel(now, tz)}` : null}
-      {syncStatus ? (
-        <>
-          {" · "}
-          {syncStatus.hasErrors ? (
-            <span title="Some calendars failed to sync">
-              <span className={styles.syncDot} aria-hidden="true" />
-              Sync problem
-              {syncStatus.lastSyncedAt ? `, last synced ${relativeAgo(syncStatus.lastSyncedAt, now)}` : ""}
-            </span>
-          ) : syncStatus.lastSyncedAt ? (
-            `Synced ${relativeAgo(syncStatus.lastSyncedAt, now)}`
-          ) : (
-            "Not synced yet"
-          )}
-        </>
-      ) : null}
-    </>
-  );
+  // Title row: range title + the muted household clock (zone in its tooltip); sync lives in Settings.
+  const subtitle = tz ? <span title={zoneLabel(now, tz)}>{dayAndTime(now, tz)}</span> : null;
 
   const sheetCalendarId = pickCalendar(calendars, settings?.defaultWriteCalendarId, activeMemberId);
 
   return (
     <>
-      <PageHeader title={title || " "} subtitle={subtitle}>
+      <PageHeader title={title || " "} subtitle={subtitle} dense>
         <div className={styles.controls}>
-          <button type="button" className={styles.circ} aria-label="Previous" onClick={() => step("prev")}>
-            <CaretLeft aria-hidden />
-          </button>
-          <button type="button" className={styles.circ} aria-label="Next" onClick={() => step("next")}>
-            <CaretRight aria-hidden />
-          </button>
-          <button type="button" className={styles.pill} onClick={goToday}>
+          <div className={styles.navGroup}>
+            <button type="button" className={styles.chev} aria-label="Previous" onClick={() => step("prev")}>
+              <CaretLeft aria-hidden />
+            </button>
+            <button type="button" className={styles.chev} aria-label="Next" onClick={() => step("next")}>
+              <CaretRight aria-hidden />
+            </button>
+          </div>
+          {/* Always rendered so the row never shifts; hidden (not removed) while today is in view. */}
+          <button
+            type="button"
+            className={cx(styles.today, todayInRange && styles.todayIdle)}
+            aria-hidden={todayInRange || undefined}
+            tabIndex={todayInRange ? -1 : 0}
+            onClick={goToday}
+          >
             Today
           </button>
-          <button
-            type="button"
-            className={cx(styles.circ, sync.isPending && styles.spin)}
-            aria-label="Sync calendars"
-            disabled={sync.isPending}
-            onClick={() => sync.mutate()}
-          >
-            <ArrowsClockwise aria-hidden />
-          </button>
-          <button
-            type="button"
-            className={styles.pill}
-            aria-pressed={!hidden.includes(FAMILY)}
-            onClick={() => toggleMember(FAMILY)}
-          >
-            <span className={styles.familyDot} aria-hidden="true" />
-            Family
-          </button>
-          <WeatherChip />
-          <SegmentedControl label="Calendar view" value={view} onChange={setView} options={VIEWS} />
+          <MemberChips hidden={hidden} onToggle={toggleMember} onShowAll={() => setHidden([])} />
+          {/* Collapses first as the header narrows. */}
+          <div className={styles.wx}>
+            <WeatherChip />
+          </div>
+          <SegmentedControl label="Calendar view" value={view} onChange={setView} options={VIEWS} small />
         </div>
       </PageHeader>
-      <MemberProgress hidden={hidden} onToggle={toggleMember} />
       <Surface>
         <div ref={wrapRef} className={styles.wrap} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           {tz && household ? (

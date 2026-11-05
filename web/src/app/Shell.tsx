@@ -1,4 +1,8 @@
+import { ArrowsClockwise } from "@phosphor-icons/react";
 import { Link, Outlet } from "@tanstack/react-router";
+import { ago } from "@/app/dates";
+import { useNow } from "@/app/useNow";
+import { useSyncNow, useSyncStatus } from "@/features/calendar";
 import { useSettings } from "@/features/queries";
 import { TonightCard } from "@/screens/meals/TonightCard";
 import { NowPlayingCard } from "@/screens/music/NowPlayingCard";
@@ -21,6 +25,30 @@ function NavLinks({ tabs }: { tabs: Tab[] }) {
   ));
 }
 
+/** Icon-only calendar sync at the foot of the rail; the last-sync time lives in Settings > General. */
+function SyncButton() {
+  const sync = useSyncNow();
+  const { data: status } = useSyncStatus();
+  const now = useNow();
+  const state = status?.hasErrors
+    ? `Sync problem${status.lastSyncedAt ? `, last synced ${ago(status.lastSyncedAt, now)}` : ""}`
+    : status?.lastSyncedAt
+      ? `Synced ${ago(status.lastSyncedAt, now)}`
+      : "Not synced yet";
+  return (
+    <button
+      type="button"
+      className={styles.railSync}
+      aria-label="Sync calendars"
+      title={`${state} · tap to sync`}
+      disabled={sync.isPending}
+      onClick={() => sync.mutate()}
+    >
+      <ArrowsClockwise aria-hidden />
+    </button>
+  );
+}
+
 /** Layout route: 84px nav rail (>= 600px) or bottom tab bar (< 600px) around the page. */
 export function Shell() {
   const { data: settings } = useSettings();
@@ -36,6 +64,7 @@ export function Shell() {
           H
         </div>
         <NavLinks tabs={tabs} />
+        <SyncButton />
       </nav>
       <main className={styles.main}>
         <ToastProvider>

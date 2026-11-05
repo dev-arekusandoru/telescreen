@@ -17,6 +17,42 @@
   border-right: 1px solid var(--line);
 }
 
+/* Calendar sync, pinned to the bottom-left of the rail. */
+.railSync {
+  margin-top: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  color: var(--muted);
+  transition: var(--dur);
+}
+
+.railSync:hover {
+  background: var(--surface2);
+  color: var(--ink);
+}
+
+.railSync:active {
+  transform: scale(0.94);
+}
+
+.railSync:disabled {
+  opacity: 0.6;
+}
+
+.railSync:disabled svg {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .logo {
   font-family: var(--display);
   font-size: 30px;
@@ -59,7 +95,7 @@
 }
 
 .main {
-  padding: 22px 26px 20px;
+  padding: 16px 20px 16px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -79,7 +115,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 22px 26px 20px 0;
+    padding: 16px 20px 16px 0;
     min-height: 0;
     overflow-y: auto;
   }

@@ -1,14 +1,15 @@
 /* Header chip (calendar header) and right-column card share this module. */
 
+/* Icon + temperature only: the condition stays in the aria-label and the popover. */
 .chip {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: var(--tap);
-  padding: 0 10px;
-  border-radius: 12px;
+  gap: 5px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 999px;
   color: var(--muted);
-  font-size: var(--fs-base);
+  font-size: 13px;
   transition: var(--dur);
 }
 
@@ -26,7 +27,7 @@
 }
 
 .chipIcon {
-  font-size: 24px;
+  font-size: 18px;
   color: var(--accent);
   flex: none;
 }
@@ -34,16 +35,6 @@
 .chipTemp {
   font-weight: 600;
   color: var(--ink);
-}
-
-.chipLabel {
-  white-space: nowrap;
-}
-
-@media (max-width: 599px) {
-  .chipLabel {
-    display: none;
-  }
 }
 
 /* Popover */
