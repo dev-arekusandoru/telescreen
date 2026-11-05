@@ -17,11 +17,12 @@ import styles from "./Music.module.css";
 const CONTROLS_HIDE_MS = 10_000;
 
 /**
- * Right column (>= 1280px): album-art-first now-playing widget.
- * Standby shows only title + artist and a thin progress line. A tap (or mouse hover)
- * reveals the controls; a tap on anything that is not a control opens the Music tab.
+ * Album-art-first now-playing widget, shared by the right column (>= 1280px) and the
+ * small-screen widgets popup. Standby shows only title + artist and a thin progress line.
+ * A tap (or mouse hover) reveals the controls; a tap on anything that is not a control
+ * opens the Music tab.
  */
-export function NowPlayingCard() {
+export function NowPlayingBody() {
   const toast = useToast();
   const navigate = useNavigate();
   const connection = useMusicConnection();

@@ -6,7 +6,9 @@ import { updateSettings } from "../src/services/settings.js";
 import { updateHousehold } from "../src/services/households.js";
 import {
   getCurrentMeals,
+  getMealsPlan,
   getMealsStatus,
+  mergePlanDays,
   normalizePlan,
   pantrypalConfig,
   pickTonight,
@@ -132,6 +134,125 @@ describe("pickTonight", () => {
       },
     ];
     expect(pickTonight(skippedOnly, "2026-11-06")).toBeNull();
+  });
+});
+
+describe("getMealsPlan", () => {
+  const env = { PANTRYPAL_URL: "http://pantrypal.test:8787", PANTRYPAL_PUBLIC_URL: "https://pantry.example" };
+  const listResponse = { items: [{ id: "plan_1", weekStart: "2026-11-02" }] };
+
+  /** PantryPal stub: list + one plan detail, everything else 404. */
+  const pantrypal = () =>
+    vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url === "http://pantrypal.test:8787/api/v1/plans?from=2026-11-01&to=2026-11-08") {
+        return jsonResponse(listResponse);
+      }
+      if (url === "http://pantrypal.test:8787/api/v1/plans/plan_1") return jsonResponse(fixture);
+      return jsonResponse({ error: "not found" }, 404);
+    });
+
+  it("merges the plans overlapping the range and returns only those days", async () => {
+    const t = makeTestCtx();
+    enableMeals(t.db);
+    const ctx = makeCtx(t.db, t.household.id, () => new Date(FIXED_NOW));
+    const fetchMock = pantrypal();
+
+    const plan = await getMealsPlan(ctx, "2026-11-01", "2026-11-09", {
+      env,
+      fetch: fetchMock as unknown as typeof fetch,
+    });
+    expect(plan.stale).toBe(false);
+    expect(plan.days.map((d) => d.date)).toEqual([
+      "2026-11-02",
+      "2026-11-03",
+      "2026-11-04",
+      "2026-11-05",
+      "2026-11-06",
+      "2026-11-07",
+      "2026-11-08",
+    ]);
+    expect(plan.days.find((d) => d.date === "2026-11-03")?.meals[0]).toMatchObject({
+      slot: "breakfast",
+      url: "https://pantry.example/recipes/rcp_oats",
+    });
+
+    // Same range within the TTL: served from cache (2 upstream calls once).
+    await getMealsPlan(ctx, "2026-11-01", "2026-11-09", { env, fetch: fetchMock as unknown as typeof fetch });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("is an empty range, not an error, when PantryPal has no plan", async () => {
+    const t = makeTestCtx();
+    enableMeals(t.db);
+    const ctx = makeCtx(t.db, t.household.id, () => new Date(FIXED_NOW));
+    const empty = vi.fn(async () => jsonResponse({ items: [] }));
+
+    const plan = await getMealsPlan(ctx, "2026-12-01", "2026-12-08", {
+      env,
+      fetch: empty as unknown as typeof fetch,
+    });
+    expect(plan).toMatchObject({ days: [], stale: false });
+  });
+
+  it("serves the last good range as stale when PantryPal fails", async () => {
+    const t = makeTestCtx();
+    enableMeals(t.db);
+    const now = new Date(FIXED_NOW);
+    const ctx = makeCtx(t.db, t.household.id, () => now);
+    const ok = pantrypal();
+    const fresh = await getMealsPlan(ctx, "2026-11-01", "2026-11-09", {
+      env,
+      fetch: ok as unknown as typeof fetch,
+    });
+
+    now.setMinutes(now.getMinutes() + 10);
+    const down = vi.fn(async () => {
+      throw new Error("ECONNREFUSED");
+    });
+    const stale = await getMealsPlan(ctx, "2026-11-01", "2026-11-09", {
+      env,
+      fetch: down as unknown as typeof fetch,
+    });
+    expect(stale).toMatchObject({ stale: true, fetchedAt: fresh.fetchedAt });
+    expect(stale.days).toEqual(fresh.days);
+  });
+
+  it("throws 503 with no cache and 404 when the module is off", async () => {
+    const t = makeTestCtx();
+    const ctx = makeCtx(t.db, t.household.id, () => new Date(FIXED_NOW));
+    const down = vi.fn(async () => {
+      throw new Error("ECONNREFUSED");
+    });
+    await expect(
+      getMealsPlan(ctx, "2026-11-01", "2026-11-09", { env, fetch: down as unknown as typeof fetch }),
+    ).rejects.toMatchObject({ code: "not_found" });
+
+    enableMeals(t.db);
+    await expect(
+      getMealsPlan(ctx, "2026-11-01", "2026-11-09", { env, fetch: down as unknown as typeof fetch }),
+    ).rejects.toMatchObject({ code: "unavailable" });
+  });
+});
+
+describe("mergePlanDays", () => {
+  it("drops days outside the range and orders the rest", () => {
+    const days = mergePlanDays([fixture, fixture], {
+      start: "2026-11-03",
+      end: "2026-11-06",
+      publicUrl: "https://pantry.example",
+    });
+    expect(days.map((d) => d.date)).toEqual(["2026-11-03", "2026-11-04", "2026-11-05"]);
+    expect(days[0]?.meals.length).toBeGreaterThan(0);
+  });
+
+  it("keeps a day that both plans describe once", () => {
+    const days = mergePlanDays([fixture], {
+      start: "2026-11-02",
+      end: "2026-11-09",
+      publicUrl: "https://pantry.example",
+    });
+    expect(days.filter((d) => d.date === "2026-11-02")).toHaveLength(1);
   });
 });
 
@@ -291,6 +412,37 @@ describe("meals routes", () => {
       publicUrl: "https://pantry.example",
       tokenConfigured: true,
     });
+  });
+
+  it("serves a range of planned days and rejects malformed ranges", async () => {
+    const t = makeTestApp();
+    await t.request("PUT", "/api/v1/settings", {
+      modules: { weather: false, meals: true, music: false },
+    });
+    vi.stubEnv("PANTRYPAL_URL", "http://pantrypal.test:8787");
+    vi.stubEnv("PANTRYPAL_PUBLIC_URL", "https://pantry.example");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url.includes("/api/v1/plans?from=")) {
+          return jsonResponse({ items: [{ id: "plan_1", weekStart: "2026-11-02" }] });
+        }
+        if (url.endsWith("/api/v1/plans/plan_1")) return jsonResponse(fixture);
+        return jsonResponse({ error: "not found" }, 404);
+      }),
+    );
+
+    const plan = await t.request<{ days: Array<{ date: string }>; stale: boolean }>(
+      "GET",
+      "/api/v1/meals/plan?start=2026-11-02&end=2026-11-09",
+    );
+    expect(plan.status).toBe(200);
+    expect(plan.body.stale).toBe(false);
+    expect(plan.body.days.map((d) => d.date)).toContain("2026-11-05");
+
+    expect((await t.request("GET", "/api/v1/meals/plan?start=2026-11-09&end=2026-11-02")).status).toBe(400);
+    expect((await t.request("GET", "/api/v1/meals/plan?start=2026-09-01&end=2026-12-01")).status).toBe(400);
   });
 
   it("404s when the module is disabled and 200s the connection test", async () => {

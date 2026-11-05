@@ -151,7 +151,7 @@ export function WeatherSection() {
         <CloudSun aria-hidden />
         <div>
           <b>Weather</b>
-          <small>Header chip and 5-day strip (Open-Meteo, no account needed)</small>
+          <small>Header chip and Daily/Hourly forecast (Open-Meteo, no account needed)</small>
         </div>
         <div className={styles.end}>
           <Switch

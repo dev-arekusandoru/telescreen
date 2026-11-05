@@ -17,6 +17,10 @@ const REQUEST: WeatherRequest = {
   place: "Berlin",
 };
 
+const HOURLY_TIME = Array.from({ length: 48 }, (_, i) =>
+  new Date(Date.UTC(2026, 10, 3, 0, 0, 0) + i * 3_600_000).toISOString().slice(0, 16),
+);
+
 const FORECAST = {
   latitude: 52.52,
   longitude: 13.41,
@@ -34,6 +38,13 @@ const FORECAST = {
     temperature_2m_max: [11.2, 9.6, 12.1, 2.4, 8.0],
     temperature_2m_min: [4.1, 5.2, 3.4, -1.2, 2.1],
     precipitation_probability_max: [20, 80, 0, 60, null],
+  },
+  hourly: {
+    time: HOURLY_TIME,
+    temperature_2m: HOURLY_TIME.map((_, i) => 6 + i * 0.1),
+    weather_code: HOURLY_TIME.map((_, i) => (i % 3 === 0 ? 0 : 3)),
+    precipitation_probability: HOURLY_TIME.map((_, i) => (i % 4 === 0 ? 25 : 0)),
+    is_day: HOURLY_TIME.map((_, i) => (i >= 8 && i < 18 ? 1 : 0)),
   },
 };
 
@@ -89,6 +100,26 @@ describe("getWeather", () => {
     expect(payload.place).toBe("Berlin");
     expect(payload.stale).toBe(false);
     expect(payload.fetchedAt).toBe("2026-11-03T12:00:00.000Z");
+  });
+
+  it("parses the next 24 hours starting at the current hour", async () => {
+    const fetchMock = forecastFetch();
+    const payload = await getWeather(REQUEST, { now: () => Date.parse("2026-11-03T12:00:00.000Z"), fetch: fetchMock });
+
+    const url = new URL(String(vi.mocked(fetchMock).mock.calls[0]?.[0]));
+    expect(url.searchParams.get("hourly")).toBe("temperature_2m,weather_code,precipitation_probability,is_day");
+
+    expect(payload.hours).toHaveLength(24);
+    expect(payload.hours[0]).toEqual({
+      time: "2026-11-03T12:00",
+      code: 0,
+      label: "Clear",
+      group: "clear",
+      temperature: 7.2,
+      isDay: true,
+      precipProbability: 25,
+    });
+    expect(payload.hours[23]).toMatchObject({ time: "2026-11-04T11:00", code: 3, isDay: false, precipProbability: 0 });
   });
 
   it("serves the cache for 15 minutes and refetches after the TTL", async () => {
@@ -158,6 +189,7 @@ describe("GET /weather", () => {
     expect(res.body.timezone).toBe("Europe/Berlin");
     expect(res.body.current.temperature).toBe(8.4);
     expect(res.body.days).toHaveLength(5);
+    expect(res.body.hours).toHaveLength(24);
     expect(res.body.stale).toBe(false);
 
     // Second request inside the TTL is served from cache.

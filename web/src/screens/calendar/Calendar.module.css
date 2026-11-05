@@ -70,17 +70,11 @@
   pointer-events: none;
 }
 
-/* Weather is the first thing to go when the header narrows (the icon-only chip is still
-   reachable on the right column of wide layouts). */
+/* Weather chip: shown only while the right column is hidden and the header has room (the
+   component is not rendered otherwise). */
 .wx {
   display: flex;
   flex: none;
-}
-
-@media (max-width: 1023px) {
-  .wx {
-    display: none;
-  }
 }
 
 @media (max-width: 860px) {
@@ -575,12 +569,20 @@
   transform: scale(0.93);
 }
 
+/* Clears the meal strip (its fixed 126px height lives in MealRail.module.css). */
+.fabRaised {
+  bottom: 144px;
+}
+
 @media (max-width: 599px) {
   .fab {
     right: 16px;
     bottom: 16px;
     width: 56px;
     height: 56px;
+  }
+  .fabRaised {
+    bottom: 138px;
   }
 }
 

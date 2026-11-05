@@ -52,6 +52,18 @@ export const weatherCurrentSchema = z
   })
   .openapi("WeatherCurrent");
 
+export const weatherHourSchema = z
+  .object({
+    time: z.string().describe("Local wall time (YYYY-MM-DDTHH:00) in the household time zone."),
+    code: z.number().int().describe("WMO weather interpretation code."),
+    label: z.string(),
+    group: weatherGroupSchema,
+    temperature: z.number(),
+    isDay: z.boolean(),
+    precipProbability: z.number().nullable(),
+  })
+  .openapi("WeatherHour");
+
 export const weatherSchema = z
   .object({
     latitude: z.number(),
@@ -62,6 +74,7 @@ export const weatherSchema = z
     current: weatherCurrentSchema,
     today: weatherDaySchema,
     days: z.array(weatherDaySchema).describe("Five days, starting with today."),
+    hours: z.array(weatherHourSchema).describe("Next 24 hours, starting with the current hour."),
     fetchedAt: z.string().describe("ISO instant the upstream data was fetched."),
     stale: z.boolean().describe("True when upstream failed and the last cached payload is being served."),
   })
@@ -74,4 +87,5 @@ export const weatherErrorSchema = z
 export type WeatherGroup = z.infer<typeof weatherGroupSchema>;
 export type WeatherUnits = z.infer<typeof weatherUnitsSchema>;
 export type WeatherDay = z.infer<typeof weatherDaySchema>;
+export type WeatherHour = z.infer<typeof weatherHourSchema>;
 export type Weather = z.infer<typeof weatherSchema>;

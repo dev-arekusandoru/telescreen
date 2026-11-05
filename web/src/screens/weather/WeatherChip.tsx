@@ -1,13 +1,13 @@
 import * as Popover from "@radix-ui/react-popover";
 import { useSettings } from "@/features/queries";
 import { degrees, unitSuffix, useWeather } from "@/features/weather";
-import { ForecastStrip } from "./ForecastStrip";
+import { WeatherBody } from "./WeatherBody";
 import styles from "./Weather.module.css";
 import { weatherIcon } from "./WeatherIcon";
 
 /**
- * Weather chip for the calendar header (SPEC §6). Opens a popover with the 5-day strip.
- * Renders nothing while loading, when the module is off, or when the endpoint is unavailable.
+ * Weather chip for the calendar header (SPEC §6), shown only while the right column is hidden.
+ * Opens a popover rendering the same body as the weather widget.
  */
 export function WeatherChip() {
   const { data: settings } = useSettings();
@@ -25,28 +25,21 @@ export function WeatherChip() {
         <button
           type="button"
           className={styles.chip}
-          aria-label={`Weather${data.place ? ` in ${data.place}` : ""}: ${data.current.label}, ${Math.round(data.current.temperature)}${unit}. Open the five-day forecast.`}
+          aria-label={`Weather${data.place ? ` in ${data.place}` : ""}: ${data.current.label}, ${Math.round(data.current.temperature)}${unit}. Open the forecast.`}
         >
           <Icon className={styles.chipIcon} weight="fill" aria-hidden />
           <span className={styles.chipTemp}>{degrees(data.current.temperature)}</span>
         </button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className={styles.pop} sideOffset={8} align="end" collisionPadding={12}>
-          <div className={styles.popHead}>
-            <div>
-              <b className={styles.popPlace}>{data.place ?? "Weather"}</b>
-              <small>
-                {data.current.label} · H {degrees(data.today.high)} L {degrees(data.today.low)}
-              </small>
-            </div>
-            <span className={styles.popNow}>
-              {Math.round(data.current.temperature)}
-              {unit}
-            </span>
-          </div>
-          <ForecastStrip days={data.days} units={data.units} />
-          {data.stale ? <p className={styles.stale}>Showing the last update — weather is offline.</p> : null}
+        <Popover.Content
+          className={styles.pop}
+          sideOffset={8}
+          align="end"
+          collisionPadding={12}
+          aria-label={`Weather${data.place ? ` in ${data.place}` : ""}`}
+        >
+          <WeatherBody weather={data} />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

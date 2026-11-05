@@ -12,7 +12,8 @@ export const WEATHER_REFETCH_MS = 15 * 60_000;
 export const weatherKeys = { weather: ["weather"] as const };
 
 /**
- * Current weather + 5-day forecast. `enabled` should be the `modules.weather` flag:
+ * Current weather, the 5-day daily forecast and the next 24 hours. `enabled` should be the
+ * `modules.weather` flag:
  * a disabled module makes `GET /weather` answer 503 and the UI renders nothing.
  */
 export function weatherQuery(enabled: boolean) {

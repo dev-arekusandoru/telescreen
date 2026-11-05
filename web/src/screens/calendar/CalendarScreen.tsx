@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } fr
 import { dayAndTime } from "@/app/dates";
 import { MemberChips } from "@/app/MemberChips";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
+import { useMediaQuery } from "@/app/useMediaQuery";
+import { WidgetsButton } from "@/app/WidgetsButton";
 import {
   useCalendars,
   useEventActions,
@@ -18,10 +20,13 @@ import {
   type EventInstance,
 } from "@/features/calendar";
 import { useHousehold, useMembers, useSettings, type Member, type Settings } from "@/features/queries";
+import { useMealsPlan, useMealsStatus } from "@/features/meals";
 import { PageHeader, SegmentedControl, Surface, cx } from "@/ui";
 import { WeatherChip } from "@/screens/weather/WeatherChip";
 import styles from "./Calendar.module.css";
 import { EventSheet, type SheetInitial } from "./EventSheet";
+import { MealRail } from "./MealRail";
+import { hasPlannedMeals } from "./mealRail";
 import { useIdleReturn, useStoredState } from "./hooks";
 import { addDays, addMinutes, dateInZone, fcDateToWall, instantToWall, wallToInstant, zoneLabel } from "./tz";
 
@@ -127,6 +132,14 @@ export function CalendarScreen() {
   const { data: household } = useHousehold();
   const { data: members = [] } = useMembers();
   const { data: settings } = useSettings();
+  // The right column appears at 1280px (SPEC §8); below that its widgets live in the header.
+  const wide = useMediaQuery("(min-width: 1280px)");
+  // The temperature chip keeps its own place while the one-row header has room for it.
+  const chipFits = useMediaQuery("(min-width: 768px)");
+  const modules = settings?.modules;
+  const hasWidgets = modules?.weather === true || modules?.meals === true || modules?.music === true;
+  const widgetColumn = wide && hasWidgets;
+  const showWeatherChip = !widgetColumn && chipFits && modules?.weather === true;
   const { data: calendars = [] } = useCalendars();
   const sync = useSyncNow();
   const actions = useEventActions();
@@ -136,7 +149,7 @@ export function CalendarScreen() {
   const view: View =
     VIEWS.find((v) => v.value === storedViewId)?.value ??
     (globalThis.matchMedia?.("(max-width: 599px)").matches ? "day" : "week");
-  const [range, setRange] = useState<{ start: string; end: string; wallStart: string } | null>(null);
+  const [range, setRange] = useState<{ start: string; end: string; wallStart: string; days: number } | null>(null);
   const [title, setTitle] = useState("");
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [hidden, setHidden] = useStoredState<string[]>("hh-cal-hidden", []);
@@ -155,6 +168,21 @@ export function CalendarScreen() {
   const getNow = useCallback(() => new Date(`${instantToWall(new Date(), tz ?? "UTC")}Z`), [tz]);
 
   const { data: instances = [] } = useEvents(range);
+
+  // Meals for the visible week/day: Month and Schedule show no meals, so nothing is fetched there.
+  // PantryPal being unreachable only means no rail — the calendar never waits on it.
+  const mealDates = useMemo(() => {
+    if (!range || (view !== "week" && view !== "day")) return null;
+    const first = range.wallStart.slice(0, 10);
+    return Array.from({ length: range.days }, (_, index) => addDays(first, index));
+  }, [range, view]);
+  const mealRange = useMemo(() => {
+    if (!mealDates || mealDates.length === 0) return null;
+    return { start: mealDates[0]!, end: addDays(mealDates[mealDates.length - 1]!, 1) };
+  }, [mealDates]);
+  const { data: mealPlan } = useMealsPlan(mealRange, settings?.modules.meals === true);
+  const { data: mealsStatus } = useMealsStatus();
+  const showMealRail = mealDates !== null && hasPlannedMeals(mealPlan?.days);
 
   // Whether "Today" is redundant (today is inside the visible range); computed once for both
   // the header button and the new-event default time.
@@ -208,6 +236,8 @@ export function CalendarScreen() {
         start: wallToInstant(wallStart, tz).toISOString(),
         end: wallToInstant(fcDateToWall(arg.end), tz).toISOString(),
         wallStart,
+        // FullCalendar's window is whole days in UTC, so the difference is exact.
+        days: Math.max(1, Math.round((arg.end.getTime() - arg.start.getTime()) / 86_400_000)),
       };
       setRange((prev) => (prev && prev.start === next.start && prev.end === next.end ? prev : next));
       setTitle(rangeTitle(arg.view.type, arg));
@@ -332,10 +362,13 @@ export function CalendarScreen() {
             Today
           </button>
           <MemberChips hidden={hidden} onToggle={toggleMember} onShowAll={() => setHidden([])} />
-          {/* Collapses first as the header narrows. */}
-          <div className={styles.wx}>
-            <WeatherChip />
-          </div>
+          {/* Below 1280px the right column is hidden; weather and the other widgets move here. */}
+          {showWeatherChip ? (
+            <div className={styles.wx}>
+              <WeatherChip />
+            </div>
+          ) : null}
+          {!widgetColumn && hasWidgets ? <WidgetsButton includeWeather={!chipFits} /> : null}
           <SegmentedControl label="Calendar view" value={view} onChange={setView} options={VIEWS} small />
         </div>
       </PageHeader>
@@ -395,8 +428,21 @@ export function CalendarScreen() {
               moreLinkContent={(arg) => `+${arg.num} more`}
             />
           ) : null}
+          {showMealRail && mealDates ? (
+            <MealRail
+              dates={mealDates}
+              days={mealPlan?.days}
+              publicUrl={mealsStatus?.publicUrl ?? null}
+              today={wallNow.slice(0, 10)}
+            />
+          ) : null}
         </div>
-        <button type="button" className={styles.fab} aria-label="Add event" onClick={() => openCreate()}>
+        <button
+          type="button"
+          className={cx(styles.fab, showMealRail && styles.fabRaised)}
+          aria-label="Add event"
+          onClick={() => openCreate()}
+        >
           <Plus weight="bold" aria-hidden />
         </button>
       </Surface>

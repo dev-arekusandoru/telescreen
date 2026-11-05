@@ -62,8 +62,19 @@ Shared: all-day strip, "now" line, per-person chips in the header (a ring around
 today's chore progress; tap opens the member's tasks and the only show/hide filter), swipe/arrow
 navigation and a "Today" button that appears only while today is off-screen. The header is a single
 compact row (title + clock, joined prev/next chevrons, member chips, weather, view switcher) so the
-calendar gets the height; the last view mode is remembered per device. Idle for 2 min returns to
+calendar gets the height; below 1280px the weather chip stands in for the hidden right column, and a
+single "At a glance" button opens the other right-column widgets in a popup (below 768px weather folds
+into that popup so the header stays on one row); the last view mode is remembered per device. Idle for 2 min returns to
 today's Week view (wall-display behavior; setting).
+
+**Meals in the week/day grid**: when the Meals module is on and the visible range has planned meals,
+a fixed-height rail sits under the day columns (outside the scrolling grid, so it never overlaps
+timed or all-day events). Each column reserves the same three rows and shows a dashed note box with
+one chip per meal: a colored slot badge (B/L/D/S/De) plus the recipe name, truncated. Days with more
+than three meals show two chips and a "+N more" line. A chip opens that recipe in PantryPal; an empty
+day is a tappable empty note box that opens that week's plan. Ranges are fetched from
+`/meals/plan`; while loading, when the module is off, or when PantryPal is unreachable the rail is
+simply absent (the calendar never blocks on it). Month and Schedule show no meals.
 
 ### 4.2 Sources and sync
 | Provider | Method | Setup |
@@ -130,9 +141,9 @@ A **chore** is a template; an **occurrence** is one due instance with a status.
 ## 6. Later modules (specified now so the shell leaves room)
 | Module | Approach | Notes |
 |---|---|---|
-| Weather | Open-Meteo (no key); lat/lon in Settings; header chip + 5-day strip | Cached 15 min server-side |
+| Weather | Open-Meteo (no key); lat/lon in Settings; Daily/Hourly strip in the right-column card or, when that column is hidden, the header chip / widgets popup | Cached 15 min server-side; ~24 hourly entries |
 | Spotify | Web API + Connect (OAuth PKCE): show now playing, play/pause/skip/volume on an existing device | Premium confirmed. Same redirect-URI constraint as Google (see §12.1) |
-| Meals (PantryPal) | Server-to-server `GET {PANTRYPAL_URL}/api/v1/plans/current`; "Tonight" card, Meals tab with the week; deep-links into PantryPal web for recipes | Read-only to start; PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` on the same tailnet/host, so no token needed (token optional via `PANTRYPAL_TOKEN`) |
+| Meals (PantryPal) | Server-to-server reads of PantryPal's plans (`/plans/current` for Tonight/Meals, `/plans?from&to` + plan ids for the calendar's visible range); "Tonight" card, Meals tab with the week, meal rail under the Week/Day calendar; deep-links into PantryPal web for recipes (`/recipes/{id}`) and weeks (`/?week=YYYY-MM-DD`) | Read-only to start; PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` on the same tailnet/host, so no token needed (token optional via `PANTRYPAL_TOKEN`) |
 
 Navigation shell (left rail on iPad, bottom bar on phone): Calendar, Chores, Meals, Music, Settings.
 Meals/Music tabs are hidden until their module is enabled.
@@ -165,7 +176,7 @@ not in the DB.
 - **Type**: display serif (candidate: Fraunces Variable) for headings/dates; humanist sans (Inter Variable) for UI. Minimum text 13px on wall display; event titles 14px+; touch targets >= 44px.
 - **Icons**: Phosphor. Regular weight at rest, fill/duotone on active/selected. 24px nav, 20px inline.
 - **Shape/motion**: 18px card radius, 10px event radius; 150-250ms ease-out; tap feedback via scale 0.98; check-off animates fill + strike. Respect `prefers-reduced-motion`.
-- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (one compact header row, member ring chips inside it, 7-day calendar filling the rest). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (tonight's meal, now playing); below that it is hidden so the 7-day week stays legible. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
+- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (one compact header row, member ring chips inside it, 7-day calendar filling the rest). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (weather, tonight's meal, now playing); below that it is hidden so the 7-day week stays legible, and the same widget bodies are reachable from one "At a glance" button in the calendar header. The weather chip keeps its own header slot while it fits (>= 768px); below that weather joins the popup. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
 - **Phone (portrait, post-MVP-friendly)**: bottom tab bar, Day view default, member ring chips in the (wrapping) header, event sheet as a bottom sheet. Reference in the mockup.
 - **Wall-display details**: no hover dependence; "now" line; dim tint for past events; no burn-in-prone static high-contrast chrome in dark mode (accent used sparingly).
 
@@ -175,6 +186,7 @@ GET/PATCH  /household           GET/POST/PATCH/DELETE /members
 GET/POST/DELETE /accounts       POST /accounts/{id}/sync
 GET/PATCH  /calendars           (member mapping, enabled, default write calendar)
 GET        /events?start&end&members=      (expanded instances)
+GET        /meals/plan?start&end           (planned days for a range, from PantryPal)
 POST       /events              PATCH/DELETE /events/{id}?scope=this|all
 GET/POST/PATCH/DELETE /chores
 GET        /chore-occurrences?from&to&member=
@@ -193,7 +205,7 @@ OAuth callback routes live at `/auth/google/callback` (server-rendered, not part
 | M2 | Calendar write: event sheet create/edit/delete, recurring scopes | Edits appear in Google/iCloud apps and survive a resync |
 | M3 | Chores: templates, occurrences, rotation/either, Today/Week/Manage | Completion flow and progress bars work; rotation order is stable across skips |
 | M4 | Polish: PWA, wall-display behavior (wake lock, idle return), phone layout, a11y/contrast pass | Install to iPad home screen; stays awake; no layout break at 390px |
-| M5 | Weather | Header chip + 5-day strip |
+| M5 | Weather | Daily/Hourly strip in the right column, or the header chip + widgets popup below 1280px |
 | M6 | PantryPal meals | Tonight card + Meals tab read from `/plans/current` |
 | M7 | Spotify | Now playing + transport controls |
 

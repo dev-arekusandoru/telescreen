@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AppError } from "../lib/errors.js";
-import type { WeatherDay, WeatherGroup, WeatherUnits } from "../schemas/weather.js";
+import type { WeatherDay, WeatherGroup, WeatherHour, WeatherUnits } from "../schemas/weather.js";
 
 /** How long a successful Open-Meteo response is served before refetching. */
 export const WEATHER_CACHE_TTL_MS = 15 * 60_000;
@@ -71,6 +71,7 @@ export interface WeatherPayload {
   current: WeatherCurrent;
   today: WeatherDay;
   days: WeatherDay[];
+  hours: WeatherHour[];
   fetchedAt: string;
   stale: boolean;
 }
@@ -103,6 +104,7 @@ const openMeteoSchema = z.object({
   longitude: z.number(),
   timezone: z.string().optional(),
   current: z.object({
+    time: z.string().optional(),
     temperature_2m: z.number(),
     weather_code: z.number(),
     is_day: z.number().optional(),
@@ -114,6 +116,15 @@ const openMeteoSchema = z.object({
     temperature_2m_min: z.array(z.number()),
     precipitation_probability_max: z.array(z.number().nullable()).optional(),
   }),
+  hourly: z
+    .object({
+      time: z.array(z.string()),
+      temperature_2m: z.array(z.number()).optional(),
+      weather_code: z.array(z.number()).optional(),
+      precipitation_probability: z.array(z.number().nullable()).optional(),
+      is_day: z.array(z.number()).optional(),
+    })
+    .optional(),
 });
 
 function buildUrl(req: WeatherRequest): URL {
@@ -125,10 +136,37 @@ function buildUrl(req: WeatherRequest): URL {
     "daily",
     "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
   );
+  url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability,is_day");
   url.searchParams.set("timezone", req.timezone);
   url.searchParams.set("forecast_days", String(FORECAST_DAYS));
   url.searchParams.set("temperature_unit", req.units === "fahrenheit" ? "fahrenheit" : "celsius");
   return url;
+}
+
+/** Next 24 hourly entries, starting at the current hour in the forecast zone. */
+function buildHours(data: z.infer<typeof openMeteoSchema>): WeatherHour[] {
+  const hourly = data.hourly;
+  if (!hourly) return [];
+  const currentHour = data.current.time?.slice(0, 13);
+  let start = 0;
+  if (currentHour) {
+    const index = hourly.time.findIndex((time) => time.slice(0, 13) >= currentHour);
+    if (index >= 0) start = index;
+  }
+  return hourly.time.slice(start, start + 24).map((time, offset) => {
+    const i = start + offset;
+    const code = hourly.weather_code?.[i] ?? 0;
+    const { label, group } = describeWmo(code);
+    return {
+      time,
+      code,
+      label,
+      group,
+      temperature: hourly.temperature_2m?.[i] ?? 0,
+      isDay: (hourly.is_day?.[i] ?? 1) === 1,
+      precipProbability: hourly.precipitation_probability?.[i] ?? null,
+    };
+  });
 }
 
 async function fetchForecast(req: WeatherRequest, fetchImpl: typeof fetch): Promise<Omit<WeatherPayload, "fetchedAt" | "stale">> {
@@ -176,11 +214,12 @@ async function fetchForecast(req: WeatherRequest, fetchImpl: typeof fetch): Prom
     },
     today,
     days,
+    hours: buildHours(data),
   };
 }
 
 /**
- * Current conditions + a 5-day forecast from Open-Meteo (no API key).
+ * Current conditions, a 5-day daily forecast and the next 24 hours from Open-Meteo (no API key).
  *
  * Successful payloads are cached for 15 minutes. When upstream fails and an expired
  * entry exists, the cached payload is returned with `stale: true`; with no cache at

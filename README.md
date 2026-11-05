@@ -97,13 +97,15 @@ Start playback once in the Spotify app on your phone, speaker or computer; HomeH
 
 ## Weather
 
-Weather uses [Open-Meteo](https://open-meteo.com) (free, no API key or account) for the location set in Settings > Weather: click **Use this device's location** (needs HTTPS, e.g. the tailscale URL) or enter latitude/longitude, pick °C/°F and an optional place label. The calendar header gets a chip (tap for the 5-day strip) and, at 1280px and wider, a strip card in the right column.
+Weather uses [Open-Meteo](https://open-meteo.com) (free, no API key or account) for the location set in Settings > Weather: click **Use this device's location** (needs HTTPS, e.g. the tailscale URL) or enter latitude/longitude, pick °C/°F and an optional place label. At 1280px and wider the right column shows a weather card with a Daily/Hourly switch; below that the calendar header gets a temperature chip (tap for the same card) plus an **At a glance** button that opens the hidden right-column widgets. Below 768px the chip folds into that popup so the header stays on one row.
 
-The server caches forecasts for 15 minutes, so requests never hit Open-Meteo per page load. When Open-Meteo is unreachable the last cached forecast is served marked as stale; without a cache the header chip stays hidden, the right-column card shows *Unavailable*, and calendars keep working.
+The server caches forecasts for 15 minutes, so requests never hit Open-Meteo per page load. When Open-Meteo is unreachable the last cached forecast is served marked as stale; without a cache the header chip stays hidden, the card shows *Unavailable*, and calendars keep working.
 
 ## Meals (PantryPal)
 
 The Meals tab and the right-column "Tonight" card read PantryPal's current-week plan (`GET /api/v1/plans/current`) server-to-server, cached for five minutes. Point `PANTRYPAL_URL` at the PantryPal server (for example `http://pantrypal:8787` on the same Docker network or `http://<host>:8787` on the tailnet). If the browser reaches PantryPal at a different address (a tailnet HTTPS URL), set `PANTRYPAL_PUBLIC_URL` so recipe links work. On a trusted tailnet run PantryPal with `PANTRYPAL_TRUST_NETWORK=1`; otherwise create a token (`pnpm cli token create <name>` in PantryPal) and set `PANTRYPAL_TOKEN`.
+
+The Calendar's Week and Day views also show that plan: a fixed-height strip under the day columns lists each day's meals (a colored Breakfast/Lunch/Dinner badge plus the recipe name; the third row becomes "+N more" on busy days). Tapping a meal opens the recipe in PantryPal, and tapping a day without meals opens that week's plan (`/?week=...`). Month and Schedule show no meals, and with PantryPal unreachable the strip simply disappears: the calendar never waits on it.
 
 Then enable the module in Settings > Meals and use **Test connection**. When PantryPal is down the last good plan is shown marked "Last known plan"; with no cached plan the card and tab say Unavailable. Meals are read-only from HomeHub.
 

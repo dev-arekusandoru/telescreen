@@ -1728,6 +1728,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/meals/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Meals planned in a date range
+         * @description Reads the PantryPal plans overlapping `[start, end)` (a rolling week can straddle two plan weeks) and returns their days merged and date-ordered, normalized like `/meals/current`. Cached for 5 minutes per range; the last good response is served (stale: true) when PantryPal is unreachable. Days without a plan are omitted, so an absent day is an empty day, not an error. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description First day of the range (YYYY-MM-DD), inclusive. */
+                    start: string;
+                    /** @description Last day of the range (YYYY-MM-DD), exclusive. */
+                    end: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Planned days in the range */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsPlan"];
+                    };
+                };
+                /** @description Meals module disabled */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description PantryPal not configured or unreachable and no cached response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/meals/status": {
         parameters: {
             query?: never;
@@ -1814,7 +1872,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Current weather and a 5-day forecast
+         * Current weather, a 5-day forecast and the next 24 hours
          * @description Open-Meteo (no API key) for the location in Settings, in the household time zone. Cached 15 minutes; serves the last cached payload flagged `stale` when upstream fails.
          */
         get: {
@@ -2301,6 +2359,14 @@ export interface components {
          * @enum {string}
          */
         MealSlot: "breakfast" | "lunch" | "dinner" | "snack" | "dessert";
+        MealsPlan: {
+            /** @description Planned days in the requested range, oldest first. Days with no plan are omitted. */
+            days: components["schemas"]["MealDay"][];
+            /** @description ISO instant this response was built from PantryPal. */
+            fetchedAt: string;
+            /** @description True when PantryPal is unreachable and the last good response for this range is served instead. */
+            stale: boolean;
+        };
         MealsStatus: {
             /** @description Settings > Modules > Meals. */
             enabled: boolean;
@@ -2329,6 +2395,8 @@ export interface components {
             today: components["schemas"]["WeatherDay"];
             /** @description Five days, starting with today. */
             days: components["schemas"]["WeatherDay"][];
+            /** @description Next 24 hours, starting with the current hour. */
+            hours: components["schemas"]["WeatherHour"][];
             /** @description ISO instant the upstream data was fetched. */
             fetchedAt: string;
             /** @description True when upstream failed and the last cached payload is being served. */
@@ -2352,6 +2420,17 @@ export interface components {
             group: components["schemas"]["WeatherGroup"];
             high: number;
             low: number;
+            precipProbability: number | null;
+        };
+        WeatherHour: {
+            /** @description Local wall time (YYYY-MM-DDTHH:00) in the household time zone. */
+            time: string;
+            /** @description WMO weather interpretation code. */
+            code: number;
+            label: string;
+            group: components["schemas"]["WeatherGroup"];
+            temperature: number;
+            isDay: boolean;
             precipProbability: number | null;
         };
         WeatherError: {

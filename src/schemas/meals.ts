@@ -39,6 +39,30 @@ export const mealsCurrentSchema = z
   })
   .openapi("MealsCurrent");
 
+export const mealsPlanSchema = z
+  .object({
+    days: z
+      .array(mealDaySchema)
+      .describe("Planned days in the requested range, oldest first. Days with no plan are omitted."),
+    fetchedAt: z.string().describe("ISO instant this response was built from PantryPal."),
+    stale: z
+      .boolean()
+      .describe("True when PantryPal is unreachable and the last good response for this range is served instead."),
+  })
+  .openapi("MealsPlan");
+
+/** Query for `/meals/plan`: a half-open date range, capped so one request cannot fan out forever. */
+export const mealsPlanQuerySchema = z
+  .object({
+    start: isoDate.describe("First day of the range (YYYY-MM-DD), inclusive."),
+    end: isoDate.describe("Last day of the range (YYYY-MM-DD), exclusive."),
+  })
+  .refine((range) => range.start < range.end, { message: "end must be after start", path: ["end"] })
+  .refine((range) => Date.parse(range.end) - Date.parse(range.start) <= 62 * 86_400_000, {
+    message: "range must be 62 days or less",
+    path: ["end"],
+  });
+
 export const mealsStatusSchema = z
   .object({
     enabled: z.boolean().describe("Settings > Modules > Meals."),

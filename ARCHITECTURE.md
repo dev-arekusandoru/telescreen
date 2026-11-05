@@ -35,7 +35,7 @@ Settings are key/value rows (`setting`): add a key in `src/schemas/settings.ts` 
 | Path | Role |
 |---|---|
 | `styles/tokens.css` | Design tokens, light + dark (`<html data-theme="system\|light\|dark">`); `base.css` reset + fonts |
-| `app/` | `router.tsx` (route tree), `routes.tsx` (root + `shellRoute`), `Shell` (84px rail ≥600px / bottom tabs <600px; rail foot holds the calendar sync button), `tabs.ts` (nav; `module` flag hides Meals/Music), `theme.ts`, `MemberChips` (calendar header ring chips + person popover), `MemberProgress` (chores header strip), `dates.ts` (household-timezone formatting) |
+| `app/` | `router.tsx` (route tree), `routes.tsx` (root + `shellRoute`), `Shell` (84px rail ≥600px / bottom tabs <600px; rail foot holds the calendar sync button), `WidgetColumn` (weather/tonight/now-playing, also reused by `WidgetsButton` below 1280px), `tabs.ts` (nav; `module` flag hides Meals/Music), `theme.ts`, `MemberChips` (calendar header ring chips + person popover), `MemberProgress` (chores header strip), `useMediaQuery`, `dates.ts` (household-timezone formatting) |
 | `api/` | `client` (openapi-fetch, `unwrap()`), generated `schema.d.ts`, `errors`, `queryClient` |
 | `features/queries.ts` | TanStack Query keys/hooks (household, members, settings); add new feature hooks in new files next to it |
 | `screens/<name>/` | `route.tsx` (child of `shellRoute`) + screen component + CSS module |
@@ -72,4 +72,10 @@ Styling: CSS modules + tokens only; no hard-coded colors. Web tests: Vitest + Te
 
 `src/music/spotify.ts` is a thin Spotify Web API client: PKCE (`code_verifier` + S256 challenge), authorization-code and refresh-token exchange, access-token refresh (expiry skew, plus one refresh + retry on 401) and typed failures (`no_active_device`, `premium_required`, `needs_auth`, `rate_limited` with `Retry-After`). `services/music.ts` owns the `state` nonce → verifier map, stores the encrypted connection in `music_connection`, persists rotated tokens after each call and maps failures to `AppError` with `details.reason`. `/auth/spotify/callback` is mounted in `app.ts` next to the Google callback; `POST /music/connect/start` and the callback share `routes/oauthPage.ts`.
 
-Web: `features/music.ts` (adaptive polling: 5 s playing, 20 s idle, 60 s hidden; optimistic transport) and `screens/music/` (`MusicPlayer` used by the Music tab and the right-column `NowPlayingCard`). Settings > Music connects/disconnects; the Music tab is hidden until `modules.music` is on.
+Web: `features/music.ts` (adaptive polling: 5 s playing, 20 s idle, 60 s hidden; optimistic transport) and `screens/music/` (`MusicPlayer` used by the Music tab and the shared right-column `NowPlayingBody`). Settings > Music connects/disconnects; the Music tab is hidden until `modules.music` is on.
+
+## Meals (PantryPal)
+
+`services/meals.ts` reads PantryPal server-to-server and normalizes its plan grid into `MealDay[]` (`GET /meals/current` → this week + `tonight`). `GET /meals/plan?start&end` serves the calendar's visible range: because PantryPal's plan weeks need not start on HomeHub's `weekStart`, it lists plans overlapping `[start, end)` (`/plans?from&to`) and reads each by id instead of computing a week start, then merges the days. Both endpoints cache the last good response for 5 minutes and serve it as `stale` when PantryPal is down; 404 = module off, 503 = unreachable with no cache.
+
+Web: `features/meals.ts` (`useMeals` for Tonight/Meals, `useMealsPlan(range)` for the calendar, `pantrypalWeekUrl` for week deep links). `screens/meals/` is the tab + right-column card; `screens/calendar/MealRail.tsx` + `mealRail.ts` render the fixed-height meal strip under the Week/Day columns and own the per-day grouping/collapsing rules. Recipe links use the server-built `url`; week links use PantryPal's `/?week=YYYY-MM-DD` search param.

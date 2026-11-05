@@ -14,7 +14,7 @@ const getWeatherRoute = createRoute({
   method: "get",
   path: "/weather",
   tags,
-  summary: "Current weather and a 5-day forecast",
+  summary: "Current weather, a 5-day forecast and the next 24 hours",
   description:
     "Open-Meteo (no API key) for the location in Settings, in the household time zone. Cached 15 minutes; serves the last cached payload flagged `stale` when upstream fails.",
   responses: {

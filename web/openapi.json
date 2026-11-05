@@ -1835,6 +1835,31 @@
         "description": "Eating occasion.",
         "example": "dinner"
       },
+      "MealsPlan": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MealDay"
+            },
+            "description": "Planned days in the requested range, oldest first. Days with no plan are omitted."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "ISO instant this response was built from PantryPal."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when PantryPal is unreachable and the last good response for this range is served instead."
+          }
+        },
+        "required": [
+          "days",
+          "fetchedAt",
+          "stale"
+        ]
+      },
       "MealsStatus": {
         "type": "object",
         "properties": {
@@ -1931,6 +1956,13 @@
             },
             "description": "Five days, starting with today."
           },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherHour"
+            },
+            "description": "Next 24 hours, starting with the current hour."
+          },
           "fetchedAt": {
             "type": "string",
             "description": "ISO instant the upstream data was fetched."
@@ -1949,6 +1981,7 @@
           "current",
           "today",
           "days",
+          "hours",
           "fetchedAt",
           "stale"
         ]
@@ -2034,6 +2067,46 @@
           "group",
           "high",
           "low",
+          "precipProbability"
+        ]
+      },
+      "WeatherHour": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "Local wall time (YYYY-MM-DDTHH:00) in the household time zone."
+          },
+          "code": {
+            "type": "integer",
+            "description": "WMO weather interpretation code."
+          },
+          "label": {
+            "type": "string"
+          },
+          "group": {
+            "$ref": "#/components/schemas/WeatherGroup"
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "isDay": {
+            "type": "boolean"
+          },
+          "precipProbability": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "time",
+          "code",
+          "label",
+          "group",
+          "temperature",
+          "isDay",
           "precipProbability"
         ]
       },
@@ -3353,6 +3426,57 @@
         }
       }
     },
+    "/api/v1/meals/plan": {
+      "get": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "Meals planned in a date range",
+        "description": "Reads the PantryPal plans overlapping `[start, end)` (a rolling week can straddle two plan weeks) and returns their days merged and date-ordered, normalized like `/meals/current`. Cached for 5 minutes per range; the last good response is served (stale: true) when PantryPal is unreachable. Days without a plan are omitted, so an absent day is an empty day, not an error. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "First day of the range (YYYY-MM-DD), inclusive."
+            },
+            "required": true,
+            "description": "First day of the range (YYYY-MM-DD), inclusive.",
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Last day of the range (YYYY-MM-DD), exclusive."
+            },
+            "required": true,
+            "description": "Last day of the range (YYYY-MM-DD), exclusive.",
+            "name": "end",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planned days in the range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsPlan"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meals module disabled"
+          },
+          "503": {
+            "description": "PantryPal not configured or unreachable and no cached response"
+          }
+        }
+      }
+    },
     "/api/v1/meals/status": {
       "get": {
         "tags": [
@@ -3400,7 +3524,7 @@
         "tags": [
           "weather"
         ],
-        "summary": "Current weather and a 5-day forecast",
+        "summary": "Current weather, a 5-day forecast and the next 24 hours",
         "description": "Open-Meteo (no API key) for the location in Settings, in the household time zone. Cached 15 minutes; serves the last cached payload flagged `stale` when upstream fails.",
         "responses": {
           "200": {

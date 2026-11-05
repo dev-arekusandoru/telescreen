@@ -29,6 +29,13 @@ export interface MealsCurrent {
   stale: boolean;
 }
 
+/** Meals for an arbitrary visible range (the calendar's week/day views). */
+export interface MealsPlan {
+  days: MealDay[];
+  fetchedAt: string;
+  stale: boolean;
+}
+
 export interface MealsStatus {
   enabled: boolean;
   configured: boolean;
@@ -174,12 +181,26 @@ interface CacheEntry {
   fetchedAt: string;
 }
 
+interface RangeEntry {
+  days: MealDay[];
+  fetchedAt: string;
+}
+
 /** Per-household last-good plan. Single-process cache; PantryPal is polled at most every 5 min. */
 const cache = new Map<string, CacheEntry>();
+
+/**
+ * Last-good plans for calendar ranges, keyed by household + PantryPal URL + range. The calendar
+ * asks for overlapping ranges as it pages (a rolling week shifts by a day at a time), so entries
+ * are capped and pruned rather than kept forever.
+ */
+const rangeCache = new Map<string, RangeEntry>();
+const RANGE_CACHE_MAX = 32;
 
 /** Test hook: forget cached plans (also useful after changing PANTRYPAL_* at runtime). */
 export function resetMealsCache(): void {
   cache.clear();
+  rangeCache.clear();
 }
 
 export interface MealsServiceOptions {
@@ -187,22 +208,82 @@ export interface MealsServiceOptions {
   fetch?: typeof fetch;
 }
 
-async function fetchPlan(
+/** GET a PantryPal JSON document. `null` for 404, which is a valid "nothing here" answer. */
+async function fetchJson(
   config: PantryPalConfig,
+  path: string,
   fetchImpl: typeof fetch,
-): Promise<RawPlan | null> {
+): Promise<unknown | null> {
   const headers: Record<string, string> = { accept: "application/json" };
   if (config.token) headers.authorization = `Bearer ${config.token}`;
-  const response = await fetchImpl(`${config.url}/api/v1/plans/current`, {
+  const response = await fetchImpl(`${config.url}${path}`, {
     headers,
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
-  // PantryPal answers 404 when there is no plan for the current week: a valid empty state.
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`PantryPal responded ${response.status} ${response.statusText}`.trim());
   const body: unknown = await response.json();
   if (!body || typeof body !== "object") throw new Error("PantryPal returned an unexpected response");
-  return body as RawPlan;
+  return body;
+}
+
+async function fetchPlan(
+  config: PantryPalConfig,
+  fetchImpl: typeof fetch,
+): Promise<RawPlan | null> {
+  // PantryPal answers 404 when there is no plan for the current week: a valid empty state.
+  return (await fetchJson(config, "/api/v1/plans/current", fetchImpl)) as RawPlan | null;
+}
+
+/**
+ * Plans overlapping `[start, end)`.
+ *
+ * PantryPal's plan week starts on its own household setting (Monday by default), which need not
+ * match HomeHub's `weekStart`, so the week start is never computed here: the list endpoint is asked
+ * for plans overlapping the range and each plan is read by id.
+ */
+async function fetchRangePlans(
+  config: PantryPalConfig,
+  start: string,
+  end: string,
+  fetchImpl: typeof fetch,
+): Promise<RawPlan[]> {
+  const last = addDays(end, -1);
+  const list = await fetchJson(config, `/api/v1/plans?from=${start}&to=${last}`, fetchImpl);
+  const ids = planIds(list);
+  const plans = await Promise.all(
+    ids.map((id) => fetchJson(config, `/api/v1/plans/${encodeURIComponent(id)}`, fetchImpl)),
+  );
+  return plans.filter((plan): plan is RawPlan => plan !== null);
+}
+
+/** Plan ids from PantryPal's list response, ignoring anything malformed. */
+function planIds(list: unknown): string[] {
+  if (!list || typeof list !== "object" || !("items" in list) || !Array.isArray(list.items)) return [];
+  return list.items.flatMap((item) => {
+    if (!item || typeof item !== "object" || !("id" in item)) return [];
+    return typeof item.id === "string" && item.id !== "" ? [item.id] : [];
+  });
+}
+
+/** Flatten the plans overlapping `[start, end)` into one date-ordered day list, dropping outside days. */
+export function mergePlanDays(
+  plans: readonly RawPlan[],
+  options: { start: string; end: string; publicUrl: string },
+): MealDay[] {
+  const byDate = new Map<string, MealDay>();
+  for (const plan of plans) {
+    const { week } = normalizePlan(plan, {
+      publicUrl: options.publicUrl,
+      fallbackWeekStart: options.start,
+    });
+    for (const day of week) {
+      if (day.date < options.start || day.date >= options.end) continue;
+      const existing = byDate.get(day.date);
+      byDate.set(day.date, existing ? { date: day.date, meals: [...existing.meals, ...day.meals] } : day);
+    }
+  }
+  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
 function present(entry: CacheEntry, today: string, stale: boolean): MealsCurrent {
@@ -255,6 +336,65 @@ export async function getCurrentMeals(ctx: Ctx, options: MealsServiceOptions = {
     if (cached) return present(cached, today, true);
     const reason = error instanceof Error ? error.message : String(error);
     throw new AppError("unavailable", `PantryPal is unreachable: ${reason}`, { url: config.url });
+  }
+}
+
+/**
+ * Meals planned in `[start, end)` — the calendar's visible range, which may straddle two of
+ * PantryPal's plan weeks.
+ *
+ * - 404 `not_found` when the Meals module flag is off.
+ * - 503 `unavailable` when `PANTRYPAL_URL` is unset or PantryPal is unreachable with no cache.
+ * - Serves the last good response (marked `stale`) for `CACHE_TTL_MS` and on upstream errors.
+ */
+export async function getMealsPlan(
+  ctx: Ctx,
+  start: string,
+  end: string,
+  options: MealsServiceOptions = {},
+): Promise<MealsPlan> {
+  const env = options.env ?? process.env;
+  const fetchImpl = options.fetch ?? fetch;
+  if (!getSettings(ctx.db).modules.meals) {
+    throw new AppError("not_found", "The Meals module is disabled in Settings");
+  }
+  const config = pantrypalConfig(env);
+  if (!config) {
+    throw new AppError("unavailable", "Meals are not configured: set PANTRYPAL_URL", { variable: "PANTRYPAL_URL" });
+  }
+
+  const now = ctx.now();
+  const key = `${ctx.householdId}\u0000${config.url}\u0000${config.publicUrl}\u0000${start}\u0000${end}`;
+  const cached = rangeCache.get(key);
+  if (cached && now.getTime() - Date.parse(cached.fetchedAt) < CACHE_TTL_MS) {
+    return { ...cached, stale: false };
+  }
+
+  try {
+    const plans = await fetchRangePlans(config, start, end, fetchImpl);
+    const entry: RangeEntry = {
+      days: mergePlanDays(plans, { start, end, publicUrl: config.publicUrl }),
+      fetchedAt: now.toISOString(),
+    };
+    rememberRange(key, entry, now);
+    return { ...entry, stale: false };
+  } catch (error) {
+    if (cached) return { ...cached, stale: true };
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new AppError("unavailable", `PantryPal is unreachable: ${reason}`, { url: config.url });
+  }
+}
+
+/** Cache a range response, dropping expired entries and the oldest ones past the cap. */
+function rememberRange(key: string, entry: RangeEntry, now: Date): void {
+  for (const [cachedKey, cached] of rangeCache) {
+    if (now.getTime() - Date.parse(cached.fetchedAt) >= CACHE_TTL_MS) rangeCache.delete(cachedKey);
+  }
+  rangeCache.set(key, entry);
+  while (rangeCache.size > RANGE_CACHE_MAX) {
+    const oldest = rangeCache.keys().next().value;
+    if (oldest === undefined) break;
+    rangeCache.delete(oldest);
   }
 }
 

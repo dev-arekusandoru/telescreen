@@ -4,13 +4,11 @@ import { ago } from "@/app/dates";
 import { useNow } from "@/app/useNow";
 import { useSyncNow, useSyncStatus } from "@/features/calendar";
 import { useSettings } from "@/features/queries";
-import { TonightCard } from "@/screens/meals/TonightCard";
-import { NowPlayingCard } from "@/screens/music/NowPlayingCard";
-import { WeatherCard } from "@/screens/weather/WeatherCard";
 import { ToastProvider } from "@/ui/toast";
 import styles from "./Shell.module.css";
 import { visibleTabs, type Tab } from "./tabs";
 import { useWakeLock } from "./wakeLock";
+import { WidgetColumn } from "./WidgetColumn";
 
 function NavLinks({ tabs }: { tabs: Tab[] }) {
   return tabs.map((t) => (
@@ -73,13 +71,7 @@ export function Shell() {
       </main>
       {showSide ? (
         <aside className={styles.side} aria-label="At a glance">
-          {settings?.modules.weather ? <WeatherCard /> : null}
-          {settings?.modules.meals ? (
-            <section className={styles.sideCard}>
-              <TonightCard />
-            </section>
-          ) : null}
-          {settings?.modules.music ? <NowPlayingCard /> : null}
+          <WidgetColumn />
         </aside>
       ) : null}
       <nav className={styles.tabbar} aria-label="Primary">

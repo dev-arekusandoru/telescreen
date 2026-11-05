@@ -11,7 +11,7 @@ function dayName(date: string, index: number): string {
   return weekday.format(new Date(`${date}T12:00:00Z`));
 }
 
-/** Five-day strip shared by the header popover and the right-column card. */
+/** Daily five-day strip shared by the right-column card and the header popover. */
 export function ForecastStrip({ days, units }: { days: Weather["days"]; units: WeatherUnits }) {
   return (
     <ul className={styles.strip} aria-label="Five-day forecast">

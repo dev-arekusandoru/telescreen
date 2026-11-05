@@ -11,13 +11,35 @@ const SLOT_LABEL: Record<MealItem["slot"], string> = {
 };
 
 /**
- * "Tonight" content for the Shell's right column (>= 1280px). Render inside the
- * Shell `.sideCard`; degrades to a muted line when PantryPal is unreachable.
+ * "Tonight" body for the right column and the small-screen widgets popup (SPEC §8).
+ * Render inside a raised card; degrades to a muted line when PantryPal is unreachable.
  */
-export function TonightCard() {
+export function TonightBody() {
   const { data, isPending } = useMeals();
   const tonight = data?.tonight ?? null;
 
+  if (isPending) return <p className={styles.muted}>Loading…</p>;
+  if (!data) return <p className={styles.muted}>Unavailable</p>;
+  if (!tonight) return <p className={styles.muted}>No dinner planned.</p>;
+  return (
+    <div className={styles.meal}>
+      {tonight.url ? (
+        <a href={tonight.url} target="_blank" rel="noreferrer">
+          {tonight.title}
+        </a>
+      ) : (
+        tonight.title
+      )}
+      <small>
+        {SLOT_LABEL[tonight.slot]}
+        {data.stale ? " · last known plan" : ""}
+      </small>
+    </div>
+  );
+}
+
+/** Right-column card chrome around `TonightBody`. */
+export function TonightCard() {
   return (
     <>
       <h2 className={styles.cardTitle}>
@@ -25,27 +47,7 @@ export function TonightCard() {
         Tonight
         <span className={styles.badge}>PantryPal</span>
       </h2>
-      {isPending ? (
-        <p className={styles.muted}>Loading…</p>
-      ) : !data ? (
-        <p className={styles.muted}>Unavailable</p>
-      ) : !tonight ? (
-        <p className={styles.muted}>No dinner planned.</p>
-      ) : (
-        <div className={styles.meal}>
-          {tonight.url ? (
-            <a href={tonight.url} target="_blank" rel="noreferrer">
-              {tonight.title}
-            </a>
-          ) : (
-            tonight.title
-          )}
-          <small>
-            {SLOT_LABEL[tonight.slot]}
-            {data.stale ? " · last known plan" : ""}
-          </small>
-        </div>
-      )}
+      <TonightBody />
     </>
   );
 }

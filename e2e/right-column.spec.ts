@@ -16,6 +16,15 @@ function weatherFixture() {
     low: 12 - i,
     precipProbability: 10,
   }));
+  const hours = Array.from({ length: 24 }, (_, i) => ({
+    time: `2026-11-04T${String(i).padStart(2, "0")}:00`,
+    code: 1,
+    label: "Mainly clear",
+    group: "mainly_clear",
+    temperature: 18 - i * 0.2,
+    isDay: i >= 7 && i < 19,
+    precipProbability: 10,
+  }));
   return {
     latitude: 52.52,
     longitude: 13.405,
@@ -25,6 +34,7 @@ function weatherFixture() {
     current: { temperature: 18, code: 1, label: "Mainly clear", group: "mainly_clear", isDay: true },
     today: days[0],
     days,
+    hours,
     fetchedAt: new Date(Date.UTC(2026, 10, 4, 8)).toISOString(),
     stale: false,
   };
