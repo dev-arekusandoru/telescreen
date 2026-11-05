@@ -35,7 +35,7 @@ Settings are key/value rows (`setting`): add a key in `src/schemas/settings.ts` 
 | Path | Role |
 |---|---|
 | `styles/tokens.css` | Design tokens, light + dark (`<html data-theme="system\|light\|dark">`); `base.css` reset + fonts |
-| `app/` | `router.tsx` (route tree), `routes.tsx` (root + `shellRoute`), `Shell` (84px rail ≥600px / bottom tabs <600px; rail foot holds the calendar sync button), `WidgetColumn` (weather/tonight/now-playing, also reused by `WidgetsButton` below 1280px), `tabs.ts` (nav; `module` flag hides Meals/Music), `theme.ts`, `MemberChips` (calendar header ring chips + person popover), `MemberProgress` (chores header strip), `useMediaQuery`, `dates.ts` (household-timezone formatting) |
+| `app/` | `router.tsx` (route tree), `routes.tsx` (root + `shellRoute`), `Shell` (84px rail ≥600px / bottom tabs <600px; rail foot holds the calendar sync button), `WidgetColumn` (weather/tonight/now-playing, also reused by `WidgetsButton` below 1280px), `tabs.ts` (nav; `module` flag hides Meals/Music), `theme.ts`, `MemberChips` (calendar header per-person ring chips + popover with the show/hide toggle), `MemberProgress` (chores header strip), `useMediaQuery`, `dates.ts` (household-timezone formatting) |
 | `api/` | `client` (openapi-fetch, `unwrap()`), generated `schema.d.ts`, `errors`, `queryClient` |
 | `features/queries.ts` | TanStack Query keys/hooks (household, members, settings); add new feature hooks in new files next to it |
 | `screens/<name>/` | `route.tsx` (child of `shellRoute`) + screen component + CSS module |

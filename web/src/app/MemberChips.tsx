@@ -1,5 +1,5 @@
 import * as Popover from "@radix-ui/react-popover";
-import { Check, UsersThree } from "@phosphor-icons/react";
+import { Check } from "@phosphor-icons/react";
 import { useState } from "react";
 import { localDate } from "@/app/localdate";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
@@ -99,19 +99,17 @@ function PersonPanel({
 }
 
 /**
- * Compact header chip group: a neutral "everyone" circle plus one ring chip per member.
+ * Compact header chip group: one ring chip per member.
  * The ring shows today's chore progress (done / total); tapping a chip opens a popover with the
- * member's list and the only control that filters their events out of the calendar.
- * `hidden` member ids render dimmed; the family circle clears them all.
+ * member's list and the only control that filters their events out of the calendar. `hidden`
+ * member ids render dimmed but stay tappable, so the popover is also the way to restore them.
  */
 export function MemberChips({
   hidden,
   onToggle,
-  onShowAll,
 }: {
   hidden: readonly string[];
   onToggle: (memberId: string) => void;
-  onShowAll: () => void;
 }) {
   const { data: members = [] } = useMembers();
   const { now, timeZone } = useHouseholdClock();
@@ -122,20 +120,9 @@ export function MemberChips({
   const progress: Record<string, Progress> = Object.fromEntries(
     (fetched ?? []).map((p) => [p.memberId, { done: p.done, total: p.total }]),
   );
-  const allShown = hidden.length === 0;
 
   return (
     <div className={styles.chips}>
-      <button
-        type="button"
-        className={styles.family}
-        aria-pressed={allShown}
-        aria-label="Show everyone on the calendar"
-        title="Show everyone"
-        onClick={onShowAll}
-      >
-        <UsersThree weight="fill" aria-hidden="true" />
-      </button>
       {members.map((m) => {
         const p = progress[m.id] ?? { done: 0, total: 0 };
         const off = hidden.includes(m.id);

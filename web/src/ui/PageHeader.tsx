@@ -20,7 +20,9 @@ export function PageHeader({
   return (
     <header className={cx(styles.header, dense && styles.dense)}>
       <div className={styles.titles}>
-        <h1 className={styles.title}>{title}</h1>
+        <h1 className={styles.title} title={title}>
+          {title}
+        </h1>
         {subtitle ? <div className={styles.sub}>{subtitle}</div> : null}
       </div>
       <div className={styles.spacer} />

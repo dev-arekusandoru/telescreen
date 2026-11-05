@@ -59,12 +59,16 @@ server-side only, never returned by the API. Encryption key via `HOMEHUB_SECRET_
 | Agenda ("Schedule") | `list` | Grouped by day |
 
 Shared: all-day strip, "now" line, per-person chips in the header (a ring around the avatar shows
-today's chore progress; tap opens the member's tasks and the only show/hide filter), swipe/arrow
-navigation and a "Today" button that appears only while today is off-screen. The header is a single
-compact row (title + clock, joined prev/next chevrons, member chips, weather, view switcher) so the
-calendar gets the height; below 1280px the weather chip stands in for the hidden right column, and a
-single "At a glance" button opens the other right-column widgets in a popup (below 768px weather folds
-into that popup so the header stays on one row); the last view mode is remembered per device. Idle for 2 min returns to
+today's chore progress; tap opens the member's tasks and the only show/hide filter, so a dimmed
+hidden member is restored from the same popover), swipe/arrow navigation and a "Today" button to the
+left of the joined prev/next chevrons; Today is not rendered while today is in view, so it never
+leaves a gap. The header title is the household name in the display serif with the household-time
+clock muted beside it (zone in the tooltip); the visible range (month / week / day) is readable
+text beside the chevrons. It stays a single compact row on the same baseline (title + clock, Today,
+chevrons, range, member chips, weather, view switcher) down to 768px, wrapping below that; below
+1280px the weather chip stands in for the hidden right column, and a single "At a glance" button
+opens the other right-column widgets in a popup (below 960px weather folds into that popup so the
+header stays on one row); the last view mode is remembered per device. Idle for 2 min returns to
 today's Week view (wall-display behavior; setting).
 
 **Meals in the week/day grid**: when the Meals module is on and the visible range has planned meals,
@@ -176,7 +180,7 @@ not in the DB.
 - **Type**: display serif (candidate: Fraunces Variable) for headings/dates; humanist sans (Inter Variable) for UI. Minimum text 13px on wall display; event titles 14px+; touch targets >= 44px.
 - **Icons**: Phosphor. Regular weight at rest, fill/duotone on active/selected. 24px nav, 20px inline.
 - **Shape/motion**: 18px card radius, 10px event radius; 150-250ms ease-out; tap feedback via scale 0.98; check-off animates fill + strike. Respect `prefers-reduced-motion`.
-- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (one compact header row, member ring chips inside it, 7-day calendar filling the rest). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (weather, tonight's meal, now playing); below that it is hidden so the 7-day week stays legible, and the same widget bodies are reachable from one "At a glance" button in the calendar header. The weather chip keeps its own header slot while it fits (>= 768px); below that weather joins the popup. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
+- **Layout (iPad landscape 1180x820 reference)**: 84px nav rail + full-width main column (one compact header row, member ring chips inside it, 7-day calendar filling the rest). At >= 1280px (e.g. iPad Pro 12.9") a 288px right column appears (weather, tonight's meal, now playing); below that it is hidden so the 7-day week stays legible, and the same widget bodies are reachable from one "At a glance" button in the calendar header. The weather chip keeps its own header slot while it fits (>= 960px); below that weather joins the popup. Today's chores are always one tap away on the Chores tab and summarized by the per-member progress bars.
 - **Phone (portrait, post-MVP-friendly)**: bottom tab bar, Day view default, member ring chips in the (wrapping) header, event sheet as a bottom sheet. Reference in the mockup.
 - **Wall-display details**: no hover dependence; "now" line; dim tint for past events; no burn-in-prone static high-contrast chrome in dark mode (accent used sparingly).
 

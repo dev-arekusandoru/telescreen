@@ -6,7 +6,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { CaretLeft, CaretRight, Plus } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
-import { dayAndTime } from "@/app/dates";
+import { timeOfDay } from "@/app/dates";
 import { MemberChips } from "@/app/MemberChips";
 import { useHouseholdClock } from "@/app/useHouseholdClock";
 import { useMediaQuery } from "@/app/useMediaQuery";
@@ -134,8 +134,10 @@ export function CalendarScreen() {
   const { data: settings } = useSettings();
   // The right column appears at 1280px (SPEC §8); below that its widgets live in the header.
   const wide = useMediaQuery("(min-width: 1280px)");
-  // The temperature chip keeps its own place while the one-row header has room for it.
-  const chipFits = useMediaQuery("(min-width: 768px)");
+  // The temperature chip keeps its own place while the one-row header has room for it. Below
+  // that it joins the At-a-glance popup, which is the only way to keep the title and controls
+  // on one row at 768px.
+  const chipFits = useMediaQuery("(min-width: 960px)");
   const modules = settings?.modules;
   const hasWidgets = modules?.weather === true || modules?.meals === true || modules?.music === true;
   const widgetColumn = wide && hasWidgets;
@@ -150,7 +152,7 @@ export function CalendarScreen() {
     VIEWS.find((v) => v.value === storedViewId)?.value ??
     (globalThis.matchMedia?.("(max-width: 599px)").matches ? "day" : "week");
   const [range, setRange] = useState<{ start: string; end: string; wallStart: string; days: number } | null>(null);
-  const [title, setTitle] = useState("");
+  const [rangeLabel, setRangeLabel] = useState("");
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [hidden, setHidden] = useStoredState<string[]>("hh-cal-hidden", []);
   const [activeMemberId, setActiveMemberId] = useStoredState<string | null>("hh-cal-active-member", null);
@@ -185,8 +187,9 @@ export function CalendarScreen() {
   const showMealRail = mealDates !== null && hasPlannedMeals(mealPlan?.days);
 
   // Whether "Today" is redundant (today is inside the visible range); computed once for both
-  // the header button and the new-event default time.
-  const todayInRange = range !== null && range.start <= now.toISOString() && now.toISOString() < range.end;
+  // the header button and the new-event default time. Until the first datesSet, the initial view
+  // is today's, so hide the button rather than flash it.
+  const todayInRange = range === null || (range.start <= now.toISOString() && now.toISOString() < range.end);
 
   const memberById = useMemo(() => new Map(members.map((m: Member) => [m.id, m])), [members]);
 
@@ -240,7 +243,7 @@ export function CalendarScreen() {
         days: Math.max(1, Math.round((arg.end.getTime() - arg.start.getTime()) / 86_400_000)),
       };
       setRange((prev) => (prev && prev.start === next.start && prev.end === next.end ? prev : next));
-      setTitle(rangeTitle(arg.view.type, arg));
+      setRangeLabel(rangeTitle(arg.view.type, arg));
     },
     [tz],
   );
@@ -334,15 +337,21 @@ export function CalendarScreen() {
     );
   }, []);
 
-  // Title row: range title + the muted household clock (zone in its tooltip); sync lives in Settings.
-  const subtitle = tz ? <span title={zoneLabel(now, tz)}>{dayAndTime(now, tz)}</span> : null;
+  // Skylight-style title: household name with the muted household-time clock on the same baseline.
+  const subtitle = tz ? <span title={zoneLabel(now, tz)}>{timeOfDay(now, tz)}</span> : null;
 
   const sheetCalendarId = pickCalendar(calendars, settings?.defaultWriteCalendarId, activeMemberId);
 
   return (
     <>
-      <PageHeader title={title || " "} subtitle={subtitle} dense>
+      <PageHeader title={household?.name ?? " "} subtitle={subtitle} dense>
         <div className={styles.controls}>
+          {/* Today is rendered only while it can move the view, so it never reserves a gap. */}
+          {todayInRange ? null : (
+            <button type="button" className={styles.today} onClick={goToday}>
+              Today
+            </button>
+          )}
           <div className={styles.navGroup}>
             <button type="button" className={styles.chev} aria-label="Previous" onClick={() => step("prev")}>
               <CaretLeft aria-hidden />
@@ -351,17 +360,10 @@ export function CalendarScreen() {
               <CaretRight aria-hidden />
             </button>
           </div>
-          {/* Always rendered so the row never shifts; hidden (not removed) while today is in view. */}
-          <button
-            type="button"
-            className={cx(styles.today, todayInRange && styles.todayIdle)}
-            aria-hidden={todayInRange || undefined}
-            tabIndex={todayInRange ? -1 : 0}
-            onClick={goToday}
-          >
-            Today
-          </button>
-          <MemberChips hidden={hidden} onToggle={toggleMember} onShowAll={() => setHidden([])} />
+          <span className={styles.range} aria-live="polite">
+            {rangeLabel}
+          </span>
+          <MemberChips hidden={hidden} onToggle={toggleMember} />
           {/* Below 1280px the right column is hidden; weather and the other widgets move here. */}
           {showWeatherChip ? (
             <div className={styles.wx}>

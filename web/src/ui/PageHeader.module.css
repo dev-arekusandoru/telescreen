@@ -56,18 +56,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 0 1 auto;
+  flex: none;
 }
 
 .dense .spacer {
   flex: 1 1 0;
   min-width: 4px;
-}
-
-@media (max-width: 1023px) {
-  .dense .sub {
-    display: none;
-  }
 }
 
 @media (max-width: 860px) {
@@ -76,7 +70,13 @@
     min-height: 32px;
   }
   .dense .title {
-    font-size: 18px;
+    font-size: 17px;
+  }
+  .dense .sub {
+    font-size: 12px;
+  }
+  .dense .spacer {
+    min-width: 0;
   }
 }
 

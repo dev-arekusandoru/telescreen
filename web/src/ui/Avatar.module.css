@@ -2,8 +2,12 @@
   width: var(--size, 34px);
   height: var(--size, 34px);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  /* Cap-height glyphs sit slightly high in the line box; half the padding nudges them down. */
+  padding-top: 0.12em;
   font-weight: 700;
   font-size: calc(var(--size, 34px) * 0.41);
   color: var(--on-accent);

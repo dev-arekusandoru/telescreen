@@ -48,7 +48,7 @@
   transform: scale(0.92);
 }
 
-/* "Today": only meaningful off-range, but always present so the row never shifts. */
+/* "Today": rendered only while today is off-range, so it never reserves a gap. */
 .today {
   height: 30px;
   padding: 0 12px;
@@ -65,9 +65,14 @@
   transform: scale(0.94);
 }
 
-.todayIdle {
-  visibility: hidden;
-  pointer-events: none;
+/* Visible range (month / week / day) beside the chevrons, at readable type. */
+.range {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  flex: none;
+  letter-spacing: -0.005em;
 }
 
 /* Weather chip: shown only while the right column is hidden and the header has room (the
@@ -79,16 +84,19 @@
 
 @media (max-width: 860px) {
   .controls {
-    gap: 6px;
+    gap: 5px;
   }
   .chev {
-    width: 26px;
+    width: 24px;
     height: 28px;
     font-size: 14px;
   }
   .today {
     height: 28px;
-    padding: 0 10px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+  .range {
     font-size: 12.5px;
   }
 }
