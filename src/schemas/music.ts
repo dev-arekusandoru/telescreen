@@ -64,3 +64,19 @@ export const musicVolumeSchema = z
 export const musicDeviceInputSchema = z
   .object({ deviceId: z.string().min(1).describe("Non-null id from GET /music/devices.") })
   .openapi("MusicDeviceInput");
+
+export const musicItemSchema = z
+  .object({
+    uri: z.string().min(1).describe("Spotify context URI, e.g. spotify:playlist:… or spotify:album:…"),
+    kind: z.enum(["album", "playlist", "collection"]).describe("collection = Liked Songs."),
+    title: z.string(),
+    subtitle: z.string().nullable().describe("Artists for an album, track count for a playlist."),
+    imageUrl: z.string().nullable(),
+  })
+  .openapi("MusicItem");
+
+export const musicItemListSchema = z.object({ items: z.array(musicItemSchema) }).openapi("MusicItemList");
+
+export const musicPlayContextSchema = z
+  .object({ uri: z.string().regex(/^spotify:[a-z]+:[A-Za-z0-9:_-]+$/, "Expected a Spotify URI") })
+  .openapi("MusicPlayContextInput");

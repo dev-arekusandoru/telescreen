@@ -25,7 +25,7 @@ const formatTime = (ms: number) => {
 };
 
 /** Between polls the bar advances locally (1 s tick) instead of jumping every 5 s. */
-function useInterpolatedProgress(track: PlaybackTrack | null | undefined, syncedAt: number): number {
+export function useInterpolatedProgress(track: PlaybackTrack | null | undefined, syncedAt: number): number {
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => {
     if (!track?.isPlaying) return;
@@ -38,7 +38,7 @@ function useInterpolatedProgress(track: PlaybackTrack | null | undefined, synced
   return Math.min(track.durationMs, track.progressMs + Math.max(0, tick - syncedAt));
 }
 
-function ConnectPrompt({ reason }: { reason: "not_connected" | "needs_reconnect" | "not_configured" }) {
+export function ConnectPrompt({ reason }: { reason: "not_connected" | "needs_reconnect" | "not_configured" }) {
   return (
     <p className={styles.muted}>
       {reason === "not_configured" ? (

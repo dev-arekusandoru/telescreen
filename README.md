@@ -23,12 +23,14 @@ Requires Node >= 22 and pnpm.
 
 ```sh
 pnpm install
-cp .env.example .env          # optional; export the vars or use `node --env-file`
-pnpm dev                      # API on http://localhost:8788 (data in ./data)
-pnpm web:dev                  # Vite dev server, proxies /api to :8788
+cp .env.example .env          # optional; `pnpm dev` loads it automatically
+pnpm dev                      # API on http://localhost:4000 (data in ./data)
+pnpm web:dev                  # Vite dev server on :4001, proxies /api to :4000
 ```
 
-Other commands: `pnpm typecheck`, `pnpm test` (server), `pnpm test:web`, `pnpm build`, `pnpm start` (serves API + built web on :8788), `pnpm db:generate` (after schema edits), `pnpm openapi` (regenerate the web API client), `pnpm e2e` (Playwright smoke at 1180x820 and 390x844; first run `pnpm e2e:install`; builds the web and starts a throwaway server on :8799).
+Dev ports live in the 4000 range so they never collide with the deployed instance on :8788.
+
+Other commands: `pnpm typecheck`, `pnpm test` (server), `pnpm test:web`, `pnpm build`, `pnpm start` (serves API + built web on :4000), `pnpm db:generate` (after schema edits), `pnpm openapi` (regenerate the web API client), `pnpm e2e` (Playwright smoke at 1180x820 and 390x844; first run `pnpm e2e:install`; builds the web and starts a throwaway server on :4010).
 
 PWA: `web/public/manifest.webmanifest`, `sw.js` (app-shell only, never caches `/api`) and `web/public/icons/` (regenerate with `node scripts/generate-icons.mjs`). Install from Safari over the tailscale HTTPS URL (Share > Add to Home Screen). The screen wake lock also needs HTTPS and is toggled in Settings > General.
 
@@ -42,7 +44,7 @@ On first boot HomeHub creates the household (time zone from `HOMEHUB_TIMEZONE`, 
 | `HOMEHUB_SECRET_KEY` | | 32 bytes as 64 hex chars; encrypts provider secrets (`openssl rand -hex 32`) |
 | `HOMEHUB_TRUST_NETWORK` | off | `1`: `/api/v1` works without a token (private networks only); a sent token is still verified |
 | `HOMEHUB_TIMEZONE` | system | IANA zone for the household on first boot |
-| `HOMEHUB_PUBLIC_URL` | `http://localhost:8788` | Base URL the browser uses to reach HomeHub (your tailnet HTTPS URL); builds the Google redirect URI |
+| `HOMEHUB_PUBLIC_URL` | `http://localhost:${PORT}` | Base URL the browser uses to reach HomeHub (your tailnet HTTPS URL); builds the Google redirect URI |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | | OAuth client from your own Google Cloud project; Google stays unavailable until both are set |
 | `GOOGLE_REDIRECT_URI` | `${HOMEHUB_PUBLIC_URL}/auth/google/callback` | Only if the URI registered in Google Cloud differs |
 | `SPOTIFY_CLIENT_ID` | | Client id from your own Spotify app; Music stays disabled until set |
@@ -51,7 +53,7 @@ On first boot HomeHub creates the household (time zone from `HOMEHUB_TIMEZONE`, 
 | `PANTRYPAL_URL` | | PantryPal server base URL (server-to-server); the Meals module stays unavailable until set |
 | `PANTRYPAL_PUBLIC_URL` | `PANTRYPAL_URL` | Browser-facing PantryPal URL for recipe deep links |
 | `PANTRYPAL_TOKEN` | | Optional bearer token; omit when PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` |
-| `PORT` / `HOST` | `8788` / `0.0.0.0` | |
+| `PORT` / `HOST` | `4000` / `0.0.0.0` | docker compose sets `8788` |
 
 Without trust mode, create a bearer token: `pnpm cli token create <name>`.
 
@@ -89,7 +91,7 @@ Spotify needs an app in your own Spotify developer account (free, about five min
    - Fallback: `http://127.0.0.1:8788/auth/spotify/callback`. Set `SPOTIFY_REDIRECT_URI` to exactly that and do the one-time connect from a browser on the HomeHub host (or `ssh -L 8788:127.0.0.1:8788 <host>` from your laptop). After the token is stored the redirect is never used again.
 2. In the app's **Settings**, tick **Web API** under *APIs used*, then **Save**. Under **User Management**, add the Spotify account's email address (development mode limits the app to the listed users; request an extension from Spotify if you need more).
 3. Put `SPOTIFY_CLIENT_ID` (and `SPOTIFY_CLIENT_SECRET` if the app shows one) in `.env`, plus `HOMEHUB_PUBLIC_URL` for the preferred redirect, and restart.
-4. Enable **Settings > Music**, then **Connect Spotify** and grant the scopes `user-read-playback-state`, `user-modify-playback-state` and `user-read-currently-playing`.
+4. Enable **Settings > Music**, then **Connect Spotify** and grant the scopes it asks for (playback state and control, recently played, and your playlists). If you connected before the Music page gained recents and playlists, reconnect once so Spotify grants the new read scopes; playback keeps working until then.
 
 Start playback once in the Spotify app on your phone, speaker or computer; HomeHub's now-playing card and Music tab then show the track, progress and the active device, with play/pause/skip, volume and a device picker. Without an active device the card offers the picker. If Spotify rejects the stored token, Settings > Music shows *Reconnect needed*.
 

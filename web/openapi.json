@@ -270,6 +270,14 @@
           },
           "weather": {
             "$ref": "#/components/schemas/WeatherSettings"
+          },
+          "musicPins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MusicItem"
+            },
+            "maxItems": 6,
+            "description": "Albums/playlists pinned on the Music page (snapshot of title and art)."
           }
         },
         "required": [
@@ -279,7 +287,8 @@
           "keepAwake",
           "modules",
           "defaultWriteCalendarId",
-          "weather"
+          "weather",
+          "musicPins"
         ]
       },
       "ModuleFlags": {
@@ -350,6 +359,48 @@
           "fahrenheit"
         ]
       },
+      "MusicItem": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Spotify context URI, e.g. spotify:playlist:… or spotify:album:…"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "album",
+              "playlist",
+              "collection"
+            ],
+            "description": "collection = Liked Songs."
+          },
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Artists for an album, track count for a playlist."
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "uri",
+          "kind",
+          "title",
+          "subtitle",
+          "imageUrl"
+        ]
+      },
       "UpdateSettingsInput": {
         "type": "object",
         "properties": {
@@ -392,6 +443,14 @@
           },
           "weather": {
             "$ref": "#/components/schemas/WeatherSettings"
+          },
+          "musicPins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MusicItem"
+            },
+            "maxItems": 6,
+            "description": "Albums/playlists pinned on the Music page (snapshot of title and art)."
           }
         }
       },
@@ -1608,6 +1667,32 @@
         },
         "required": [
           "deviceId"
+        ]
+      },
+      "MusicItemList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MusicItem"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "MusicPlayContextInput": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "pattern": "^spotify:[a-z]+:[A-Za-z0-9:_-]+$"
+          }
+        },
+        "required": [
+          "uri"
         ]
       },
       "MealsCurrent": {
@@ -3171,6 +3256,72 @@
         "responses": {
           "204": {
             "description": "Playback transferred"
+          }
+        }
+      }
+    },
+    "/api/v1/music/recent": {
+      "get": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Recently played albums",
+        "description": "Distinct albums from Spotify's play history, newest first (max 12). 422 `missing_scope` until Spotify is reconnected after the library scopes were added.",
+        "responses": {
+          "200": {
+            "description": "Albums",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicItemList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/music/playlists": {
+      "get": {
+        "tags": [
+          "music"
+        ],
+        "summary": "The account's playlists",
+        "description": "Up to 50 playlists, preceded by a synthetic Liked Songs entry. 422 `missing_scope` as for recent.",
+        "responses": {
+          "200": {
+            "description": "Playlists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicItemList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/music/play-context": {
+      "post": {
+        "tags": [
+          "music"
+        ],
+        "summary": "Play an album, playlist or Liked Songs",
+        "description": "Starts `uri` on the active device; with none active, falls back to the first available Connect device. 422 `no_active_device` if there is no device at all; 403 `premium_required`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicPlayContextInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Playback started"
           }
         }
       }

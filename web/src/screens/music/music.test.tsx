@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultSettings, renderAt, stubApi } from "@/test/api";
@@ -33,6 +33,15 @@ const TRACK: Track = {
   isPlaying: true,
 };
 
+const RECENT = [
+  { uri: "spotify:album:a1", kind: "album", title: "Low Tide Letters", subtitle: "Marlowe", imageUrl: "https://img.example/a1.jpg" },
+  { uri: "spotify:album:a2", kind: "album", title: "Neon Orchard", subtitle: "Citrus Hotel", imageUrl: null },
+];
+const PLAYLISTS = [
+  { uri: "spotify:user:alex:collection", kind: "collection", title: "Liked Songs", subtitle: null, imageUrl: null },
+  { uri: "spotify:playlist:p1", kind: "playlist", title: "Dinner Party", subtitle: "12 songs", imageUrl: null },
+];
+
 const KITCHEN: Device = { id: "dev-1", name: "Kitchen", type: "Speaker", volumePercent: 40, isActive: true };
 const OFFICE: Device = { id: "dev-2", name: "Office", type: "Computer", volumePercent: 25, isActive: false };
 
@@ -46,6 +55,7 @@ let connection: {
 };
 let nowPlayingError: { status: number; body: unknown } | null;
 let musicEnabled: boolean;
+let libraryError: { status: number; body: unknown } | null;
 let calls: Array<{ method: string; path: string; body: unknown }>;
 
 const json = (data: unknown, status = 200) =>
@@ -67,6 +77,7 @@ beforeEach(() => {
   connection = { connected: true, configured: true, label: "Alex", status: "ok", lastError: null };
   nowPlayingError = null;
   musicEnabled = false;
+  libraryError = null;
   calls = [];
 
   vi.stubGlobal(
@@ -83,6 +94,10 @@ beforeEach(() => {
       if (path === "/music/now-playing") {
         if (nowPlayingError) return json(nowPlayingError.body, nowPlayingError.status);
         return json(player);
+      }
+      if ((path === "/music/recent" || path === "/music/playlists") && req.method === "GET") {
+        if (libraryError) return json(libraryError.body, libraryError.status);
+        return json({ items: path === "/music/recent" ? RECENT : PLAYLISTS });
       }
       if (path === "/music/devices" && req.method === "GET") return json({ devices: [KITCHEN, OFFICE] });
       if (path === "/music/connect/start") {
@@ -184,40 +199,62 @@ describe("Music tab", () => {
     await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/previous", body: undefined }));
   });
 
-  it("sets the volume with the slider", async () => {
-    const view = await renderMain("/music");
-    const slider = await view.findByRole("slider", { name: "Volume" });
-    expect(slider).toHaveAttribute("aria-valuenow", "40");
-    slider.focus();
-    await userEvent.keyboard("{ArrowRight}");
-    await waitFor(() =>
-      expect(calls).toContainEqual({ method: "PUT", path: "/music/volume", body: { percent: 41 } }),
-    );
-  });
-
-  it("transfers playback to a device picked from the list", async () => {
-    const view = await renderMain("/music");
-    const picker = await view.findByRole("combobox", { name: "Spotify device" });
-    expect(picker).toHaveTextContent("Kitchen");
-    await userEvent.click(picker);
-    await userEvent.click(await screen.findByRole("option", { name: "Office" }));
-    await waitFor(() =>
-      expect(calls).toContainEqual({ method: "PUT", path: "/music/device", body: { deviceId: "dev-2" } }),
-    );
-  });
-
-  it("offers the device picker when nothing is active", async () => {
+  it("shows an empty hero when nothing is playing", async () => {
     player = { track: null, device: null };
     const view = await renderMain("/music");
-    expect(await view.findByText(/Pick one below/)).toBeInTheDocument();
-    const picker = view.getByRole("combobox", { name: "Spotify device" });
-    expect(picker).toHaveTextContent("No active device");
-    await userEvent.click(picker);
-    await userEvent.click(await screen.findByRole("option", { name: "Kitchen" }));
+    expect(await view.findByText("Nothing playing")).toBeInTheDocument();
+    expect(view.queryByRole("progressbar")).toBeNull();
+    expect(view.queryByRole("button", { name: "Pause" })).toBeNull();
+  });
+
+  it("keeps volume and device controls out of the page for now", async () => {
+    const view = await renderMain("/music");
+    await view.findByText("Golden Hour");
+    expect(view.queryByRole("slider", { name: "Volume" })).toBeNull();
+    expect(view.queryByRole("combobox", { name: "Spotify device" })).toBeNull();
+  });
+});
+
+describe("Music tab library", () => {
+  it("lists recent albums and playlists and plays one on tap", async () => {
+    const view = await renderMain("/music");
+    const recent = await view.findByRole("region", { name: "Recently played" });
+    expect(await within(recent).findByText("Marlowe")).toBeInTheDocument();
+    await userEvent.click(within(recent).getByRole("button", { name: "Play Low Tide Letters" }));
     await waitFor(() =>
-      expect(calls).toContainEqual({ method: "PUT", path: "/music/device", body: { deviceId: "dev-1" } }),
+      expect(calls).toContainEqual({ method: "POST", path: "/music/play-context", body: { uri: "spotify:album:a1" } }),
     );
-    expect(await view.findByText("Golden Hour")).toBeInTheDocument();
+    const playlists = view.getByRole("region", { name: "Your playlists" });
+    expect(within(playlists).getByRole("button", { name: "Play Liked Songs" })).toBeInTheDocument();
+  });
+
+  it("pins in edit mode instead of playing, then plays a pin with one tap", async () => {
+    const view = await renderMain("/music");
+    const pinned = await view.findByRole("region", { name: "Pinned" });
+    expect(within(pinned).getByText(/Pin your go-to/)).toBeInTheDocument();
+
+    await userEvent.click(within(pinned).getByRole("button", { name: "Edit" }));
+    await userEvent.click(await view.findByRole("button", { name: "Pin Dinner Party" }));
+    expect(calls.some((c) => c.path === "/music/play-context")).toBe(false);
+    expect(await within(pinned).findByRole("button", { name: "Unpin Dinner Party" })).toBeInTheDocument();
+
+    await userEvent.click(within(pinned).getByRole("button", { name: "Done" }));
+    await userEvent.click(within(pinned).getByRole("button", { name: "Play Dinner Party" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({ method: "POST", path: "/music/play-context", body: { uri: "spotify:playlist:p1" } }),
+    );
+  });
+
+  it("asks to reconnect when the library scopes are missing", async () => {
+    libraryError = {
+      status: 422,
+      body: { error: { code: "unprocessable", message: "scope", details: { reason: "missing_scope" } } },
+    };
+    const view = await renderMain("/music");
+    expect(await view.findByText("Reconnect Spotify to browse your music")).toBeInTheDocument();
+    expect(view.queryByRole("region", { name: "Recently played" })).toBeNull();
+    // Playback is unaffected.
+    expect(view.getByRole("button", { name: "Pause" })).toBeInTheDocument();
   });
 });
 
@@ -247,17 +284,54 @@ describe("connection states", () => {
     };
     const view = await renderMain("/music");
     expect(await view.findByText("Unavailable")).toBeInTheDocument();
+    expect(view.queryByText("Nothing playing")).toBeNull();
   });
 });
 
-describe("right column card", () => {
-  it("renders the now playing card when the module is enabled", async () => {
+describe("right column widget", () => {
+  const widget = async () => {
     musicEnabled = true;
-    await renderMain("/music");
+    await renderMain("/calendar");
     const aside = await screen.findByRole("complementary", { name: "At a glance" });
-    expect(within(aside).getByRole("heading", { name: /Now playing/ })).toBeInTheDocument();
-    expect(await within(aside).findByText("Golden Hour")).toBeInTheDocument();
-    expect(within(aside).getByRole("button", { name: "Pause" })).toBeInTheDocument();
+    const card = await within(aside).findByRole("region", { name: "Now playing" });
+    return { aside, card, view: within(card) };
+  };
+
+  it("shows only title and artist in standby", async () => {
+    const { view } = await widget();
+    expect(await view.findByText("Golden Hour")).toBeInTheDocument();
+    expect(view.getByText("JVKE")).toBeInTheDocument();
+    expect(view.queryByRole("slider")).toBeNull();
+    expect(view.queryByRole("combobox")).toBeNull();
+  });
+
+  it("first tap reveals controls, a control acts, a second tap elsewhere opens Music", async () => {
+    const { card, view } = await widget();
+    await view.findByText("Golden Hour");
+    fireEvent.click(card); // bare click = touch tap (no mouse hover)
+    await userEvent.click(await view.findByRole("button", { name: "Pause", hidden: true }));
+    await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/pause", body: undefined }));
+    expect(within(screen.getByRole("main")).queryByRole("heading", { level: 1, name: "Music" })).toBeNull();
+
+    fireEvent.click(card); // bare click = touch tap (no mouse hover)
+    expect(await within(screen.getByRole("main")).findByRole("heading", { level: 1, name: "Music" })).toBeInTheDocument();
+  });
+
+  it("shows a friendly empty state and opens Music on tap", async () => {
+    player = { track: null, device: null };
+    const { card, view } = await widget();
+    expect(await view.findByText("Nothing playing")).toBeInTheDocument();
+    expect(view.queryByRole("progressbar")).toBeNull();
+    fireEvent.click(card); // bare click = touch tap (no mouse hover)
+    expect(await within(screen.getByRole("main")).findByRole("heading", { level: 1, name: "Music" })).toBeInTheDocument();
+  });
+
+  it("points to Settings when Spotify is not connected", async () => {
+    connection = { connected: false, configured: true, label: null, status: null, lastError: null };
+    const { card, view } = await widget();
+    expect(await view.findByText("Connect Spotify")).toBeInTheDocument();
+    fireEvent.click(card); // bare click = touch tap (no mouse hover)
+    expect(await screen.findByRole("region", { name: "Music" })).toBeInTheDocument();
   });
 });
 

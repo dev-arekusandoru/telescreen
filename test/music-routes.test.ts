@@ -126,7 +126,7 @@ describe("Spotify OAuth (PKCE)", () => {
     expect(params.get("response_type")).toBe("code");
     expect(params.get("redirect_uri")).toBe(`${PUBLIC_URL}/auth/spotify/callback`);
     expect(params.get("scope")).toBe(
-      "user-read-playback-state user-modify-playback-state user-read-currently-playing",
+      "user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-recently-played playlist-read-private playlist-read-collaborative",
     );
     expect(params.get("code_challenge_method")).toBe("S256");
     expect(params.get("code_challenge")).toMatch(/^[A-Za-z0-9\-_]{43}$/);
@@ -370,5 +370,125 @@ describe("playback routes", () => {
     const after = await t.request<{ error: { details: { reason: string } } }>("GET", "/api/v1/music/now-playing");
     expect(after.status).toBe(422);
     expect(after.body.error.details.reason).toBe("not_connected");
+  });
+});
+
+describe("library routes", () => {
+  const ALBUM = (n: number) => ({
+    uri: `spotify:album:a${n}`,
+    name: `Album ${n}`,
+    artists: [{ name: "Artist" }, { name: "Guest" }],
+    images: [{ url: `https://img/${n}-64.jpg`, width: 64 }, { url: `https://img/${n}-640.jpg`, width: 640 }],
+  });
+
+  it("collapses recently played tracks into distinct albums", async () => {
+    seedConnection(t.db);
+    stubFetch((req) =>
+      req.url.pathname === "/v1/me/player/recently-played"
+        ? {
+            status: 200,
+            body: { items: [1, 1, 2, 1, 3].map((n) => ({ track: { name: "t", album: ALBUM(n) } })) },
+          }
+        : undefined,
+    );
+    const { status, body } = await t.request<{ items: unknown[] }>("GET", "/api/v1/music/recent");
+    expect(status).toBe(200);
+    expect(body.items).toEqual([
+      { uri: "spotify:album:a1", kind: "album", title: "Album 1", subtitle: "Artist, Guest", imageUrl: "https://img/1-640.jpg" },
+      { uri: "spotify:album:a2", kind: "album", title: "Album 2", subtitle: "Artist, Guest", imageUrl: "https://img/2-640.jpg" },
+      { uri: "spotify:album:a3", kind: "album", title: "Album 3", subtitle: "Artist, Guest", imageUrl: "https://img/3-640.jpg" },
+    ]);
+  });
+
+  it("lists playlists with Liked Songs first and tolerates missing art", async () => {
+    seedConnection(t.db);
+    stubFetch((req) => {
+      if (req.url.pathname === "/v1/me/playlists") {
+        return {
+          status: 200,
+          body: {
+            items: [
+              { uri: "spotify:playlist:p1", name: "Dinner", images: [], tracks: { total: 12 } },
+              null,
+              { uri: "spotify:playlist:p2", name: "One", images: [{ url: "https://img/p2.jpg", width: 300 }], tracks: { total: 1 } },
+            ],
+          },
+        };
+      }
+      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "alex" } };
+      return undefined;
+    });
+    const { body } = await t.request<{ items: Array<{ title: string; subtitle: string | null; imageUrl: string | null; uri: string }> }>(
+      "GET",
+      "/api/v1/music/playlists",
+    );
+    expect(body.items.map((i) => i.title)).toEqual(["Liked Songs", "Dinner", "One"]);
+    expect(body.items[0]!.uri).toBe("spotify:user:alex:collection");
+    expect(body.items[1]).toMatchObject({ subtitle: "12 songs", imageUrl: null });
+    expect(body.items[2]).toMatchObject({ subtitle: "1 song", imageUrl: "https://img/p2.jpg" });
+  });
+
+  it("asks to reconnect when the token predates the library scopes", async () => {
+    seedConnection(t.db);
+    stubFetch(() => ({ status: 403, body: { error: { status: 403, message: "Insufficient client scope" } } }));
+    const { status, body } = await t.request<{ error: { details: { reason: string } } }>("GET", "/api/v1/music/recent");
+    expect(status).toBe(422);
+    expect(body.error.details.reason).toBe("missing_scope");
+    // Playback keeps working, so the connection must not be flagged as needing auth.
+    const connection = await t.request<{ status: string }>("GET", "/api/v1/music/connection");
+    expect(connection.body.status).toBe("ok");
+  });
+
+  it("plays a context on the active device", async () => {
+    seedConnection(t.db);
+    const log = stubFetch((req) => (req.url.pathname === "/v1/me/player/play" ? { status: 204 } : undefined));
+    const { status } = await t.request("POST", "/api/v1/music/play-context", { uri: "spotify:playlist:p1" });
+    expect(status).toBe(204);
+    expect(JSON.parse(log[0]!.body)).toEqual({ context_uri: "spotify:playlist:p1" });
+    expect(log[0]!.url.searchParams.get("device_id")).toBeNull();
+  });
+
+  it("falls back to the first available device when none is active", async () => {
+    seedConnection(t.db);
+    let first = true;
+    const log = stubFetch((req) => {
+      if (req.url.pathname === "/v1/me/player/play") {
+        if (first) {
+          first = false;
+          return { status: 404, body: { error: { status: 404, message: "No active device found", reason: "NO_ACTIVE_DEVICE" } } };
+        }
+        return { status: 204 };
+      }
+      if (req.url.pathname === "/v1/me/player/devices") {
+        return { status: 200, body: { devices: [{ id: null, name: "Group" }, { id: "dev-9", name: "Kitchen" }] } };
+      }
+      return undefined;
+    });
+    const { status } = await t.request("POST", "/api/v1/music/play-context", { uri: "spotify:album:a1" });
+    expect(status).toBe(204);
+    const retry = log.at(-1)!;
+    expect(retry.url.searchParams.get("device_id")).toBe("dev-9");
+  });
+
+  it("still reports no_active_device when Spotify lists no usable device", async () => {
+    seedConnection(t.db);
+    stubFetch((req) => {
+      if (req.url.pathname === "/v1/me/player/play") {
+        return { status: 404, body: { error: { status: 404, message: "No active device found", reason: "NO_ACTIVE_DEVICE" } } };
+      }
+      return { status: 200, body: { devices: [] } };
+    });
+    const { status, body } = await t.request<{ error: { details: { reason: string } } }>("POST", "/api/v1/music/play-context", {
+      uri: "spotify:album:a1",
+    });
+    expect(status).toBe(422);
+    expect(body.error.details.reason).toBe("no_active_device");
+  });
+
+  it("rejects anything that is not a Spotify URI", async () => {
+    seedConnection(t.db);
+    stubFetch(() => ({ status: 500 }));
+    const { status } = await t.request("POST", "/api/v1/music/play-context", { uri: "https://evil.example" });
+    expect(status).toBe(400);
   });
 });

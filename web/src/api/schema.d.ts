@@ -1556,6 +1556,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/music/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recently played albums
+         * @description Distinct albums from Spotify's play history, newest first (max 12). 422 `missing_scope` until Spotify is reconnected after the library scopes were added.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Albums */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MusicItemList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/playlists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The account's playlists
+         * @description Up to 50 playlists, preceded by a synthetic Liked Songs entry. 422 `missing_scope` as for recent.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Playlists */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MusicItemList"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/music/play-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Play an album, playlist or Liked Songs
+         * @description Starts `uri` on the active device; with none active, falls back to the first available Connect device. 422 `no_active_device` if there is no device at all; 403 `premium_required`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MusicPlayContextInput"];
+                };
+            };
+            responses: {
+                /** @description Playback started */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/meals/current": {
         parameters: {
             query?: never;
@@ -1800,6 +1919,8 @@ export interface components {
                 [key: string]: string | null;
             };
             weather: components["schemas"]["WeatherSettings"];
+            /** @description Albums/playlists pinned on the Music page (snapshot of title and art). */
+            musicPins: components["schemas"]["MusicItem"][];
         };
         /** @description Optional module flags; disabled modules are hidden from navigation. */
         ModuleFlags: {
@@ -1819,6 +1940,19 @@ export interface components {
         };
         /** @enum {string} */
         WeatherUnits: "celsius" | "fahrenheit";
+        MusicItem: {
+            /** @description Spotify context URI, e.g. spotify:playlist:… or spotify:album:… */
+            uri: string;
+            /**
+             * @description collection = Liked Songs.
+             * @enum {string}
+             */
+            kind: "album" | "playlist" | "collection";
+            title: string;
+            /** @description Artists for an album, track count for a playlist. */
+            subtitle: string | null;
+            imageUrl: string | null;
+        };
         UpdateSettingsInput: {
             /**
              * @description rolling = 7 days starting today; fixed = week per household weekStart.
@@ -1837,6 +1971,8 @@ export interface components {
                 [key: string]: string | null;
             };
             weather?: components["schemas"]["WeatherSettings"];
+            /** @description Albums/playlists pinned on the Music page (snapshot of title and art). */
+            musicPins?: components["schemas"]["MusicItem"][];
         };
         ChoreList: components["schemas"]["Chore"][];
         Chore: {
@@ -2114,6 +2250,12 @@ export interface components {
         MusicDeviceInput: {
             /** @description Non-null id from GET /music/devices. */
             deviceId: string;
+        };
+        MusicItemList: {
+            items: components["schemas"]["MusicItem"][];
+        };
+        MusicPlayContextInput: {
+            uri: string;
         };
         MealsCurrent: {
             /** @description First day of the plan week (household week start). */

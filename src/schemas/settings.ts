@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { musicItemSchema } from "./music.js";
 import { weatherSettingsSchema } from "./weather.js";
 
 export const modulesSchema = z
@@ -24,6 +25,7 @@ export const settingsSchema = z
       .record(z.string(), z.string().nullable())
       .describe("Member id → default calendar id for new events (null = none)."),
     weather: weatherSettingsSchema.describe("Location and units for the Weather module."),
+    musicPins: z.array(musicItemSchema).max(6).describe("Albums/playlists pinned on the Music page (snapshot of title and art)."),
   })
   .openapi("Settings");
 
@@ -37,6 +39,7 @@ export const SETTING_DEFAULTS: Settings = {
   modules: { weather: false, meals: false, music: false },
   defaultWriteCalendarId: {},
   weather: { latitude: null, longitude: null, units: "celsius", place: null },
+  musicPins: [],
 };
 
 /** PUT body: any subset of keys; `modules` and `defaultWriteCalendarId` are replaced as given. */

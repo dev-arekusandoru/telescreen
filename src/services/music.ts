@@ -15,6 +15,7 @@ import {
   SpotifyNoActiveDeviceError,
   SpotifyPremiumRequiredError,
   SpotifyRateLimitError,
+  SpotifyScopeError,
   createPkcePair,
   exchangeSpotifyCode,
   fetchSpotifyDisplayName,
@@ -63,6 +64,9 @@ export function mapSpotifyError(error: unknown): AppError {
   }
   if (error instanceof SpotifyPremiumRequiredError) {
     return new AppError("forbidden", error.message, { reason: "premium_required" });
+  }
+  if (error instanceof SpotifyScopeError) {
+    return new AppError("unprocessable", error.message, { reason: "missing_scope" });
   }
   if (error instanceof SpotifyAuthError) {
     return new AppError("unprocessable", error.message, { reason: "needs_reconnect" });

@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
-import { dbPath, trustNetwork } from "./config.js";
+import { dbPath, loadDotEnv, serverPort, trustNetwork } from "./config.js";
 import { openDb, runMigrations } from "./db/client.js";
 import { makeCtx } from "./context.js";
 import { hasSecretKey } from "./lib/crypto.js";
@@ -9,11 +9,10 @@ import { startSyncScheduler } from "./services/sync.js";
 import { runChoreTick } from "./services/chores.js";
 import { defaultWebDir, hasWebApp } from "./web.js";
 
-const DEFAULT_PORT = 8788;
+loadDotEnv();
 
 const hostname = process.env.HOST ?? "0.0.0.0";
-const parsedPort = Number.parseInt(process.env.PORT ?? String(DEFAULT_PORT), 10);
-const port = Number.isFinite(parsedPort) ? parsedPort : DEFAULT_PORT;
+const port = serverPort();
 const trust = trustNetwork();
 const webDir = defaultWebDir();
 const serveWeb = hasWebApp(webDir);

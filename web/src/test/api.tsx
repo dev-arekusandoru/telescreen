@@ -19,6 +19,7 @@ export function defaultSettings() {
     modules: { weather: false, meals: false, music: false },
     defaultWriteCalendarId: {},
     weather: { latitude: null, longitude: null, units: "celsius", place: null },
+    musicPins: [],
   };
 }
 

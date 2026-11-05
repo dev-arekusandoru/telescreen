@@ -78,8 +78,11 @@ describe("spotifyConfig", () => {
     expect(spotifyConfig({ SPOTIFY_CLIENT_ID: "id" } as NodeJS.ProcessEnv)).toEqual({
       clientId: "id",
       clientSecret: null,
-      redirectUri: "http://localhost:8788/auth/spotify/callback",
+      redirectUri: "http://localhost:4000/auth/spotify/callback",
     });
+    expect(
+      spotifyConfig({ SPOTIFY_CLIENT_ID: "id", PORT: "8080" } as NodeJS.ProcessEnv)?.redirectUri,
+    ).toBe("http://localhost:8080/auth/spotify/callback");
     expect(
       spotifyConfig({
         SPOTIFY_CLIENT_ID: "id",

@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = Number(process.env.E2E_PORT ?? 8799);
+const PORT = Number(process.env.E2E_PORT ?? 4010);
 const FAKE_PORT = PORT - 1;
 
 /**

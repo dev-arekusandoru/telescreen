@@ -1,39 +1,4 @@
-/* Music module: right-column card + Music tab. */
-
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px 18px;
-}
-
-.cardTitle {
-  font-family: var(--display);
-  font-size: 19px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cardTitle svg {
-  color: var(--accent);
-  font-size: 20px;
-}
-
-.pill {
-  margin-left: auto;
-  font-family: var(--font);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 8px;
-}
+/* Music module: right-column widget + Music tab. */
 
 .player {
   display: flex;
@@ -239,8 +204,230 @@
   margin: 0 auto;
 }
 
+/* ---- Right-column widget: art-first, controls on demand ---- */
+.widget {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+}
+
+.widget:has(:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.wArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
+
+.wArtFallback {
+  display: grid;
+  place-items: center;
+  font-size: 72px;
+  color: var(--on-accent);
+  background: linear-gradient(135deg, var(--accent), var(--member-sage));
+}
+
+.widgetShown .wArt {
+  transform: scale(1.03);
+}
+
+.wScrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(10, 6, 3, 0.82) 0%, rgba(10, 6, 3, 0.45) 30%, transparent 55%);
+}
+
+.wMeta {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  color: #fff;
+  min-width: 0;
+}
+
+.wTitle {
+  display: block;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wArtist {
+  margin-top: 2px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wProg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  transition: height var(--dur) var(--ease);
+}
+
+.widgetShown .wProg {
+  height: 5px;
+}
+
+.wProg span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.9s linear;
+}
+
+.wControls {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 8, 4, 0.5);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  /* Hidden controls leave the tab order; they appear instantly on focus/reveal. */
+  transition: opacity 0.22s var(--ease), visibility 0s linear 0.22s;
+}
+
+.widgetShown .wControls,
+.wControls:focus-within {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.22s var(--ease), visibility 0s;
+}
+
+.wTransport {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transform: scale(0.94);
+  transition: transform 0.25s var(--ease);
+}
+
+.widgetShown .wTransport {
+  transform: none;
+}
+
+.wTransport button {
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  transition: transform var(--dur) var(--ease);
+}
+
+.wTransport button:active {
+  transform: scale(0.94);
+}
+
+.wTransport button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.wTransport .wPlay {
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 12px 26px -12px var(--accent);
+}
+
+/* Empty / not-connected: centered icon + copy on a soft warm glow. No art, no progress. */
+.widgetEmpty {
+  background: radial-gradient(
+    90% 70% at 50% 40%,
+    color-mix(in srgb, var(--accent) 10%, var(--surface2)) 0%,
+    var(--surface) 100%
+  );
+}
+
+.wEmptyBody {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px;
+  text-align: center;
+}
+
+.wBadge {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.wEmptyTitle {
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.wEmptySub {
+  max-width: 200px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .progressFill {
+  .progressFill,
+  .wProg span,
+  .wArt,
+  .wTransport,
+  .wControls {
     transition: none;
   }
 }

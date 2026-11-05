@@ -4,6 +4,8 @@ import {
   musicConnectionSchema,
   musicDeviceInputSchema,
   musicDeviceListSchema,
+  musicItemListSchema,
+  musicPlayContextSchema,
   musicVolumeSchema,
   nowPlayingSchema,
 } from "../schemas/music.js";
@@ -113,6 +115,36 @@ const deviceRoute = createRoute({
   responses: { 204: { description: "Playback transferred" } },
 });
 
+const recentRoute = createRoute({
+  method: "get",
+  path: "/music/recent",
+  tags,
+  summary: "Recently played albums",
+  description:
+    "Distinct albums from Spotify's play history, newest first (max 12). 422 `missing_scope` until Spotify is reconnected after the library scopes were added.",
+  responses: { 200: { description: "Albums", content: json(musicItemListSchema) } },
+});
+
+const playlistsRoute = createRoute({
+  method: "get",
+  path: "/music/playlists",
+  tags,
+  summary: "The account's playlists",
+  description: "Up to 50 playlists, preceded by a synthetic Liked Songs entry. 422 `missing_scope` as for recent.",
+  responses: { 200: { description: "Playlists", content: json(musicItemListSchema) } },
+});
+
+const playContextRoute = createRoute({
+  method: "post",
+  path: "/music/play-context",
+  tags,
+  summary: "Play an album, playlist or Liked Songs",
+  description:
+    "Starts `uri` on the active device; with none active, falls back to the first available Connect device. 422 `no_active_device` if there is no device at all; 403 `premium_required`.",
+  request: { body: { content: json(musicPlayContextSchema), required: true } },
+  responses: { 204: { description: "Playback started" } },
+});
+
 export function registerMusicRoutes(app: ApiApp): void {
   app.openapi(connectionRoute, (c) => c.json(getMusicConnection(c.var.ctx), 200));
   app.openapi(connectStartRoute, (c) => c.json(startSpotifyAuth(c.var.ctx), 200));
@@ -152,6 +184,19 @@ export function registerMusicRoutes(app: ApiApp): void {
   app.openapi(deviceRoute, async (c) => {
     const { deviceId } = c.req.valid("json");
     await withSpotify(c.var.ctx, (client) => client.transfer(deviceId));
+    return c.body(null, 204);
+  });
+  app.openapi(recentRoute, async (c) => {
+    const items = await withSpotify(c.var.ctx, (client) => client.recentAlbums());
+    return c.json({ items }, 200);
+  });
+  app.openapi(playlistsRoute, async (c) => {
+    const items = await withSpotify(c.var.ctx, (client) => client.playlists());
+    return c.json({ items }, 200);
+  });
+  app.openapi(playContextRoute, async (c) => {
+    const { uri } = c.req.valid("json");
+    await withSpotify(c.var.ctx, (client) => client.playContext(uri));
     return c.body(null, 204);
   });
 }

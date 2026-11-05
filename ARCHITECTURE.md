@@ -47,7 +47,7 @@ Styling: CSS modules + tokens only; no hard-coded colors. Web tests: Vitest + Te
 `web/src/styles/contrast.test.ts` parses `tokens.css` and enforces WCAG contrast for every text/surface/member pair in light and dark; run it after editing tokens. `e2e/` holds Playwright specs (`playwright.config.ts`).
 
 ## Commands
-`pnpm dev` (API :8788) + `pnpm web:dev` (Vite, proxies `/api`) · `pnpm typecheck` · `pnpm test` / `pnpm test:web` · `pnpm build` · `pnpm start` · `pnpm cli token create <name>`
+`pnpm dev` (API :4000) + `pnpm web:dev` (Vite :4001, proxies `/api`) · `pnpm typecheck` · `pnpm test` / `pnpm test:web` · `pnpm build` · `pnpm start` · `pnpm cli token create <name>`
 
 ## Calendar sync (`src/calendar/`, `services/{accounts,calendars,sync,events}.ts`)
 | Piece | Role |

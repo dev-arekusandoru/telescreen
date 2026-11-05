@@ -1,3 +1,4 @@
+import { localPublicUrl } from "../config.js";
 import { and, eq } from "drizzle-orm";
 import { events } from "../db/schema.js";
 import type { NormEvent, TimeSpec, WriteFields } from "./ics.js";
@@ -35,7 +36,7 @@ export function googleConfig(env: NodeJS.ProcessEnv = process.env): GoogleConfig
   const clientId = env.GOOGLE_CLIENT_ID?.trim();
   const clientSecret = env.GOOGLE_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) return null;
-  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || "http://localhost:8788").replace(/\/+$/, "");
+  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
   const redirectUri = env.GOOGLE_REDIRECT_URI?.trim() || `${publicUrl}/auth/google/callback`;
   return { clientId, clientSecret, redirectUri };
 }

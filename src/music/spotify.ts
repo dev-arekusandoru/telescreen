@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { localPublicUrl } from "../config.js";
 
 /**
  * Spotify Web API client (SPEC §6, Music module).
@@ -15,11 +16,18 @@ export const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
 export const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 export const SPOTIFY_API = "https://api.spotify.com/v1";
 
-/** Playback state read + transport control on an existing device (Premium). */
+/**
+ * Playback state + transport control (Premium), plus read-only library access for the
+ * Music page (recently played, the user's playlists). Connections made before the
+ * library scopes existed get a `missing_scope` error until Spotify is reconnected.
+ */
 export const SPOTIFY_SCOPES = [
   "user-read-playback-state",
   "user-modify-playback-state",
   "user-read-currently-playing",
+  "user-read-recently-played",
+  "playlist-read-private",
+  "playlist-read-collaborative",
 ] as const;
 
 export interface SpotifyConfig {
@@ -33,7 +41,7 @@ export interface SpotifyConfig {
 export function spotifyConfig(env: NodeJS.ProcessEnv = process.env): SpotifyConfig | null {
   const clientId = env.SPOTIFY_CLIENT_ID?.trim();
   if (!clientId) return null;
-  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || "http://localhost:8788").replace(/\/+$/, "");
+  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
   const redirectUri = env.SPOTIFY_REDIRECT_URI?.trim() || `${publicUrl}/auth/spotify/callback`;
   return { clientId, clientSecret: env.SPOTIFY_CLIENT_SECRET?.trim() || null, redirectUri };
 }
@@ -96,6 +104,14 @@ export class SpotifyPremiumRequiredError extends SpotifyError {
   constructor(message = "Spotify Premium is required to control playback.") {
     super(message);
     this.name = "SpotifyPremiumRequiredError";
+  }
+}
+
+/** The stored token predates a scope the call needs; reconnecting grants it. */
+export class SpotifyScopeError extends SpotifyError {
+  constructor(message = "Spotify needs more permission for this. Reconnect Spotify in Settings.") {
+    super(message);
+    this.name = "SpotifyScopeError";
   }
 }
 
@@ -249,9 +265,26 @@ interface RawItem {
   name?: string;
   duration_ms?: number;
   artists?: Array<{ name?: string }>;
-  album?: { name?: string; images?: RawImage[] };
+  album?: { uri?: string; name?: string; images?: RawImage[]; artists?: Array<{ name?: string }> };
   show?: { name?: string; images?: RawImage[] };
   images?: RawImage[];
+}
+
+/** An album or playlist the Music page can start playing. */
+export interface LibraryItem {
+  uri: string;
+  kind: "album" | "playlist" | "collection";
+  title: string;
+  subtitle: string | null;
+  imageUrl: string | null;
+}
+
+interface RawPlaylist {
+  uri?: string;
+  name?: string;
+  images?: RawImage[] | null;
+  tracks?: { total?: number };
+  items?: { total?: number };
 }
 
 interface RawPlayer {
@@ -263,7 +296,7 @@ interface RawPlayer {
 }
 
 /** Largest image URL (Spotify lists 640/300/64 px, so take the widest). */
-function largestImage(images: RawImage[] | undefined): string | null {
+function largestImage(images: RawImage[] | null | undefined): string | null {
   if (!images || images.length === 0) return null;
   let best = images[0]!;
   for (const image of images) if ((image.width ?? 0) > (best.width ?? 0)) best = image;
@@ -428,6 +461,7 @@ export class SpotifyClient {
       if (res.status === 403 && (reason === "PREMIUM_REQUIRED" || /premium/i.test(message))) {
         throw new SpotifyPremiumRequiredError(message);
       }
+      if (res.status === 403 && /scope/i.test(message)) throw new SpotifyScopeError();
       throw new SpotifyError(message);
     }
   }
@@ -461,6 +495,84 @@ export class SpotifyClient {
 
   async setVolume(percent: number): Promise<void> {
     await this.request("PUT", "/me/player/volume", { query: { volume_percent: percent } });
+  }
+
+  /**
+   * Recently played, collapsed to distinct albums (newest first). Spotify's history lists
+   * tracks and only sometimes a context, so the album is the one thing every entry has.
+   */
+  async recentAlbums(limit = 12): Promise<LibraryItem[]> {
+    const raw = await this.request<{ items?: Array<{ track?: RawItem | null }> }>(
+      "GET",
+      "/me/player/recently-played",
+      { query: { limit: 50 } },
+    );
+    const seen = new Set<string>();
+    const out: LibraryItem[] = [];
+    for (const entry of raw?.items ?? []) {
+      const album = entry.track?.album;
+      if (!album?.uri || !album.name || seen.has(album.uri)) continue;
+      seen.add(album.uri);
+      const artists = (album.artists ?? entry.track?.artists ?? [])
+        .map((a) => a.name)
+        .filter((n): n is string => typeof n === "string");
+      out.push({
+        uri: album.uri,
+        kind: "album",
+        title: album.name,
+        subtitle: artists.join(", ") || null,
+        imageUrl: largestImage(album.images),
+      });
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
+  /** The user's playlists (owned and followed), led by a "Liked Songs" collection. */
+  async playlists(): Promise<LibraryItem[]> {
+    const raw = await this.request<{ items?: Array<RawPlaylist | null> }>("GET", "/me/playlists", {
+      query: { limit: 50 },
+    });
+    const out: LibraryItem[] = [];
+    for (const playlist of raw?.items ?? []) {
+      if (!playlist?.uri || !playlist.name) continue;
+      const total = playlist.tracks?.total ?? playlist.items?.total;
+      out.push({
+        uri: playlist.uri,
+        kind: "playlist",
+        title: playlist.name,
+        subtitle: typeof total === "number" ? `${total} ${total === 1 ? "song" : "songs"}` : null,
+        imageUrl: largestImage(playlist.images),
+      });
+    }
+    // Liked Songs is not a playlist object; its play context is built from the user id.
+    const me = await this.request<{ id?: string }>("GET", "/me").catch(() => null);
+    if (me?.id) {
+      out.unshift({
+        uri: `spotify:user:${me.id}:collection`,
+        kind: "collection",
+        title: "Liked Songs",
+        subtitle: null,
+        imageUrl: null,
+      });
+    }
+    return out;
+  }
+
+  /**
+   * Start an album/playlist/collection. With no active device (a wall display whose
+   * Spotify app is asleep) fall back to the first Connect device that can take playback.
+   */
+  async playContext(uri: string): Promise<void> {
+    const body = { context_uri: uri };
+    try {
+      await this.request("PUT", "/me/player/play", { body });
+    } catch (error) {
+      if (!(error instanceof SpotifyNoActiveDeviceError)) throw error;
+      const target = (await this.devices()).find((d) => d.id !== null);
+      if (!target?.id) throw error;
+      await this.request("PUT", "/me/player/play", { body, query: { device_id: target.id } });
+    }
   }
 
   /** Move playback to `deviceId` and start it there. */
