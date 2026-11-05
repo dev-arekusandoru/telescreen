@@ -18,3 +18,16 @@ services:
       # PANTRYPAL_*); nothing needs to be repeated here.
     volumes:
       - ./data:/data
+    networks:
+      - default
+      - rakazo
+
+# Shared network with the pantrypal/rakazo stacks, which is where `pantrypal`
+# resolves. It is owned by rakazo's compose project, so it must exist first:
+#   docker network ls | grep -i rakazo
+#   docker network create rakazo_app   # only if missing
+# Override the name with RAKAZO_NETWORK if it differs.
+networks:
+  rakazo:
+    name: ${RAKAZO_NETWORK:-rakazo_app}
+    external: true
