@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { pantrypalWeekUrl, type MealDay, type MealItem } from "@/features/meals";
-import { RAIL_ROWS, hasPlannedMeals, mealsByDay, visibleMeals } from "./mealRail";
+import { RAIL_ROWS, hasPlannedMeals, mealsByDay, visibleMeals } from "./mealRailData";
 
 const meal = (slot: MealItem["slot"], title: string, extra: Partial<MealItem> = {}): MealItem => ({
   slot,

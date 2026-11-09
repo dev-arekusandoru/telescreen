@@ -51,37 +51,3 @@ export function TonightCard() {
     </>
   );
 }
-
-/**
- * Compact single-line version for the top of the Meals tab. Hidden at >= 1280px,
- * where the right-column card carries the same information.
- */
-export function TonightLine({ enabled = true }: { enabled?: boolean }) {
-  const { data, isPending } = useMeals(enabled);
-  const tonight = data?.tonight ?? null;
-
-  return (
-    <div className={styles.tonightLine}>
-      <ForkKnife weight="fill" aria-hidden />
-      <b>Tonight</b>
-      {isPending ? (
-        <span className={styles.muted}>Loading…</span>
-      ) : !data ? (
-        <span className={styles.muted}>Unavailable</span>
-      ) : !tonight ? (
-        <span className={styles.muted}>No dinner planned</span>
-      ) : (
-        <span className={styles.lineTitle}>
-          {tonight.url ? (
-            <a href={tonight.url} target="_blank" rel="noreferrer">
-              {tonight.title}
-            </a>
-          ) : (
-            tonight.title
-          )}
-        </span>
-      )}
-      {tonight ? <span className={styles.lineMeta}>{SLOT_LABEL[tonight.slot]}</span> : null}
-    </div>
-  );
-}

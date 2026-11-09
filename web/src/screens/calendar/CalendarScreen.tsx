@@ -26,7 +26,7 @@ import { WeatherChip } from "@/screens/weather/WeatherChip";
 import styles from "./Calendar.module.css";
 import { EventSheet, type SheetInitial } from "./EventSheet";
 import { MealRail } from "./MealRail";
-import { hasPlannedMeals } from "./mealRail";
+import { hasPlannedMeals } from "./mealRailData";
 import { useIdleReturn, useStoredState } from "./hooks";
 import { addDays, addMinutes, dateInZone, fcDateToWall, instantToWall, wallToInstant, zoneLabel } from "./tz";
 

@@ -109,6 +109,8 @@ The Calendar's Week and Day views also show that plan: a fixed-height strip unde
 
 Then enable the module in Settings > Meals and use **Test connection**. When PantryPal is down the last good plan is shown marked "Last known plan"; with no cached plan the card and tab say Unavailable. Meals are read-only from HomeHub.
 
+The Meals tab itself is built for the wall display: a hero card with the next meal to cook, a swipeable week strip (Breakfast/Lunch/Dinner per day) and a sidebar with the shopping list grouped by aisle, "missing for this week" pantry gaps and food expiring within five days. Those reads come from `/api/v1/shopping-lists`, `/api/v1/pantry/availability` and `/api/v1/pantry`, refreshed every five minutes and cached server-side like the plan; recipe photos and total times come from `/api/v1/recipes/{id}` (cached an hour, a missing photo falls back to a tinted placeholder).
+
 ## Deploy (Docker + Tailscale)
 
 ```sh

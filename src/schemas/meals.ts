@@ -51,6 +51,74 @@ export const mealsPlanSchema = z
   })
   .openapi("MealsPlan");
 
+const boardMealSchema = z
+  .object({
+    ...mealItemFields,
+    imageUrl: z.string().nullable().describe("Recipe hero image; null when the recipe has none."),
+    minutes: z.number().nullable().describe("Recipe total time in minutes; null when unknown."),
+    cuisine: z.string().nullable().describe("Recipe cuisine label; null when unknown."),
+    leftover: z.boolean().describe("True when this slot reuses an earlier cook."),
+    cookedOn: isoDate
+      .nullable()
+      .describe("Date of the cook this slot comes from; null when it is not a planned cook."),
+  })
+  .openapi("BoardMeal");
+
+export const boardDaySchema = z
+  .object({ date: isoDate, meals: z.array(boardMealSchema) })
+  .openapi("BoardDay");
+
+export const mealsBoardSchema = z
+  .object({
+    days: z.array(boardDaySchema).describe("Planned days in the requested range, oldest first."),
+    fetchedAt: z.string().describe("ISO instant this response was built from PantryPal."),
+    stale: z.boolean().describe("True when PantryPal is unreachable and the last good response is served."),
+  })
+  .openapi("MealsBoard");
+
+export const mealsKitchenSchema = z
+  .object({
+    shopping: z
+      .object({
+        title: z.string(),
+        total: z.number().int(),
+        left: z.number().int().describe("Unchecked items remaining."),
+        groups: z.array(
+          z.object({
+            category: z.string().describe('Display label for the aisle, e.g. "Produce".'),
+            items: z.array(
+              z.object({
+                name: z.string(),
+                qty: z.string().nullable().describe('Display quantity, e.g. "600 g"; null when unknown.'),
+                needsCheck: z.boolean(),
+                checked: z.boolean(),
+              }),
+            ),
+          }),
+        ),
+      })
+      .nullable()
+      .describe("Newest open shopping list; null when there is none."),
+    missing: z
+      .array(
+        z.object({
+          name: z.string(),
+          detail: z.string().describe('Server-formatted line, e.g. "Pizza night · need 250 g, have 80 g".'),
+        }),
+      )
+      .describe("Ingredients the current plan needs and the pantry cannot cover."),
+    expiring: z.array(
+      z.object({
+        name: z.string(),
+        expiresOn: isoDate,
+        daysLeft: z.number().int().describe("Negative when already expired."),
+      }),
+    ),
+    fetchedAt: z.string(),
+    stale: z.boolean().describe("True when every section failed and the last good response is served."),
+  })
+  .openapi("MealsKitchen");
+
 /** Query for `/meals/plan`: a half-open date range, capped so one request cannot fan out forever. */
 export const mealsPlanQuerySchema = z
   .object({

@@ -1786,6 +1786,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/meals/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Meal boards for a date range, enriched with recipe details
+         * @description Like `/meals/plan` but each meal also carries the recipe photo, total time, cuisine and left-over provenance. Recipe details come from PantryPal `GET /api/v1/recipes/{id}` (deduplicated per request, cached for an hour); a missing recipe leaves the extra fields null rather than failing the board. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description First day of the range (YYYY-MM-DD), inclusive. */
+                    start: string;
+                    /** @description Last day of the range (YYYY-MM-DD), exclusive. */
+                    end: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Planned days in the range */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsBoard"];
+                    };
+                };
+                /** @description Meals module disabled */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description PantryPal not configured or unreachable and no cached response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/meals/kitchen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shopping list, pantry gaps and expiring food
+         * @description Read-only kitchen snapshot: the newest open PantryPal shopping list grouped by aisle, ingredients the current plan needs but the pantry cannot cover, and pantry rows expiring within five days. Each section is fetched independently; a failing section degrades to empty instead of failing the response. Cached for 5 minutes, last good response served as stale. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Kitchen snapshot */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealsKitchen"];
+                    };
+                };
+                /** @description Meals module disabled */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description PantryPal not configured or unreachable and no cached response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/meals/status": {
         parameters: {
             query?: never;
@@ -2365,6 +2476,74 @@ export interface components {
             /** @description ISO instant this response was built from PantryPal. */
             fetchedAt: string;
             /** @description True when PantryPal is unreachable and the last good response for this range is served instead. */
+            stale: boolean;
+        };
+        MealsBoard: {
+            /** @description Planned days in the requested range, oldest first. */
+            days: components["schemas"]["BoardDay"][];
+            /** @description ISO instant this response was built from PantryPal. */
+            fetchedAt: string;
+            /** @description True when PantryPal is unreachable and the last good response is served. */
+            stale: boolean;
+        };
+        BoardDay: {
+            date: string;
+            meals: components["schemas"]["BoardMeal"][];
+        };
+        BoardMeal: {
+            slot: components["schemas"]["MealSlot"];
+            /** @description Display text: recipe title or the freeform/skip label. */
+            title: string;
+            /** @description PantryPal recipe id; null for freeform and skip. */
+            recipeId: string | null;
+            /** @description Deep link into the PantryPal web app; null when there is no recipe. */
+            url: string | null;
+            /** @description True for `skip` slots (intentionally no meal). */
+            skipped?: boolean;
+            /** @description Recipe hero image; null when the recipe has none. */
+            imageUrl: string | null;
+            /** @description Recipe total time in minutes; null when unknown. */
+            minutes: number | null;
+            /** @description Recipe cuisine label; null when unknown. */
+            cuisine: string | null;
+            /** @description True when this slot reuses an earlier cook. */
+            leftover: boolean;
+            /** @description Date of the cook this slot comes from; null when it is not a planned cook. */
+            cookedOn: string | null;
+        };
+        MealsKitchen: {
+            /** @description Newest open shopping list; null when there is none. */
+            shopping: {
+                title: string;
+                total: number;
+                /** @description Unchecked items remaining. */
+                left: number;
+                groups: {
+                    /** @description Display label for the aisle, e.g. "Produce". */
+                    category: string;
+                    items: {
+                        name: string;
+                        /** @description Display quantity, e.g. "600 g"; null when unknown. */
+                        qty: string | null;
+                        needsCheck: boolean;
+                        checked: boolean;
+                    }[];
+                }[];
+            } | null;
+            /** @description Ingredients the current plan needs and the pantry cannot cover. */
+            missing: {
+                name: string;
+                /** @description Server-formatted line, e.g. "Pizza night · need 250 g, have 80 g". */
+                detail: string;
+            }[];
+            expiring: {
+                name: string;
+                expiresOn: string;
+                /** @description Negative when already expired. */
+                daysLeft: number;
+            }[];
+            fetchedAt: string;
+            /** @description True when every section failed and the last good response is served. */
             stale: boolean;
         };
         MealsStatus: {

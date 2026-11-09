@@ -4,7 +4,7 @@ import { formatDate } from "@/app/localdate";
 import { pantrypalWeekUrl, type MealDay, type MealItem } from "@/features/meals";
 import { cx } from "@/ui";
 import styles from "./MealRail.module.css";
-import { SLOT_BADGE, SLOT_LABEL, mealsByDay, visibleMeals } from "./mealRail";
+import { SLOT_BADGE, SLOT_LABEL, mealsByDay, visibleMeals } from "./mealRailData";
 
 interface Pad {
   left: number;

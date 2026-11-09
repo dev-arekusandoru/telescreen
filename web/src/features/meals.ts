@@ -7,11 +7,17 @@ export type MealDay = components["schemas"]["MealDay"];
 export type MealItem = components["schemas"]["MealItem"];
 export type MealsStatus = components["schemas"]["MealsStatus"];
 export type MealsTestResult = components["schemas"]["MealsTestResult"];
+export type MealsBoard = components["schemas"]["MealsBoard"];
+export type BoardDay = components["schemas"]["BoardDay"];
+export type BoardMeal = components["schemas"]["BoardMeal"];
+export type MealsKitchen = components["schemas"]["MealsKitchen"];
 
 export const mealsKeys = {
   current: ["meals", "current"] as const,
   plan: (start: string, end: string) => ["meals", "plan", start, end] as const,
   status: ["meals", "status"] as const,
+  board: (start: string, end: string) => ["meals", "board", start, end] as const,
+  kitchen: ["meals", "kitchen"] as const,
 };
 
 /** Current week as normalized by the server (cached there for 5 min; stale-on-error). */
@@ -40,9 +46,32 @@ export const mealsPlanQuery = (start: string, end: string) =>
 export const mealsStatusQuery = () =>
   queryOptions({ queryKey: mealsKeys.status, queryFn: () => unwrap(client.GET("/meals/status")) });
 
+/** Week board with recipe photos and left-over provenance; fails silently like `mealsPlanQuery`. */
+export const mealsBoardQuery = (start: string, end: string) =>
+  queryOptions({
+    queryKey: mealsKeys.board(start, end),
+    queryFn: () => unwrap(client.GET("/meals/board", { params: { query: { start, end } } })),
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+    retry: false,
+  });
+
+/** Read-only kitchen snapshot: shopping list, pantry gaps, expiring food. */
+export const mealsKitchenQuery = () =>
+  queryOptions({
+    queryKey: mealsKeys.kitchen,
+    queryFn: () => unwrap(client.GET("/meals/kitchen")),
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+    retry: false,
+  });
+
 /** `enabled: false` while the module flag is off or unknown. */
 export const useMeals = (enabled = true) => useQuery({ ...mealsQuery(), enabled });
 export const useMealsStatus = () => useQuery(mealsStatusQuery());
+export const useMealsBoard = (range: { start: string; end: string }, enabled = true) =>
+  useQuery({ ...mealsBoardQuery(range.start, range.end), enabled });
+export const useMealsKitchen = (enabled = true) => useQuery({ ...mealsKitchenQuery(), enabled });
 
 /** Planned days for a range, or nothing while the range is unknown (month view, no clock yet). */
 export const useMealsPlan = (range: { start: string; end: string } | null, enabled = true) =>

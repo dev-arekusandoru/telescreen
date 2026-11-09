@@ -1,10 +1,17 @@
 .app {
   display: grid;
   grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  /* vh fallback first: the production CSS minifier drops it when 100dvh follows in the
+     same rule, and Chromium <108 (the wall frames) has no dvh at all. */
   height: 100vh;
-  height: 100dvh;
   /* Standalone PWA with a translucent status bar / notch (viewport-fit=cover). */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+
+@supports (height: 100dvh) {
+  .app {
+    height: 100dvh;
+  }
 }
 
 /* Left rail (>= 600px) */

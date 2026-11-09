@@ -1860,6 +1860,258 @@
           "stale"
         ]
       },
+      "MealsBoard": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoardDay"
+            },
+            "description": "Planned days in the requested range, oldest first."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "ISO instant this response was built from PantryPal."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when PantryPal is unreachable and the last good response is served."
+          }
+        },
+        "required": [
+          "days",
+          "fetchedAt",
+          "stale"
+        ]
+      },
+      "BoardDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "meals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoardMeal"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "meals"
+        ]
+      },
+      "BoardMeal": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "$ref": "#/components/schemas/MealSlot"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display text: recipe title or the freeform/skip label."
+          },
+          "recipeId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "PantryPal recipe id; null for freeform and skip."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Deep link into the PantryPal web app; null when there is no recipe."
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "True for `skip` slots (intentionally no meal)."
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Recipe hero image; null when the recipe has none."
+          },
+          "minutes": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Recipe total time in minutes; null when unknown."
+          },
+          "cuisine": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Recipe cuisine label; null when unknown."
+          },
+          "leftover": {
+            "type": "boolean",
+            "description": "True when this slot reuses an earlier cook."
+          },
+          "cookedOn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Date of the cook this slot comes from; null when it is not a planned cook."
+          }
+        },
+        "required": [
+          "slot",
+          "title",
+          "recipeId",
+          "url",
+          "imageUrl",
+          "minutes",
+          "cuisine",
+          "leftover",
+          "cookedOn"
+        ]
+      },
+      "MealsKitchen": {
+        "type": "object",
+        "properties": {
+          "shopping": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "left": {
+                "type": "integer",
+                "description": "Unchecked items remaining."
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                      "description": "Display label for the aisle, e.g. \"Produce\"."
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "qty": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Display quantity, e.g. \"600 g\"; null when unknown."
+                          },
+                          "needsCheck": {
+                            "type": "boolean"
+                          },
+                          "checked": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "qty",
+                          "needsCheck",
+                          "checked"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "category",
+                    "items"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "title",
+              "total",
+              "left",
+              "groups"
+            ],
+            "description": "Newest open shopping list; null when there is none."
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "Server-formatted line, e.g. \"Pizza night · need 250 g, have 80 g\"."
+                }
+              },
+              "required": [
+                "name",
+                "detail"
+              ]
+            },
+            "description": "Ingredients the current plan needs and the pantry cannot cover."
+          },
+          "expiring": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "expiresOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "daysLeft": {
+                  "type": "integer",
+                  "description": "Negative when already expired."
+                }
+              },
+              "required": [
+                "name",
+                "expiresOn",
+                "daysLeft"
+              ]
+            }
+          },
+          "fetchedAt": {
+            "type": "string"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when every section failed and the last good response is served."
+          }
+        },
+        "required": [
+          "shopping",
+          "missing",
+          "expiring",
+          "fetchedAt",
+          "stale"
+        ]
+      },
       "MealsStatus": {
         "type": "object",
         "properties": {
@@ -3464,6 +3716,84 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MealsPlan"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meals module disabled"
+          },
+          "503": {
+            "description": "PantryPal not configured or unreachable and no cached response"
+          }
+        }
+      }
+    },
+    "/api/v1/meals/board": {
+      "get": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "Meal boards for a date range, enriched with recipe details",
+        "description": "Like `/meals/plan` but each meal also carries the recipe photo, total time, cuisine and left-over provenance. Recipe details come from PantryPal `GET /api/v1/recipes/{id}` (deduplicated per request, cached for an hour); a missing recipe leaves the extra fields null rather than failing the board. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "First day of the range (YYYY-MM-DD), inclusive."
+            },
+            "required": true,
+            "description": "First day of the range (YYYY-MM-DD), inclusive.",
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Last day of the range (YYYY-MM-DD), exclusive."
+            },
+            "required": true,
+            "description": "Last day of the range (YYYY-MM-DD), exclusive.",
+            "name": "end",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planned days in the range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsBoard"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meals module disabled"
+          },
+          "503": {
+            "description": "PantryPal not configured or unreachable and no cached response"
+          }
+        }
+      }
+    },
+    "/api/v1/meals/kitchen": {
+      "get": {
+        "tags": [
+          "meals"
+        ],
+        "summary": "Shopping list, pantry gaps and expiring food",
+        "description": "Read-only kitchen snapshot: the newest open PantryPal shopping list grouped by aisle, ingredients the current plan needs but the pantry cannot cover, and pantry rows expiring within five days. Each section is fetched independently; a failing section degrades to empty instead of failing the response. Cached for 5 minutes, last good response served as stale. 404 when the module is disabled; 503 when PantryPal is not configured or unreachable.",
+        "responses": {
+          "200": {
+            "description": "Kitchen snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealsKitchen"
                 }
               }
             }

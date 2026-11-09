@@ -1,5 +1,5 @@
 import type { Ctx } from "../context.js";
-import { addDays, isValidDate, todayIn, weekdayOf } from "../lib/localdate.js";
+import { addDays, diffDays, isValidDate, todayIn, weekdayOf } from "../lib/localdate.js";
 import { AppError } from "../lib/errors.js";
 import { getHousehold } from "./households.js";
 import { getSettings } from "./settings.js";
@@ -32,6 +32,44 @@ export interface MealsCurrent {
 /** Meals for an arbitrary visible range (the calendar's week/day views). */
 export interface MealsPlan {
   days: MealDay[];
+  fetchedAt: string;
+  stale: boolean;
+}
+
+/** A planned meal plus what the board tiles need to render it. */
+export interface BoardMeal extends MealItem {
+  imageUrl: string | null;
+  minutes: number | null;
+  cuisine: string | null;
+  leftover: boolean;
+  cookedOn: string | null;
+}
+
+export interface BoardDay {
+  date: string;
+  meals: BoardMeal[];
+}
+
+export interface MealsBoard {
+  days: BoardDay[];
+  fetchedAt: string;
+  stale: boolean;
+}
+
+export interface Shopping {
+  title: string;
+  total: number;
+  left: number;
+  groups: {
+    category: string;
+    items: { name: string; qty: string | null; needsCheck: boolean; checked: boolean }[];
+  }[];
+}
+
+export interface MealsKitchen {
+  shopping: Shopping | null;
+  missing: { name: string; detail: string }[];
+  expiring: { name: string; expiresOn: string; daysLeft: number }[];
   fetchedAt: string;
   stale: boolean;
 }
@@ -73,7 +111,8 @@ export function pantrypalConfig(env: NodeJS.ProcessEnv = process.env): PantryPal
 interface RawSlot {
   kind?: string | null;
   label?: string | null;
-  cookEvent?: { recipeId?: string | null; recipeTitle?: string | null } | null;
+  isLeftover?: boolean | null;
+  cookEvent?: { recipeId?: string | null; recipeTitle?: string | null; cookDate?: string | null } | null;
 }
 
 interface RawDay {
@@ -88,6 +127,14 @@ export interface RawPlan {
 
 const text = (value: unknown): string | null =>
   typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+
+/** `items` array of a PantryPal list response, ignoring anything malformed. */
+function listItems(body: unknown): Record<string, unknown>[] {
+  if (!body || typeof body !== "object" || !("items" in body) || !Array.isArray(body.items)) return [];
+  return body.items.filter(
+    (item): item is Record<string, unknown> => Boolean(item) && typeof item === "object",
+  );
+}
 
 /**
  * PantryPal's recipe screen (`/recipes/$slug` in its web app) also resolves recipe ids,
@@ -174,6 +221,8 @@ export function pickTonight(week: MealDay[], today: string): MealItem | null {
 
 const CACHE_TTL_MS = 5 * 60_000;
 const FETCH_TIMEOUT_MS = 5_000;
+/** Pantry rows expiring within this many days (already expired ones always count). */
+const EXPIRING_DAYS = 5;
 
 interface CacheEntry {
   weekStart: string;
@@ -197,10 +246,30 @@ const cache = new Map<string, CacheEntry>();
 const rangeCache = new Map<string, RangeEntry>();
 const RANGE_CACHE_MAX = 32;
 
+interface BoardEntry {
+  days: BoardDay[];
+  fetchedAt: string;
+}
+
+/** Same shape of cache as `rangeCache`, for the richer board payloads. */
+const boardCache = new Map<string, BoardEntry>();
+
+/** Kitchen snapshots, keyed like `cache` plus the household's today (they age at midnight). */
+const kitchenCache = new Map<string, MealsKitchen>();
+
+const RECIPE_CACHE_TTL_MS = 60 * 60_000;
+const RECIPE_CACHE_MAX = 200;
+
+/** Recipe details only change when a recipe is edited, so an hour is plenty. */
+const recipeCache = new Map<string, { info: RecipeInfo; at: number }>();
+
 /** Test hook: forget cached plans (also useful after changing PANTRYPAL_* at runtime). */
 export function resetMealsCache(): void {
   cache.clear();
   rangeCache.clear();
+  boardCache.clear();
+  kitchenCache.clear();
+  recipeCache.clear();
 }
 
 export interface MealsServiceOptions {
@@ -259,11 +328,7 @@ async function fetchRangePlans(
 
 /** Plan ids from PantryPal's list response, ignoring anything malformed. */
 function planIds(list: unknown): string[] {
-  if (!list || typeof list !== "object" || !("items" in list) || !Array.isArray(list.items)) return [];
-  return list.items.flatMap((item) => {
-    if (!item || typeof item !== "object" || !("id" in item)) return [];
-    return typeof item.id === "string" && item.id !== "" ? [item.id] : [];
-  });
+  return listItems(list).flatMap((item) => (typeof item.id === "string" && item.id !== "" ? [item.id] : []));
 }
 
 /** Flatten the plans overlapping `[start, end)` into one date-ordered day list, dropping outside days. */
@@ -281,6 +346,50 @@ export function mergePlanDays(
       if (day.date < options.start || day.date >= options.end) continue;
       const existing = byDate.get(day.date);
       byDate.set(day.date, existing ? { date: day.date, meals: [...existing.meals, ...day.meals] } : day);
+    }
+  }
+  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+function toBoardMeal(slot: RawSlot, mealType: MealType, publicUrl: string): BoardMeal | null {
+  const item = toMealItem(slot, mealType, publicUrl);
+  if (!item) return null;
+  const cookedOn = text(slot.cookEvent?.cookDate);
+  return {
+    ...item,
+    imageUrl: null,
+    minutes: null,
+    cuisine: null,
+    leftover: slot.isLeftover === true,
+    cookedOn: cookedOn && isValidDate(cookedOn) ? cookedOn : null,
+  };
+}
+
+/**
+ * Same flattening as `mergePlanDays`, but keeps the left-over provenance the board shows.
+ * Recipe details are filled in later by `enrichBoard`.
+ */
+export function mergeBoardDays(
+  plans: readonly RawPlan[],
+  options: { start: string; end: string; publicUrl: string },
+): BoardDay[] {
+  const byDate = new Map<string, BoardDay>();
+  for (const plan of plans) {
+    for (const day of Array.isArray(plan?.days) ? plan.days : []) {
+      const date = text(day?.date);
+      if (!date || !isValidDate(date) || date < options.start || date >= options.end) continue;
+      const meals: BoardMeal[] = [];
+      for (const mealType of MEAL_TYPES) {
+        const slots = day?.meals?.[mealType];
+        if (!Array.isArray(slots)) continue;
+        for (const slot of slots) {
+          if (!slot || typeof slot !== "object") continue;
+          const meal = toBoardMeal(slot, mealType, options.publicUrl);
+          if (meal) meals.push(meal);
+        }
+      }
+      const existing = byDate.get(date);
+      byDate.set(date, existing ? { date, meals: [...existing.meals, ...meals] } : { date, meals });
     }
   }
   return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
@@ -376,7 +485,7 @@ export async function getMealsPlan(
       days: mergePlanDays(plans, { start, end, publicUrl: config.publicUrl }),
       fetchedAt: now.toISOString(),
     };
-    rememberRange(key, entry, now);
+    rememberCapped(rangeCache, key, entry, now, RANGE_CACHE_MAX);
     return { ...entry, stale: false };
   } catch (error) {
     if (cached) return { ...cached, stale: true };
@@ -385,16 +494,288 @@ export async function getMealsPlan(
   }
 }
 
-/** Cache a range response, dropping expired entries and the oldest ones past the cap. */
-function rememberRange(key: string, entry: RangeEntry, now: Date): void {
-  for (const [cachedKey, cached] of rangeCache) {
-    if (now.getTime() - Date.parse(cached.fetchedAt) >= CACHE_TTL_MS) rangeCache.delete(cachedKey);
+/**
+ * Meals planned in `[start, end)`, enriched with recipe details for the wall board.
+ * Same caching and failure semantics as `getMealsPlan`; a recipe lookup never fails the board.
+ */
+export async function getMealsBoard(
+  ctx: Ctx,
+  start: string,
+  end: string,
+  options: MealsServiceOptions = {},
+): Promise<MealsBoard> {
+  const env = options.env ?? process.env;
+  const fetchImpl = options.fetch ?? fetch;
+  if (!getSettings(ctx.db).modules.meals) {
+    throw new AppError("not_found", "The Meals module is disabled in Settings");
   }
-  rangeCache.set(key, entry);
-  while (rangeCache.size > RANGE_CACHE_MAX) {
-    const oldest = rangeCache.keys().next().value;
+  const config = pantrypalConfig(env);
+  if (!config) {
+    throw new AppError("unavailable", "Meals are not configured: set PANTRYPAL_URL", { variable: "PANTRYPAL_URL" });
+  }
+
+  const now = ctx.now();
+  const key = `${ctx.householdId}\u0000${config.url}\u0000${config.publicUrl}\u0000${start}\u0000${end}`;
+  const cached = boardCache.get(key);
+  if (cached && now.getTime() - Date.parse(cached.fetchedAt) < CACHE_TTL_MS) {
+    return { ...cached, stale: false };
+  }
+
+  try {
+    const plans = await fetchRangePlans(config, start, end, fetchImpl);
+    const entry: BoardEntry = {
+      days: await enrichBoard(
+        mergeBoardDays(plans, { start, end, publicUrl: config.publicUrl }),
+        config,
+        fetchImpl,
+      ),
+      fetchedAt: now.toISOString(),
+    };
+    rememberCapped(boardCache, key, entry, now, RANGE_CACHE_MAX);
+    return { ...entry, stale: false };
+  } catch (error) {
+    if (cached) return { ...cached, stale: true };
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new AppError("unavailable", `PantryPal is unreachable: ${reason}`, { url: config.url });
+  }
+}
+
+interface RecipeInfo {
+  imageUrl: string | null;
+  minutes: number | null;
+  cuisine: string | null;
+}
+
+const EMPTY_RECIPE_INFO: RecipeInfo = { imageUrl: null, minutes: null, cuisine: null };
+
+/** Relative recipe images resolve against the public URL; anything but http(s) is dropped. */
+export function recipeImageUrl(value: unknown, publicUrl: string): string | null {
+  const raw = text(value);
+  if (!raw) return null;
+  if (raw.startsWith("/")) return `${publicUrl}${raw}`;
+  return /^https?:\/\//i.test(raw) ? raw : null;
+}
+
+async function fetchRecipeInfo(
+  config: PantryPalConfig,
+  recipeId: string,
+  fetchImpl: typeof fetch,
+): Promise<RecipeInfo> {
+  const key = `${config.url}\u0000${recipeId}`;
+  const cached = recipeCache.get(key);
+  if (cached && Date.now() - cached.at < RECIPE_CACHE_TTL_MS) return cached.info;
+
+  try {
+    const raw = await fetchJson(config, `/api/v1/recipes/${encodeURIComponent(recipeId)}`, fetchImpl);
+    const body = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+    const info: RecipeInfo = {
+      imageUrl: recipeImageUrl(body.imageUrl, config.publicUrl),
+      minutes: typeof body.totalMinutes === "number" ? body.totalMinutes : null,
+      cuisine: text(body.cuisine),
+    };
+    recipeCache.set(key, { info, at: Date.now() });
+    while (recipeCache.size > RECIPE_CACHE_MAX) {
+      const oldest = recipeCache.keys().next().value;
+      if (oldest === undefined) break;
+      recipeCache.delete(oldest);
+    }
+    return info;
+  } catch {
+    // A recipe the board cannot load is a missing photo, not a broken board; don't cache the miss.
+    return EMPTY_RECIPE_INFO;
+  }
+}
+
+/** Fill in recipe details, looking each recipe id up once per request. */
+async function enrichBoard(
+  days: BoardDay[],
+  config: PantryPalConfig,
+  fetchImpl: typeof fetch,
+): Promise<BoardDay[]> {
+  const ids = new Set(days.flatMap((day) => day.meals.flatMap((meal) => (meal.recipeId ? [meal.recipeId] : []))));
+  const infos = new Map(
+    await Promise.all([...ids].map(async (id) => [id, await fetchRecipeInfo(config, id, fetchImpl)] as const)),
+  );
+  return days.map((day) => ({
+    date: day.date,
+    meals: day.meals.map((meal) => {
+      const info = meal.recipeId ? infos.get(meal.recipeId) : undefined;
+      return info ? { ...meal, ...info } : meal;
+    }),
+  }));
+}
+
+/**
+ * Shopping list, pantry gaps and expiring food in one read-only snapshot for the wall board.
+ * Sections are fetched independently: a failing one degrades to empty.
+ */
+export async function getMealsKitchen(
+  ctx: Ctx,
+  options: MealsServiceOptions = {},
+): Promise<MealsKitchen> {
+  const env = options.env ?? process.env;
+  const fetchImpl = options.fetch ?? fetch;
+  if (!getSettings(ctx.db).modules.meals) {
+    throw new AppError("not_found", "The Meals module is disabled in Settings");
+  }
+  const config = pantrypalConfig(env);
+  if (!config) {
+    throw new AppError("unavailable", "Meals are not configured: set PANTRYPAL_URL", { variable: "PANTRYPAL_URL" });
+  }
+
+  const now = ctx.now();
+  const today = todayIn(getHousehold(ctx.db, ctx.householdId).timezone, now);
+  const key = `${ctx.householdId}\u0000${config.url}\u0000${today}`;
+  const cached = kitchenCache.get(key);
+  if (cached && now.getTime() - Date.parse(cached.fetchedAt) < CACHE_TTL_MS) {
+    return { ...cached, stale: false };
+  }
+
+  const [shopping, missing, expiring] = await Promise.allSettled([
+    fetchShopping(config, fetchImpl),
+    fetchMissing(config, fetchImpl),
+    fetchExpiring(config, today, fetchImpl),
+  ]);
+
+  const all = [shopping, missing, expiring];
+  if (all.every((section) => section.status === "rejected")) {
+    if (cached) return { ...cached, stale: true };
+    const failed = all.find((section) => section.status === "rejected") as PromiseRejectedResult;
+    const reason = failed.reason instanceof Error ? failed.reason.message : String(failed.reason);
+    throw new AppError("unavailable", `PantryPal is unreachable: ${reason}`, { url: config.url });
+  }
+
+  const snapshot: MealsKitchen = {
+    shopping: shopping.status === "fulfilled" ? shopping.value : null,
+    missing: missing.status === "fulfilled" ? missing.value : [],
+    expiring: expiring.status === "fulfilled" ? expiring.value : [],
+    fetchedAt: now.toISOString(),
+    stale: false,
+  };
+  rememberCapped(kitchenCache, key, snapshot, now, RANGE_CACHE_MAX);
+  return snapshot;
+}
+
+/** Newest list by `updatedAt`; PantryPal returns them unsorted. */
+async function fetchShopping(config: PantryPalConfig, fetchImpl: typeof fetch): Promise<Shopping | null> {
+  const lists = listItems(await fetchJson(config, "/api/v1/shopping-lists", fetchImpl))
+    .filter((list) => typeof list.id === "string")
+    .sort((a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")));
+  const chosen = lists.find((list) => list.status === "shopping") ?? lists.find((list) => list.status === "draft");
+  if (!chosen) return null;
+
+  const detail = await fetchJson(config, `/api/v1/shopping-lists/${encodeURIComponent(String(chosen.id))}`, fetchImpl);
+  if (!detail || typeof detail !== "object") return null;
+  const body = detail as Record<string, unknown>;
+  const list = body.list && typeof body.list === "object" ? (body.list as Record<string, unknown>) : {};
+  const counts = body.counts && typeof body.counts === "object" ? (body.counts as Record<string, unknown>) : {};
+  const count = (value: unknown) => (typeof value === "number" ? value : 0);
+  return {
+    title: text(list.title) ?? "Shopping list",
+    total: count(counts.total),
+    left: count(counts.remaining),
+    groups: (Array.isArray(body.groups) ? body.groups : [])
+      .filter((group): group is Record<string, unknown> => Boolean(group) && typeof group === "object")
+      .map((group) => ({
+        category: categoryLabel(text(group.category) ?? "other"),
+        items: (Array.isArray(group.items) ? group.items : [])
+          .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+          .map((item) => ({
+            name: text(item.name) ?? "",
+            qty: formatQuantity(typeof item.qty === "number" ? item.qty : null, text(item.unit)),
+            needsCheck: item.needsCheck === true,
+            checked: text(item.checkedAt) !== null,
+          })),
+      })),
+  };
+}
+
+/** "canned_goods" -> "Canned goods": aisle labels for the board. */
+export function categoryLabel(category: string): string {
+  const words = category.replace(/_/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** "600 g" / "3": a shopping quantity as the board shows it. */
+export function formatQuantity(qty: number | null, unit: string | null): string | null {
+  if (qty === null) return null;
+  return unit ? `${qty} ${unit}` : String(qty);
+}
+
+/** Current plan demand the pantry cannot cover, one display line per ingredient. */
+async function fetchMissing(config: PantryPalConfig, fetchImpl: typeof fetch): Promise<{ name: string; detail: string }[]> {
+  const plan = await fetchPlan(config, fetchImpl);
+  const planId = plan && "id" in plan ? text(plan.id) : null;
+  if (!planId) return [];
+
+  const body = await fetchJson(
+    config,
+    `/api/v1/pantry/availability?mealPlanId=${encodeURIComponent(planId)}`,
+    fetchImpl,
+  );
+  const lines: { name: string; detail: string }[] = [];
+  for (const line of listItems(body)) {
+    const committed = typeof line.committed === "number" ? line.committed : null;
+    if (committed === null || committed <= 0) continue;
+    const onHand = typeof line.onHand === "number" ? line.onHand : null;
+    const short =
+      line.comparable === true ? onHand !== null && onHand < committed : text(line.onHandStatus) === "out";
+    if (!short) continue;
+
+    const uses = (Array.isArray(line.committedBy) ? line.committedBy : []).filter(
+      (use): use is Record<string, unknown> => Boolean(use) && typeof use === "object",
+    );
+    const title = text(uses[0]?.recipeTitle) ?? "Planned meal";
+    const more = uses.length > 1 ? ` (+${uses.length - 1} more)` : "";
+    const unit = text(line.unit);
+    const have = onHand === null || onHand <= 0 ? "have none" : `have ${formatQuantity(onHand, unit) ?? "some"}`;
+    lines.push({
+      name: text(line.ingredientName) ?? "",
+      detail: `${title}${more} · need ${formatQuantity(committed, unit)}, ${have}`,
+    });
+  }
+  return lines.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8);
+}
+
+/** Pantry rows expiring within five days, already expired included (`daysLeft` negative). */
+async function fetchExpiring(
+  config: PantryPalConfig,
+  today: string,
+  fetchImpl: typeof fetch,
+): Promise<{ name: string; expiresOn: string; daysLeft: number }[]> {
+  const body = await fetchJson(config, "/api/v1/pantry", fetchImpl);
+  const rows: { name: string; expiresOn: string; daysLeft: number }[] = [];
+  for (const item of listItems(body)) {
+    const expiresOn = text(item.expiresOn);
+    if (!expiresOn || !isValidDate(expiresOn)) continue;
+    const daysLeft = diffDays(expiresOn, today);
+    if (daysLeft > EXPIRING_DAYS) continue;
+    const ingredient = item.ingredient && typeof item.ingredient === "object" ? item.ingredient : {};
+    const name = text((ingredient as Record<string, unknown>).name);
+    if (!name) continue;
+    rows.push({ name, expiresOn, daysLeft });
+  }
+  return rows
+    .sort((a, b) => a.expiresOn.localeCompare(b.expiresOn) || a.name.localeCompare(b.name))
+    .slice(0, 8);
+}
+
+/** Store a last-good response, dropping expired entries and the oldest ones past the cap. */
+function rememberCapped<T extends { fetchedAt: string }>(
+  entries: Map<string, T>,
+  key: string,
+  entry: T,
+  now: Date,
+  max: number,
+): void {
+  for (const [cachedKey, cached] of entries) {
+    if (now.getTime() - Date.parse(cached.fetchedAt) >= CACHE_TTL_MS) entries.delete(cachedKey);
+  }
+  entries.set(key, entry);
+  while (entries.size > max) {
+    const oldest = entries.keys().next().value;
     if (oldest === undefined) break;
-    rangeCache.delete(oldest);
+    entries.delete(oldest);
   }
 }
 

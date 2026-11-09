@@ -15,13 +15,18 @@
   transform: translate(-50%, -50%);
   width: min(520px, 94vw);
   max-height: 92vh;
-  max-height: 92dvh;
   overflow-y: auto;
   background: var(--surface);
   border-radius: var(--radius-sheet);
   padding: 22px;
   box-shadow: var(--shadow-pop);
   animation: rise 0.25s var(--ease);
+}
+
+@supports (max-height: 92dvh) {
+  .sheet {
+    max-height: 92dvh;
+  }
 }
 
 @keyframes fade {

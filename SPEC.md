@@ -147,7 +147,7 @@ A **chore** is a template; an **occurrence** is one due instance with a status.
 |---|---|---|
 | Weather | Open-Meteo (no key); lat/lon in Settings; Daily/Hourly strip in the right-column card or, when that column is hidden, the header chip / widgets popup | Cached 15 min server-side; ~24 hourly entries |
 | Spotify | Web API + Connect (OAuth PKCE): show now playing, play/pause/skip/volume on an existing device | Premium confirmed. Same redirect-URI constraint as Google (see §12.1) |
-| Meals (PantryPal) | Server-to-server reads of PantryPal's plans (`/plans/current` for Tonight/Meals, `/plans?from&to` + plan ids for the calendar's visible range); "Tonight" card, Meals tab with the week, meal rail under the Week/Day calendar; deep-links into PantryPal web for recipes (`/recipes/{id}`) and weeks (`/?week=YYYY-MM-DD`) | Read-only to start; PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` on the same tailnet/host, so no token needed (token optional via `PANTRYPAL_TOKEN`) |
+| Meals (PantryPal) | Server-to-server reads of PantryPal's plans (`/plans/current` for Tonight/Meals, `/plans?from&to` + plan ids for the calendar's visible range and the Meals board), recipes (`/api/v1/recipes/{id}` for board photos/time), shopping lists and pantry (`/shopping-lists`, `/pantry/availability`, `/pantry`); "Tonight" card, Meals tab with a week-paged hero + week strip and a kitchen sidebar (shopping by aisle, pantry gaps, expiring soon), meal rail under the Week/Day calendar; deep-links into PantryPal web for recipes (`/recipes/{id}`) and weeks (`/?week=YYYY-MM-DD`) | Read-only to start; PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` on the same tailnet/host, so no token needed (token optional via `PANTRYPAL_TOKEN`) |
 
 Navigation shell (left rail on iPad, bottom bar on phone): Calendar, Chores, Meals, Music, Settings.
 Meals/Music tabs are hidden until their module is enabled.
@@ -190,7 +190,10 @@ GET/PATCH  /household           GET/POST/PATCH/DELETE /members
 GET/POST/DELETE /accounts       POST /accounts/{id}/sync
 GET/PATCH  /calendars           (member mapping, enabled, default write calendar)
 GET        /events?start&end&members=      (expanded instances)
+GET        /meals/current                  (this week + tonight, from PantryPal)
 GET        /meals/plan?start&end           (planned days for a range, from PantryPal)
+GET        /meals/board?start&end          (planned days + recipe photo/time for the Meals tab)
+GET        /meals/kitchen                  (shopping list, pantry gaps, expiring food)
 POST       /events              PATCH/DELETE /events/{id}?scope=this|all
 GET/POST/PATCH/DELETE /chores
 GET        /chore-occurrences?from&to&member=
