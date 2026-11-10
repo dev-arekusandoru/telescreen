@@ -16,6 +16,7 @@ export function defaultSettings() {
     idleReturnMinutes: 2,
     syncIntervalMinutes: 5,
     keepAwake: true,
+    seasonalDecor: true,
     modules: { weather: false, meals: false, music: false },
     defaultWriteCalendarId: {},
     weather: { latitude: null, longitude: null, units: "celsius", place: null },

@@ -1,4 +1,4 @@
-import { Clock, CalendarDots, ArrowsClockwise, CloudCheck, Globe, House, MoonStars, CalendarBlank, type Icon } from "@phosphor-icons/react";
+import { Clock, CalendarDots, ArrowsClockwise, CloudCheck, Globe, House, MoonStars, Leaf, CalendarBlank, type Icon } from "@phosphor-icons/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { ago } from "@/app/dates";
 import { useNow } from "@/app/useNow";
@@ -198,6 +198,15 @@ export function GeneralSection() {
           checked={settings?.keepAwake ?? true}
           disabled={busy}
           onCheckedChange={(keepAwake) => updateSettings.mutate({ keepAwake })}
+        />
+      </Row>
+
+      <Row icon={Leaf} title="Seasonal decorations" hint="Falling leaves and other touches around holidays">
+        <Switch
+          label="Seasonal decorations"
+          checked={settings?.seasonalDecor ?? true}
+          disabled={busy}
+          onCheckedChange={(seasonalDecor) => updateSettings.mutate({ seasonalDecor })}
         />
       </Row>
     </section>
