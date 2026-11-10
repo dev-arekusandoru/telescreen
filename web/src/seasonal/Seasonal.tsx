@@ -1,15 +1,18 @@
 import { useSyncStatus } from "@/features/calendar";
-import { Scattered } from "./Scattered";
+import { useDevTheme } from "./devTheme";
+import { themeForDate, THEMES } from "./registry";
 import styles from "./Seasonal.module.css";
 
-/** Thanksgiving theme runs all of November; other events get added here later. */
-export const isSeason = (d: Date) => d.getMonth() === 10;
-
+/** Master switch (`settings.seasonalDecor`) is applied by the caller; this picks the theme for today or the dev override. */
 export function Seasonal() {
   const { data: status } = useSyncStatus();
+  const dev = useDevTheme();
+  const theme = THEMES.find((t) => t.id === dev) ?? themeForDate(new Date());
+  if (!theme) return null;
   return (
     <div className={styles.layer} aria-hidden="true">
-      <Scattered syncedAt={status?.lastSyncedAt} />
+      {/* key: switching themes remounts, so piles and timers start clean */}
+      <theme.Component key={theme.id} syncedAt={status?.lastSyncedAt} />
     </div>
   );
 }

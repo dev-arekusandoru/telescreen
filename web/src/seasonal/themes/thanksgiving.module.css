@@ -1,0 +1,110 @@
+.leaf {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: var(--size);
+  opacity: 0.85;
+  transform: translateY(-60px);
+  animation: fall var(--dur) linear var(--delay) forwards;
+}
+
+/* Resting spot: the fall's end point, held statically so the blow animation can start from it. */
+.landed {
+  animation: none;
+  transform: translateY(calc(100vh - var(--floor) - var(--size) - var(--lift)));
+}
+
+.leaf img {
+  display: block;
+  width: 100%;
+  animation: sway calc(var(--dur) / 5) ease-in-out var(--delay) infinite;
+}
+
+@keyframes fall {
+  from {
+    transform: translateY(-60px);
+  }
+  to {
+    transform: translateY(calc(100vh - var(--floor) - var(--size) - var(--lift)));
+  }
+}
+
+.landed img {
+  animation-play-state: paused;
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: translateX(calc(var(--sway) * -1)) rotate(-40deg);
+  }
+  50% {
+    transform: translateX(var(--sway)) rotate(40deg);
+  }
+}
+
+.landed.blow {
+  animation: blow 1.6s ease-in var(--wind) forwards;
+}
+
+@keyframes blow {
+  to {
+    translate: 110vw -35vh;
+    rotate: 540deg;
+    opacity: 0;
+  }
+}
+
+.turkey {
+  position: absolute;
+  width: 36px;
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+/* Perched above the rail's sync button; on phones, above the tab bar instead. */
+.railTurkey {
+  left: 24px;
+  bottom: 70px;
+}
+
+@media (max-width: 599px) {
+  .railTurkey {
+    left: 12px;
+    bottom: 82px;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(4deg);
+  }
+}
+
+/* One turkey strolling along the bottom edge, right to left. */
+.walker {
+  bottom: calc(var(--floor) + 2px);
+  left: 0;
+  width: 30px;
+  animation: stroll 70s linear infinite;
+}
+
+@keyframes stroll {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-60px);
+  }
+}
+
+/* Motion-only decoration is dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .leaf,
+  .walker {
+    display: none;
+  }
+}

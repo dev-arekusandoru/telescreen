@@ -1,4 +1,4 @@
-import { Clock, CalendarDots, ArrowsClockwise, CloudCheck, Globe, House, MoonStars, Leaf, CalendarBlank, type Icon } from "@phosphor-icons/react";
+import { Clock, CalendarDots, ArrowsClockwise, CloudCheck, Globe, House, MoonStars, Leaf, Wrench, CalendarBlank, type Icon } from "@phosphor-icons/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { ago } from "@/app/dates";
 import { useNow } from "@/app/useNow";
@@ -6,7 +6,9 @@ import { wakeLockSupported } from "@/app/wakeLock";
 import { useSyncStatus } from "@/features/calendar";
 import { useUpdateHousehold } from "@/features/household";
 import { useHousehold, useSettings, useUpdateSettings } from "@/features/queries";
-import { SegmentedControl, Switch } from "@/ui";
+import { setDevTheme, useDevTheme } from "@/seasonal/devTheme";
+import { THEMES } from "@/seasonal/registry";
+import { Select, SegmentedControl, Switch } from "@/ui";
 import styles from "./Settings.module.css";
 
 const IDLE_OPTIONS = [
@@ -24,6 +26,8 @@ const SYNC_OPTIONS = [
   { value: "15", label: "15 min" },
   { value: "30", label: "30 min" },
 ];
+
+const DEV_THEME_OPTIONS = [{ value: "auto", label: "Auto (by date)" }, ...THEMES.map((t) => ({ value: t.id, label: t.label }))];
 
 const WEEK_MODES = [
   { value: "rolling", label: "Next 7 days" },
@@ -103,6 +107,7 @@ const timeZones = (): string[] => {
 /** Settings > General: household, wall-display behaviour, week mode, sync. */
 export function GeneralSection() {
   const { data: settings } = useSettings();
+  const devTheme = useDevTheme();
   const { data: household } = useHousehold();
   const updateSettings = useUpdateSettings();
   const updateHousehold = useUpdateHousehold();
@@ -208,6 +213,10 @@ export function GeneralSection() {
           disabled={busy}
           onCheckedChange={(seasonalDecor) => updateSettings.mutate({ seasonalDecor })}
         />
+      </Row>
+
+      <Row icon={Wrench} title="Developer: seasonal theme" hint="Preview a theme on this device regardless of date">
+        <Select label="Seasonal theme" value={devTheme} onValueChange={setDevTheme} options={DEV_THEME_OPTIONS} />
       </Row>
     </section>
   );

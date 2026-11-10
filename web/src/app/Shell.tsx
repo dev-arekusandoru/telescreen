@@ -1,4 +1,4 @@
-import { isSeason, Seasonal } from "@/seasonal/Seasonal";
+import { Seasonal } from "@/seasonal/Seasonal";
 import { ArrowsClockwise } from "@phosphor-icons/react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { ago } from "@/app/dates";
@@ -70,7 +70,7 @@ export function Shell() {
           <Outlet />
         </ToastProvider>
       </main>
-      {(settings?.seasonalDecor ?? true) && isSeason(new Date()) ? <Seasonal /> : null}
+      {(settings?.seasonalDecor ?? true) ? <Seasonal /> : null}
       {showSide ? (
         <aside className={styles.side} aria-label="At a glance">
           <WidgetColumn />

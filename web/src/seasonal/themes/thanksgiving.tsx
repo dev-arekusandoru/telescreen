@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import chestnut from "./art/chestnut.svg";
-import flutterGold from "./art/flutter-gold.svg";
-import flutterOrange from "./art/flutter-orange.svg";
-import flutterRust from "./art/flutter-rust.svg";
-import leaf from "./art/leaf.svg";
-import leafDark from "./art/leaf-dark.svg";
-import leafGold from "./art/leaf-gold.svg";
-import maple from "./art/maple.svg";
-import mapleGold from "./art/maple-gold.svg";
-import mapleOrange from "./art/maple-orange.svg";
-import turkey from "./art/turkey.svg";
-import styles from "./Seasonal.module.css";
+import chestnut from "../art/thanksgiving/chestnut.svg";
+import flutterGold from "../art/thanksgiving/flutter-gold.svg";
+import flutterOrange from "../art/thanksgiving/flutter-orange.svg";
+import flutterRust from "../art/thanksgiving/flutter-rust.svg";
+import leaf from "../art/thanksgiving/leaf.svg";
+import leafDark from "../art/thanksgiving/leaf-dark.svg";
+import leafGold from "../art/thanksgiving/leaf-gold.svg";
+import maple from "../art/thanksgiving/maple.svg";
+import mapleGold from "../art/thanksgiving/maple-gold.svg";
+import mapleOrange from "../art/thanksgiving/maple-orange.svg";
+import turkey from "../art/thanksgiving/turkey.svg";
+import styles from "./thanksgiving.module.css";
+import type { ThemeProps } from "../types";
 
 const LEAVES = [maple, flutterGold, leaf, mapleOrange, flutterRust, leafGold, mapleGold, flutterOrange, leafDark];
 const ACORN_CHANCE = 0.25;
@@ -44,7 +45,7 @@ const seed = () => Array.from({ length: 8 }, (_, i) => makeLeaf(i, -(i / 8) * 22
  * changes (calendar sync: the user's interval, or a manual tap) the landed leaves blow away.
  * The pile has no cap; it only resets on a sync.
  */
-export function Scattered({ syncedAt }: { syncedAt?: string | null }) {
+export function Thanksgiving({ syncedAt }: ThemeProps) {
   const [leaves, setLeaves] = useState<Leaf[]>(seed);
   const [blowing, setBlowing] = useState<ReadonlySet<number>>(new Set());
   const nextId = useRef(8);
