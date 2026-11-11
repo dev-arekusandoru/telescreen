@@ -1,3 +1,4 @@
+import { Seasonal, useActiveTheme } from "@/seasonal/Seasonal";
 import { ArrowsClockwise } from "@phosphor-icons/react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { ago } from "@/app/dates";
@@ -54,13 +55,15 @@ export function Shell() {
   useWakeLock(settings?.keepAwake ?? true);
   // Right column (>= 1280px, SPEC §8): only exists while a module that fills it is enabled.
   const modules = settings?.modules;
+  const seasonalLogo = useActiveTheme()?.Logo;
+  const Logo = (settings?.seasonalDecor ?? true) ? seasonalLogo : undefined;
   const showSide =
     modules?.weather === true || modules?.meals === true || modules?.music === true || modules?.travel === true;
   return (
     <div className={styles.app} data-side={showSide ? "on" : undefined}>
       <nav className={styles.rail} aria-label="Primary">
         <div className={styles.logo} aria-hidden="true">
-          H
+          {Logo ? <Logo /> : "H"}
         </div>
         <NavLinks tabs={tabs} />
         <SyncButton />
@@ -70,6 +73,7 @@ export function Shell() {
           <Outlet />
         </ToastProvider>
       </main>
+      {(settings?.seasonalDecor ?? true) ? <Seasonal /> : null}
       {showSide ? (
         <aside className={styles.side} aria-label="At a glance">
           <WidgetColumn />

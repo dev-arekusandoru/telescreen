@@ -1,0 +1,71 @@
+.egg {
+  position: absolute;
+  z-index: 0;
+  left: var(--x);
+  bottom: var(--floor);
+  width: var(--size);
+  height: var(--size);
+  object-fit: contain;
+  transform: translateY(38%) rotate(var(--turn));
+  opacity: .78;
+  animation: peek 7s ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes peek {
+  from { translate: 0 5px; }
+  to { translate: 0 -4px; }
+}
+
+.bunny {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  left: -55px;
+  bottom: var(--floor);
+  animation: bunny-hop 26s linear 2s infinite;
+}
+
+@keyframes bunny-hop {
+  0% { transform: translateX(0) translateY(0); }
+  8% { transform: translateX(16vw) translateY(-28px); }
+  16% { transform: translateX(32vw) translateY(0); }
+  24% { transform: translateX(48vw) translateY(-32px); }
+  32% { transform: translateX(64vw) translateY(0); }
+  40% { transform: translateX(80vw) translateY(-27px); }
+  48% { transform: translateX(105vw) translateY(0); }
+  100% { transform: translateX(105vw) translateY(0); }
+}
+
+.chick {
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  left: 21%;
+  bottom: var(--floor);
+  animation: wander 14s ease-in-out infinite alternate;
+}
+
+.chickTwo { left: 72%; animation-delay: -7s; animation-duration: 17s; }
+.pipping { filter: drop-shadow(0 0 5px #ffe57b); }
+
+@keyframes wander {
+  0% { transform: translate(0, 0) rotate(-7deg); }
+  25% { transform: translate(22px, -2px) rotate(6deg); }
+  50% { transform: translate(39px, 0) rotate(-4deg); }
+  75% { transform: translate(16px, -3px) rotate(8deg); }
+  100% { transform: translate(-9px, 0) rotate(-5deg); }
+}
+
+.tulip {
+  position: absolute;
+  right: 4%;
+  bottom: var(--floor);
+  font-size: 28px;
+  line-height: 1;
+  opacity: .78;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .egg, .bunny, .chick { animation: none; }
+}

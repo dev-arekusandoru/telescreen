@@ -1,0 +1,9 @@
+.bubble { position: absolute; bottom: var(--floor); border: 1.5px solid #8fdcf0aa; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #fff9 0 8%, transparent 28%); box-shadow: inset -2px -2px 5px #82c9eb55; animation: rise 18s linear infinite; }
+.crab { position: absolute; width: 31px; height: 31px; bottom: var(--floor); left: -40px; animation: scuttle 34s linear infinite; }
+.bee { position: absolute; width: 24px; top: 45%; left: -30px; animation: bee 32s ease-in-out infinite; }
+.wave { position: absolute; z-index: 1; bottom: var(--floor); left: 0; width: 200%; height: 68px; opacity: .9; pointer-events: none; animation: wash 3.5s ease-in-out forwards; }
+@keyframes rise { 0% { transform: translateY(0) scale(.7); opacity: 0; } 10% { opacity: .65; } 90% { opacity: .45; } 100% { transform: translateY(-105vh) scale(1.15); opacity: 0; } }
+@keyframes scuttle { to { transform: translateX(calc(100vw + 80px)); } }
+@keyframes bee { 0% { transform: translate(0,0); } 30% { transform: translate(35vw,-55px); } 65% { transform: translate(72vw,36px); } 100% { transform: translate(calc(100vw + 40px),-25px); } }
+@keyframes wash { 0% { transform: translateX(-50%) translateY(18px); opacity: .2; } 20% { transform: translateX(-35%) translateY(0); opacity: .9; } 55% { transform: translateX(0) translateY(0); opacity: .85; } 100% { transform: translateX(0) translateY(70px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bubble,.crab,.bee { animation: none; display: none; } .wave { display: none; } }

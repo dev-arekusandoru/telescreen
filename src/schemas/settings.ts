@@ -22,6 +22,7 @@ export const settingsSchema = z
     idleReturnMinutes: z.number().int().min(0).max(240).describe("Idle minutes before returning to today's Week view; 0 disables."),
     syncIntervalMinutes: z.number().int().min(1).max(1440).describe("Calendar poll interval."),
     keepAwake: z.boolean().describe("Request the screen wake lock while the app is visible."),
+    seasonalDecor: z.boolean().describe("Show seasonal decoration (falling leaves and similar) during holidays and seasons."),
     modules: modulesSchema.describe("Optional module flags; disabled modules are hidden from navigation."),
     defaultWriteCalendarId: z
       .record(z.string(), z.string().nullable())
@@ -39,6 +40,7 @@ export const SETTING_DEFAULTS: Settings = {
   idleReturnMinutes: 2,
   syncIntervalMinutes: 5,
   keepAwake: true,
+  seasonalDecor: true,
   modules: { weather: false, meals: false, music: false, travel: false },
   defaultWriteCalendarId: {},
   weather: { latitude: null, longitude: null, units: "celsius", place: null },

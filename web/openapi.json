@@ -259,6 +259,10 @@
             "type": "boolean",
             "description": "Request the screen wake lock while the app is visible."
           },
+          "seasonalDecor": {
+            "type": "boolean",
+            "description": "Show seasonal decoration (falling leaves and similar) during holidays and seasons."
+          },
           "modules": {
             "$ref": "#/components/schemas/ModuleFlags"
           },
@@ -292,6 +296,7 @@
           "idleReturnMinutes",
           "syncIntervalMinutes",
           "keepAwake",
+          "seasonalDecor",
           "modules",
           "defaultWriteCalendarId",
           "weather",
@@ -493,6 +498,10 @@
           "keepAwake": {
             "type": "boolean",
             "description": "Request the screen wake lock while the app is visible."
+          },
+          "seasonalDecor": {
+            "type": "boolean",
+            "description": "Show seasonal decoration (falling leaves and similar) during holidays and seasons."
           },
           "modules": {
             "$ref": "#/components/schemas/ModuleFlags"

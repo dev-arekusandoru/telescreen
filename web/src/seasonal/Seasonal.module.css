@@ -1,0 +1,16 @@
+/* Decorative layer: never takes input, sits under dialogs (z 20+) and over page content. */
+.layer {
+  --floor: 0px;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Phones: the floor is the top of the tab bar. */
+@media (max-width: 599px) {
+  .layer {
+    --floor: 68px;
+  }
+}

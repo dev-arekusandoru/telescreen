@@ -1,0 +1,32 @@
+.drop {
+  position: absolute;
+  left: var(--x);
+  top: -40px;
+  width: var(--size);
+  height: var(--size);
+  animation: driftDown var(--duration) linear var(--delay) forwards;
+}
+.drop img { width: 100%; height: 100%; }
+.clover { animation-name: cloverDown; }
+.fallingCoin { animation-name: coinDown; }
+@keyframes driftDown { to { transform: translateY(calc(100vh + 60px)) rotate(250deg); } }
+@keyframes cloverDown { to { transform: translate(calc(5vw - 20px), calc(100vh + 60px)) rotate(360deg); } }
+@keyframes coinDown { to { transform: translate(calc(-3vw + 12px), calc(100vh - var(--floor) - 24px)); } }
+.piledCoin {
+  position: absolute;
+  width: 23px;
+  height: 23px;
+  left: var(--left);
+  bottom: calc(var(--floor) + var(--rise));
+  animation: glint 2.8s ease-in-out infinite alternate;
+}
+.scatter { animation: scatter 1s ease-out forwards; }
+@keyframes scatter { to { transform: translate(var(--scatter), -70px) rotate(150deg); opacity: 0; } }
+@keyframes glint { to { filter: brightness(1.2); } }
+.logo { display: block; width: 44px; height: 44px; }
+.pot { position: absolute; right: 13px; bottom: calc(var(--floor) + 11px); font-size: 32px; color: #d7a52e; filter: drop-shadow(0 2px 1px #664b18); }
+@media (max-width: 599px) { .pot { right: 12px; bottom: calc(var(--floor) + 8px); font-size: 27px; } }
+@media (prefers-reduced-motion: reduce) {
+  .drop, .piledCoin { animation: none; }
+  .drop { display: none; }
+}

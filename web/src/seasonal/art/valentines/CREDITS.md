@@ -1,0 +1,1 @@
+Artwork: Twemoji (https://github.com/jdecked/twemoji), graphics © Twitter, Inc. and other contributors, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Files are unmodified: hearts.svg = 1f495 (two hearts), sparkling-heart.svg = 1f497, love-letter.svg = 1f48c.

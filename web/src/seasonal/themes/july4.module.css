@@ -1,0 +1,94 @@
+.fw {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 0;
+  height: 0;
+}
+
+.rocket {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f5cb52;
+  /* Trail: soft glows stacked below the head. */
+  box-shadow: 0 10px 6px -1px rgb(245 203 82 / 0.6), 0 20px 8px -2px rgb(245 203 82 / 0.3);
+  opacity: 0;
+  animation: rise 8s ease-out var(--delay) infinite;
+}
+
+@keyframes rise {
+  0% { transform: translateY(170px); opacity: 0; }
+  2% { opacity: 1; }
+  14% { transform: translateY(0); opacity: 1; }
+  15%, 100% { transform: translateY(0); opacity: 0; }
+}
+
+.p {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pc);
+  box-shadow: 0 0 7px 1px var(--pc);
+  opacity: 0;
+  animation: burst 8s cubic-bezier(0.1, 0.7, 0.3, 1) var(--delay) infinite;
+}
+
+.p:nth-child(4n + 1) { --pc: #d94b48; }
+.p:nth-child(4n + 2) { --pc: #3f6fb8; }
+.p:nth-child(4n + 3) { --pc: #f0b429; }
+.p:nth-child(4n) { --pc: #ffffff; box-shadow: 0 0 7px 2px #7b8fb5; }
+
+@keyframes burst {
+  0%, 14% { transform: rotate(var(--a)) translateX(0) scale(0.4); opacity: 0; }
+  16% { opacity: 1; }
+  32% { transform: rotate(var(--a)) translateX(58px) scale(1); opacity: 0.95; }
+  42%, 100% { transform: rotate(var(--a)) translateX(68px) scale(0.5); opacity: 0; }
+}
+
+/* Sync finale: same particles, one shot, no rocket. */
+.once { position: absolute; inset: 0; }
+.once .p { animation: burstOnce 1.8s cubic-bezier(0.1, 0.7, 0.3, 1) var(--delay) both; }
+
+@keyframes burstOnce {
+  0% { transform: rotate(var(--a)) translateX(0) scale(0.4); opacity: 0; }
+  10% { opacity: 1; }
+  60% { transform: rotate(var(--a)) translateX(60px) scale(1); opacity: 0.95; }
+  100% { transform: rotate(var(--a)) translateX(72px) scale(0.5); opacity: 0; }
+}
+
+.logo {
+  width: 44px;
+  height: auto;
+  animation: wave 3s ease-in-out infinite alternate;
+  transform-origin: 50% 50%;
+}
+
+@keyframes wave { to { transform: rotate(7deg); } }
+
+.sparkler {
+  position: absolute;
+  right: 8%;
+  bottom: calc(var(--floor) + 14px);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  color: #f5cb52;
+  background: currentColor;
+  box-shadow: 0 0 6px 2px currentColor, 8px -4px 2px -1px #fff, -6px -7px 3px -1px #fff;
+  animation: glint 0.8s steps(2, end) infinite alternate;
+}
+
+@keyframes glint { to { opacity: 0.28; transform: scale(0.7); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fw, .once { display: none; }
+  .logo { animation: none; }
+  .sparkler { animation: none; opacity: 0.7; }
+}

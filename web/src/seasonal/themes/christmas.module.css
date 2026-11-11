@@ -1,0 +1,128 @@
+.lights {
+  position: absolute;
+  top: 0;
+  left: 3%;
+  right: 3%;
+  height: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.lights i {
+  width: 7px;
+  height: 10px;
+  border-radius: 50% 50% 45% 45%;
+  background: #d94b48;
+  box-shadow: 0 0 9px 2px currentColor;
+  color: #e7ae50;
+  opacity: .72;
+  animation: twinkle 2.8s ease-in-out calc(var(--i) * -137ms) infinite alternate;
+}
+
+.lights i:nth-child(3n) { background: #f0d77e; color: #f0d77e; }
+.lights i:nth-child(3n + 1) { background: #d94b48; color: #d94b48; }
+.lights i:nth-child(3n + 2) { background: #5b9b67; color: #5b9b67; }
+
+@keyframes twinkle { to { opacity: .25; } }
+
+
+.largeTree {
+  position: absolute;
+  right: 10px;
+  bottom: calc(var(--floor) - 16px);
+  width: 120px;
+}
+
+.logoWreath {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.holly {
+  position: absolute;
+  width: 40px;
+  height: 34px;
+}
+
+/* Rail dead space above the sync button (same perch as the other themes). */
+.hollyRail { left: 20px; bottom: calc(var(--floor) + 70px); }
+.hollyTree { right: 128px; bottom: calc(var(--floor) + 2px); transform: scaleX(-1); }
+
+.holly i {
+  position: absolute;
+  width: 23px;
+  height: 12px;
+  background: #286640;
+  border-radius: 100% 0 100% 0;
+}
+
+.holly i:nth-child(1) { left: 3px; top: 8px; transform: rotate(-25deg); }
+.holly i:nth-child(2) { left: 19px; top: 4px; transform: rotate(24deg); }
+.holly i:nth-child(3) { left: 13px; top: 22px; transform: rotate(52deg); }
+.holly::after {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 15px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d94b48;
+  box-shadow: 7px 5px #d94b48, -3px 8px #d94b48;
+}
+
+
+.flake {
+  position: absolute;
+  top: -34px;
+  left: var(--x);
+  width: var(--size);
+  opacity: .7;
+  animation: fall var(--duration) linear var(--delay) forwards;
+}
+
+.flake img { display: block; width: 100%; }
+.shape1 { opacity: .56; }
+.shape1 img { transform: rotate(30deg); }
+.shape2 { opacity: .42; }
+.shape2 img { transform: rotate(60deg) scale(.78); }
+
+@keyframes fall {
+  to { transform: translateY(calc(100vh - var(--floor) - var(--size) - var(--lift))); }
+}
+
+.landed { animation: none; transform: translateY(calc(100vh - var(--floor) - var(--size) - var(--lift))); }
+.landed img { animation: drift 4s ease-in-out infinite alternate; }
+
+@keyframes drift {
+  to { transform: translateX(12px) rotate(35deg); }
+}
+
+.gust { animation: gust 1.7s ease-in forwards; }
+@keyframes gust { to { translate: 110vw -20vh; rotate: 420deg; opacity: 0; } }
+
+.walker {
+  position: absolute;
+  bottom: calc(var(--floor) + 2px);
+  width: 30px;
+  animation: stroll 72s linear 8s infinite;
+}
+
+@keyframes stroll {
+  from { transform: translateX(100vw); }
+  to { transform: translateX(-45px); }
+}
+
+/* Phones: the + button sits bottom-right above the tab bar, so skip the tree and its holly. */
+@media (max-width: 599px) {
+  .largeTree, .hollyTree { display: none; }
+  .hollyRail { left: 12px; bottom: calc(var(--floor) + 82px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lights i, .flake, .landed img, .walker { animation: none; }
+  .flake { display: none; }
+  .lights i { opacity: .65; }
+}

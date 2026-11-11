@@ -2169,6 +2169,8 @@ export interface components {
             syncIntervalMinutes: number;
             /** @description Request the screen wake lock while the app is visible. */
             keepAwake: boolean;
+            /** @description Show seasonal decoration (falling leaves and similar) during holidays and seasons. */
+            seasonalDecor: boolean;
             modules: components["schemas"]["ModuleFlags"];
             /** @description Member id → default calendar id for new events (null = none). */
             defaultWriteCalendarId: {
@@ -2237,6 +2239,8 @@ export interface components {
             syncIntervalMinutes?: number;
             /** @description Request the screen wake lock while the app is visible. */
             keepAwake?: boolean;
+            /** @description Show seasonal decoration (falling leaves and similar) during holidays and seasons. */
+            seasonalDecor?: boolean;
             modules?: components["schemas"]["ModuleFlags"];
             /** @description Member id → default calendar id for new events (null = none). */
             defaultWriteCalendarId?: {
