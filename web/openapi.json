@@ -389,7 +389,8 @@
             "enum": [
               "album",
               "playlist",
-              "collection"
+              "collection",
+              "artist"
             ],
             "description": "collection = Liked Songs."
           },

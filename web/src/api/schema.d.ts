@@ -2207,7 +2207,7 @@ export interface components {
              * @description collection = Liked Songs.
              * @enum {string}
              */
-            kind: "album" | "playlist" | "collection";
+            kind: "album" | "playlist" | "collection" | "artist";
             title: string;
             /** @description Artists for an album, track count for a playlist. */
             subtitle: string | null;

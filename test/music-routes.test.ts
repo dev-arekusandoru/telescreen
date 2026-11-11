@@ -400,6 +400,60 @@ describe("library routes", () => {
     ]);
   });
 
+  it("collapses tracks played from a playlist into that playlist", async () => {
+    seedConnection(t.db);
+    const ctx = { type: "playlist", uri: "spotify:playlist:p1" };
+    stubFetch((req) => {
+      if (req.url.pathname === "/v1/me/player/recently-played") {
+        return {
+          status: 200,
+          body: {
+            items: [
+              { track: { album: ALBUM(1) }, context: ctx },
+              { track: { album: ALBUM(2) }, context: ctx },
+              { track: { album: ALBUM(3) }, context: null },
+            ],
+          },
+        };
+      }
+      if (req.url.pathname === "/v1/me/playlists") {
+        return { status: 200, body: { items: [{ uri: "spotify:playlist:p1", name: "Dinner", images: [], tracks: { total: 2 } }] } };
+      }
+      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "alex" } };
+      return undefined;
+    });
+    const { body } = await t.request<{ items: Array<{ uri: string }> }>("GET", "/api/v1/music/recent");
+    expect(body.items.map((i) => i.uri)).toEqual(["spotify:playlist:p1", "spotify:album:a3"]);
+  });
+
+  it("groups artist plays and pages back for more history", async () => {
+    seedConnection(t.db);
+    const artist = { type: "artist", uri: "spotify:artist:x1" };
+    const befores: Array<string | null> = [];
+    stubFetch((req) => {
+      if (req.url.pathname === "/v1/me/player/recently-played") {
+        const before = req.url.searchParams.get("before");
+        befores.push(before);
+        return {
+          status: 200,
+          body: before
+            ? { items: [{ track: { album: ALBUM(2) }, context: null }] }
+            : { items: [{ track: { album: ALBUM(1) }, context: artist }, { track: { album: ALBUM(9) }, context: artist }], cursors: { before: "123" } },
+        };
+      }
+      if (req.url.pathname === "/v1/artists/x1") {
+        return { status: 200, body: { name: "Marlowe", images: [{ url: "https://img/x1.jpg", width: 320 }] } };
+      }
+      return undefined;
+    });
+    const { body } = await t.request<{ items: Array<{ uri: string; kind: string; title: string }> }>("GET", "/api/v1/music/recent");
+    expect(befores).toEqual([null, "123"]);
+    expect(body.items.map((i) => [i.uri, i.kind, i.title])).toEqual([
+      ["spotify:artist:x1", "artist", "Marlowe"],
+      ["spotify:album:a2", "album", "Album 2"],
+    ]);
+  });
+
   it("lists playlists with Liked Songs first and tolerates missing art", async () => {
     seedConnection(t.db);
     stubFetch((req) => {

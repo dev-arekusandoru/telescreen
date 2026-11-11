@@ -273,7 +273,7 @@ interface RawItem {
 /** An album or playlist the Music page can start playing. */
 export interface LibraryItem {
   uri: string;
-  kind: "album" | "playlist" | "collection";
+  kind: "album" | "playlist" | "collection" | "artist";
   title: string;
   subtitle: string | null;
   imageUrl: string | null;
@@ -498,34 +498,79 @@ export class SpotifyClient {
   }
 
   /**
-   * Recently played, collapsed to distinct albums (newest first). Spotify's history lists
-   * tracks and only sometimes a context, so the album is the one thing every entry has.
+   * Recently played, newest first. Tracks played from a playlist, Liked Songs or an artist
+   * collapse into that context (as the Spotify app shows); everything else into its album.
+   * The history is a track log capped at 50 per call, so page back (max 3 calls) until
+   * there are enough distinct entries.
    */
   async recentAlbums(limit = 12): Promise<LibraryItem[]> {
-    const raw = await this.request<{ items?: Array<{ track?: RawItem | null }> }>(
-      "GET",
-      "/me/player/recently-played",
-      { query: { limit: 50 } },
-    );
+    type Entry = { track?: RawItem | null; context?: { type?: string; uri?: string } | null };
     const seen = new Set<string>();
-    const out: LibraryItem[] = [];
-    for (const entry of raw?.items ?? []) {
-      const album = entry.track?.album;
-      if (!album?.uri || !album.name || seen.has(album.uri)) continue;
-      seen.add(album.uri);
-      const artists = (album.artists ?? entry.track?.artists ?? [])
-        .map((a) => a.name)
-        .filter((n): n is string => typeof n === "string");
-      out.push({
-        uri: album.uri,
-        kind: "album",
-        title: album.name,
-        subtitle: artists.join(", ") || null,
-        imageUrl: largestImage(album.images),
-      });
-      if (out.length >= limit) break;
+    const slots: Array<LibraryItem | Promise<LibraryItem | null>> = [];
+    let known: Promise<LibraryItem[]> | undefined;
+    let before: string | undefined;
+    for (let page = 0; page < 3 && slots.length < limit; page++) {
+      const raw = await this.request<{ items?: Entry[]; cursors?: { before?: string } | null }>(
+        "GET",
+        "/me/player/recently-played",
+        { query: before ? { limit: 50, before } : { limit: 50 } },
+      );
+      for (const entry of raw?.items ?? []) {
+        const ctx = entry.context;
+        const fromContext = !!ctx?.uri && ["playlist", "collection", "artist"].includes(ctx.type ?? "");
+        const key = fromContext ? ctx!.uri! : entry.track?.album?.uri;
+        if (!key || seen.has(key)) continue;
+        if (fromContext) {
+          seen.add(key);
+          const uri = key;
+          const type = ctx!.type;
+          const id = uri.split(":")[2];
+          if (type === "artist") {
+            slots.push(
+              this.request<RawPlaylist>("GET", `/artists/${id}`)
+                .then((a) =>
+                  a?.name
+                    ? { uri, kind: "artist" as const, title: a.name, subtitle: "Artist", imageUrl: largestImage(a.images) }
+                    : null,
+                )
+                .catch(() => null),
+            );
+          } else {
+            known ??= this.playlists().catch(() => []);
+            slots.push(
+              known.then(async (lib) => {
+                const hit = lib.find((i) => i.uri === uri);
+                if (hit || type !== "playlist") return hit ?? null;
+                const p = await this.request<RawPlaylist>("GET", `/playlists/${id}`, {
+                  query: { fields: "uri,name,images" },
+                }).catch(() => null);
+                return p?.name
+                  ? { uri, kind: "playlist" as const, title: p.name, subtitle: null, imageUrl: largestImage(p.images) }
+                  : null;
+              }),
+            );
+          }
+        } else {
+          const album = entry.track?.album;
+          if (!album?.uri || !album.name) continue;
+          seen.add(key);
+          const artists = (album.artists ?? entry.track?.artists ?? [])
+            .map((a) => a.name)
+            .filter((n): n is string => typeof n === "string");
+          slots.push({
+            uri: album.uri,
+            kind: "album",
+            title: album.name,
+            subtitle: artists.join(", ") || null,
+            imageUrl: largestImage(album.images),
+          });
+        }
+        if (slots.length >= limit) break;
+      }
+      before = raw?.cursors?.before;
+      if (!before || !raw?.items?.length) break;
     }
-    return out;
+    return (await Promise.all(slots)).filter((i): i is LibraryItem => i !== null);
   }
 
   /** The user's playlists (owned and followed), led by a "Liked Songs" collection. */

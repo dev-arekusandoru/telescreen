@@ -68,7 +68,7 @@ export const musicDeviceInputSchema = z
 export const musicItemSchema = z
   .object({
     uri: z.string().min(1).describe("Spotify context URI, e.g. spotify:playlist:… or spotify:album:…"),
-    kind: z.enum(["album", "playlist", "collection"]).describe("collection = Liked Songs."),
+    kind: z.enum(["album", "playlist", "collection", "artist"]).describe("collection = Liked Songs."),
     title: z.string(),
     subtitle: z.string().nullable().describe("Artists for an album, track count for a playlist."),
     imageUrl: z.string().nullable(),
