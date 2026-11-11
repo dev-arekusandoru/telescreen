@@ -95,11 +95,11 @@ test.describe("right column", () => {
     const original = await (await page.request.get("/api/v1/settings")).json();
     await stubUpstreams(page);
     try {
-      await setModules(page, { weather: false, meals: false, music: false });
+      await setModules(page, { weather: false, meals: false, music: false, travel: false });
       await page.goto("/calendar");
       await expect(page.getByRole("complementary", { name: "At a glance" })).toBeHidden();
 
-      await setModules(page, { weather: true, meals: true, music: true });
+      await setModules(page, { weather: true, meals: true, music: true, travel: false });
       await page.goto("/calendar");
       const side = page.getByRole("complementary", { name: "At a glance" });
       await expect(side).toBeVisible();

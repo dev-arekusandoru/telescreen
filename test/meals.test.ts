@@ -37,7 +37,7 @@ const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 function enableMeals(db: Db): void {
-  updateSettings(db, { modules: { weather: false, meals: true, music: false } });
+  updateSettings(db, { modules: { weather: false, meals: true, music: false, travel: false } });
 }
 
 beforeEach(() => resetMealsCache());
@@ -391,7 +391,7 @@ describe("meals routes", () => {
   it("serves the normalized week over HTTP and reports status", async () => {
     const t = makeTestApp();
     await t.request("PUT", "/api/v1/settings", {
-      modules: { weather: false, meals: true, music: false },
+      modules: { weather: false, meals: true, music: false, travel: false },
     });
     vi.stubEnv("PANTRYPAL_URL", "http://pantrypal.test:8787");
     vi.stubEnv("PANTRYPAL_PUBLIC_URL", "https://pantry.example");
@@ -423,7 +423,7 @@ describe("meals routes", () => {
   it("serves a range of planned days and rejects malformed ranges", async () => {
     const t = makeTestApp();
     await t.request("PUT", "/api/v1/settings", {
-      modules: { weather: false, meals: true, music: false },
+      modules: { weather: false, meals: true, music: false, travel: false },
     });
     vi.stubEnv("PANTRYPAL_URL", "http://pantrypal.test:8787");
     vi.stubEnv("PANTRYPAL_PUBLIC_URL", "https://pantry.example");
@@ -454,7 +454,7 @@ describe("meals routes", () => {
   it("serves the enriched board and the kitchen snapshot", async () => {
     const t = makeTestApp();
     await t.request("PUT", "/api/v1/settings", {
-      modules: { weather: false, meals: true, music: false },
+      modules: { weather: false, meals: true, music: false, travel: false },
     });
     vi.stubEnv("PANTRYPAL_URL", "http://pantrypal.test:8787");
     vi.stubEnv("PANTRYPAL_PUBLIC_URL", "https://pantry.example");
@@ -489,7 +489,7 @@ describe("meals routes", () => {
     expect(kitchen.status).toBe(200);
     expect(kitchen.body).toMatchObject({ shopping: null, missing: [], expiring: [], stale: false });
 
-    await t.request("PUT", "/api/v1/settings", { modules: { weather: false, meals: false, music: false } });
+    await t.request("PUT", "/api/v1/settings", { modules: { weather: false, meals: false, music: false, travel: false } });
     expect((await t.request("GET", "/api/v1/meals/board?start=2026-11-02&end=2026-11-09")).status).toBe(404);
     expect((await t.request("GET", "/api/v1/meals/kitchen")).status).toBe(404);
   });

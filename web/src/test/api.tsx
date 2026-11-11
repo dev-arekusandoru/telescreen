@@ -16,10 +16,11 @@ export function defaultSettings() {
     idleReturnMinutes: 2,
     syncIntervalMinutes: 5,
     keepAwake: true,
-    modules: { weather: false, meals: false, music: false },
+    modules: { weather: false, meals: false, music: false, travel: false },
     defaultWriteCalendarId: {},
     weather: { latitude: null, longitude: null, units: "celsius", place: null },
     musicPins: [],
+    travel: { home: null, destinations: [] },
   };
 }
 

@@ -10,6 +10,7 @@ import { registerEventRoutes } from "./events.js";
 import { registerMealsRoutes } from "./meals.js";
 import { registerMusicRoutes } from "./music.js";
 import { registerSettingsRoutes } from "./settings.js";
+import { registerTravelRoutes } from "./travel.js";
 import { registerWeatherRoutes } from "./weather.js";
 
 /** The API sub-app mounted at `/api/v1`. */
@@ -34,4 +35,5 @@ export const routeRegistrars: Array<(app: ApiApp) => void> = [
   registerMusicRoutes,
   registerMealsRoutes,
   registerWeatherRoutes,
+  registerTravelRoutes,
 ];

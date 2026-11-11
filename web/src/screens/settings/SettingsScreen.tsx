@@ -8,6 +8,7 @@ import { GeneralSection } from "./GeneralSection";
 import { MealsSection } from "./MealsSection";
 import { MembersSection } from "./MembersSection";
 import { MusicSection } from "./MusicSection";
+import { TravelSection } from "./TravelSection";
 import { WeatherSection } from "./WeatherSection";
 import styles from "./Settings.module.css";
 
@@ -48,6 +49,8 @@ export function SettingsScreen() {
         <CalendarsSection />
 
         <WeatherSection />
+
+        <TravelSection />
 
         <MealsSection />
 

@@ -2023,6 +2023,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/travel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Driving times from home to each saved destination
+         * @description Google Routes API (traffic-aware, driving) for the home address and destinations in Settings. Cached 10 minutes; serves the last cached payload flagged `stale` when upstream fails.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Travel times */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Travel"];
+                    };
+                };
+                /** @description Module disabled, GOOGLE_MAPS_API_KEY unset, no home address, or upstream unreachable with no cache */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TravelError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/travel/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Travel module configuration status
+         * @description Whether the module is enabled and GOOGLE_MAPS_API_KEY is set (no network call).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TravelStatus"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2090,12 +2177,14 @@ export interface components {
             weather: components["schemas"]["WeatherSettings"];
             /** @description Albums/playlists pinned on the Music page (snapshot of title and art). */
             musicPins: components["schemas"]["MusicItem"][];
+            travel: components["schemas"]["TravelSettings"];
         };
         /** @description Optional module flags; disabled modules are hidden from navigation. */
         ModuleFlags: {
             weather: boolean;
             meals: boolean;
             music: boolean;
+            travel: boolean;
         };
         /** @description Location and units for the Weather module. */
         WeatherSettings: {
@@ -2122,6 +2211,20 @@ export interface components {
             subtitle: string | null;
             imageUrl: string | null;
         };
+        /** @description Home address and destinations for the Travel module. */
+        TravelSettings: {
+            /** @description Starting address for every route; null until set. */
+            home: string | null;
+            destinations: components["schemas"]["TravelDestination"][];
+        };
+        TravelDestination: {
+            /** @description Client-generated stable id. */
+            id: string;
+            /** @description Short name shown in the widget, e.g. "Work". */
+            label: string;
+            /** @description Free-text address; Google resolves it. */
+            address: string;
+        };
         UpdateSettingsInput: {
             /**
              * @description rolling = 7 days starting today; fixed = week per household weekStart.
@@ -2142,6 +2245,7 @@ export interface components {
             weather?: components["schemas"]["WeatherSettings"];
             /** @description Albums/playlists pinned on the Music page (snapshot of title and art). */
             musicPins?: components["schemas"]["MusicItem"][];
+            travel?: components["schemas"]["TravelSettings"];
         };
         ChoreList: components["schemas"]["Chore"][];
         Chore: {
@@ -2617,6 +2721,38 @@ export interface components {
                 code: string;
                 message: string;
             };
+        };
+        Travel: {
+            home: string;
+            /** @description One entry per configured destination, in settings order. */
+            routes: components["schemas"]["TravelRoute"][];
+            /** @description ISO instant the upstream data was fetched. */
+            fetchedAt: string;
+            /** @description True when upstream failed and the last cached payload is being served. */
+            stale: boolean;
+        };
+        TravelRoute: {
+            id: string;
+            label: string;
+            address: string;
+            /** @description Driving time with current traffic; null when no route. */
+            durationSeconds: number | null;
+            /** @description Driving time without traffic; null when no route. */
+            staticDurationSeconds: number | null;
+            /** @description Why no route is available for this destination. */
+            error: string | null;
+        };
+        TravelError: {
+            error: {
+                code: string;
+                message: string;
+            };
+        };
+        TravelStatus: {
+            /** @description Settings > Modules > Travel. */
+            enabled: boolean;
+            /** @description GOOGLE_MAPS_API_KEY is set. */
+            configured: boolean;
         };
     };
     responses: never;

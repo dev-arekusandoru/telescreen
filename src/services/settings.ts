@@ -19,6 +19,10 @@ export function getSettings(db: Db): Settings {
       // Corrupt row: fall back to the default.
     }
   }
+  // Module flags added later are missing from older stored rows; fill them from the defaults.
+  if (typeof merged.modules === "object" && merged.modules !== null) {
+    merged.modules = { ...SETTING_DEFAULTS.modules, ...merged.modules };
+  }
   const parsed = settingsSchema.safeParse({ ...SETTING_DEFAULTS, ...merged });
   return parsed.success ? parsed.data : SETTING_DEFAULTS;
 }

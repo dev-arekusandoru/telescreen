@@ -175,7 +175,7 @@ describe("getWeather", () => {
 
 describe("GET /weather", () => {
   const configured = {
-    modules: { weather: true, meals: false, music: false },
+    modules: { weather: true, meals: false, music: false, travel: false },
     weather: { latitude: 52.52, longitude: 13.41, units: "celsius", place: "Berlin" },
   };
 
@@ -208,7 +208,7 @@ describe("GET /weather", () => {
   it("returns 503 when no location is set", async () => {
     const t = makeTestApp();
     await t.request("PUT", "/api/v1/settings", {
-      modules: { weather: true, meals: false, music: false },
+      modules: { weather: true, meals: false, music: false, travel: false },
     });
     const res = await t.request<{ error: { code: string; message: string } }>("GET", "/api/v1/weather");
     expect(res.status).toBe(503);

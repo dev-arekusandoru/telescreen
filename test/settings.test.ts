@@ -11,14 +11,14 @@ describe("settings", () => {
       idleReturnMinutes: 2,
       syncIntervalMinutes: 5,
       keepAwake: true,
-      modules: { weather: false, meals: false, music: false },
+      modules: { weather: false, meals: false, music: false, travel: false },
       defaultWriteCalendarId: {},
       weather: { latitude: null, longitude: null, units: "celsius", place: null },
     });
 
     const put = await t.request<Record<string, unknown>>("PUT", "/api/v1/settings", {
       weekMode: "fixed",
-      modules: { weather: false, meals: true, music: false },
+      modules: { weather: false, meals: true, music: false, travel: false },
       defaultWriteCalendarId: { mem_x: "cal_y" },
     });
     expect(put.status).toBe(200);

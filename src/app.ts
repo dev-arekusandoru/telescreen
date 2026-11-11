@@ -96,6 +96,7 @@ export function createApp(options: CreateAppOptions): App {
       { name: "meals", description: "Read-only PantryPal meal plans" },
       { name: "weather", description: "Open-Meteo current conditions and forecast" },
       { name: "music", description: "Spotify now playing and playback control" },
+      { name: "travel", description: "Google Routes API driving times from home" },
     ],
     security: [{ bearerAuth: [] }],
   });

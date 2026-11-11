@@ -1,0 +1,37 @@
+/* Travel settings: home address and name + address pairs per destination. */
+.home {
+  margin-left: auto;
+  width: 320px;
+}
+
+.fields {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  width: 140px;
+  flex: none;
+}
+
+.address {
+  width: auto;
+  flex: 1;
+}
+
+@media (max-width: 599px) {
+  .home {
+    margin-left: 0;
+  }
+
+  .fields {
+    flex-wrap: wrap;
+  }
+
+  .name,
+  .address {
+    flex: 1 1 100%;
+  }
+}

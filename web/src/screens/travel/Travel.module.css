@@ -1,0 +1,101 @@
+/* Travel card (right column and the small-screen widgets popup). */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.cardTitle {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cardTitle > svg {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.badge {
+  margin-left: auto;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+
+/* Whole row is the tap target (opens Google Maps directions). */
+.route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--dur) var(--ease);
+}
+
+.route:active {
+  transform: scale(0.98);
+}
+
+.route:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.delay {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.none,
+.muted {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route {
+    transition: none;
+  }
+}

@@ -49,6 +49,10 @@
     {
       "name": "music",
       "description": "Spotify now playing and playback control"
+    },
+    {
+      "name": "travel",
+      "description": "Google Routes API driving times from home"
     }
   ],
   "security": [
@@ -278,6 +282,9 @@
             },
             "maxItems": 6,
             "description": "Albums/playlists pinned on the Music page (snapshot of title and art)."
+          },
+          "travel": {
+            "$ref": "#/components/schemas/TravelSettings"
           }
         },
         "required": [
@@ -288,7 +295,8 @@
           "modules",
           "defaultWriteCalendarId",
           "weather",
-          "musicPins"
+          "musicPins",
+          "travel"
         ]
       },
       "ModuleFlags": {
@@ -302,12 +310,16 @@
           },
           "music": {
             "type": "boolean"
+          },
+          "travel": {
+            "type": "boolean"
           }
         },
         "required": [
           "weather",
           "meals",
-          "music"
+          "music",
+          "travel"
         ],
         "description": "Optional module flags; disabled modules are hidden from navigation."
       },
@@ -401,6 +413,60 @@
           "imageUrl"
         ]
       },
+      "TravelSettings": {
+        "type": "object",
+        "properties": {
+          "home": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Starting address for every route; null until set."
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TravelDestination"
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "home",
+          "destinations"
+        ],
+        "description": "Home address and destinations for the Travel module."
+      },
+      "TravelDestination": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Client-generated stable id."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Short name shown in the widget, e.g. \"Work\"."
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Free-text address; Google resolves it."
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "address"
+        ]
+      },
       "UpdateSettingsInput": {
         "type": "object",
         "properties": {
@@ -451,6 +517,9 @@
             },
             "maxItems": 6,
             "description": "Albums/playlists pinned on the Music page (snapshot of title and art)."
+          },
+          "travel": {
+            "$ref": "#/components/schemas/TravelSettings"
           }
         }
       },
@@ -2384,6 +2453,118 @@
         "required": [
           "error"
         ]
+      },
+      "Travel": {
+        "type": "object",
+        "properties": {
+          "home": {
+            "type": "string"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TravelRoute"
+            },
+            "description": "One entry per configured destination, in settings order."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "ISO instant the upstream data was fetched."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when upstream failed and the last cached payload is being served."
+          }
+        },
+        "required": [
+          "home",
+          "routes",
+          "fetchedAt",
+          "stale"
+        ]
+      },
+      "TravelRoute": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "durationSeconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Driving time with current traffic; null when no route."
+          },
+          "staticDurationSeconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Driving time without traffic; null when no route."
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Why no route is available for this destination."
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "address",
+          "durationSeconds",
+          "staticDurationSeconds",
+          "error"
+        ]
+      },
+      "TravelError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "TravelStatus": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Settings > Modules > Travel."
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "GOOGLE_MAPS_API_KEY is set."
+          }
+        },
+        "required": [
+          "enabled",
+          "configured"
+        ]
       }
     },
     "parameters": {}
@@ -3873,6 +4054,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WeatherError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/travel": {
+      "get": {
+        "tags": [
+          "travel"
+        ],
+        "summary": "Driving times from home to each saved destination",
+        "description": "Google Routes API (traffic-aware, driving) for the home address and destinations in Settings. Cached 10 minutes; serves the last cached payload flagged `stale` when upstream fails.",
+        "responses": {
+          "200": {
+            "description": "Travel times",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Travel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Module disabled, GOOGLE_MAPS_API_KEY unset, no home address, or upstream unreachable with no cache",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/travel/status": {
+      "get": {
+        "tags": [
+          "travel"
+        ],
+        "summary": "Travel module configuration status",
+        "description": "Whether the module is enabled and GOOGLE_MAPS_API_KEY is set (no network call).",
+        "responses": {
+          "200": {
+            "description": "Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelStatus"
                 }
               }
             }

@@ -14,7 +14,8 @@ Self-hosted family wall-calendar and chores for two people: a big color-coded ca
 8. **iPad**: open the URL in Safari > Share > **Add to Home Screen**. Enable *Keep screen awake* in Settings > General for wall use.
 9. **Meals** (optional): run PantryPal on the same host or tailnet, set `PANTRYPAL_URL`, then enable Settings > Meals ([details](#meals-pantrypal)).
 10. **Weather** (optional): enable Settings > Weather, then use *Use this device's location* or enter latitude/longitude ([details](#weather)).
-11. Back up by copying `./data`.
+11. **Travel** (optional): set `GOOGLE_MAPS_API_KEY`, restart, then enable Settings > Travel and add a home address and destinations ([details](#travel)).
+12. Back up by copying `./data`.
 
 
 ## Develop
@@ -53,6 +54,7 @@ On first boot HomeHub creates the household (time zone from `HOMEHUB_TIMEZONE`, 
 | `PANTRYPAL_URL` | | PantryPal server base URL (server-to-server); the Meals module stays unavailable until set |
 | `PANTRYPAL_PUBLIC_URL` | `PANTRYPAL_URL` | Browser-facing PantryPal URL for recipe deep links |
 | `PANTRYPAL_TOKEN` | | Optional bearer token; omit when PantryPal runs with `PANTRYPAL_TRUST_NETWORK=1` |
+| `GOOGLE_MAPS_API_KEY` | | Google Cloud API key with the Routes API enabled; the Travel module stays unavailable until set |
 | `PORT` / `HOST` | `4000` / `0.0.0.0` | docker compose sets `8788` |
 
 Without trust mode, create a bearer token: `pnpm cli token create <name>`.
@@ -100,6 +102,12 @@ Start playback once in the Spotify app on your phone, speaker or computer; HomeH
 Weather uses [Open-Meteo](https://open-meteo.com) (free, no API key or account) for the location set in Settings > Weather: click **Use this device's location** (needs HTTPS, e.g. the tailscale URL) or enter latitude/longitude, pick °C/°F and an optional place label. At 1280px and wider the right column shows a weather card with a Daily/Hourly switch; below that the calendar header gets a temperature chip (tap for the same card) plus an **At a glance** button that opens the hidden right-column widgets. Below 960px the chip folds into that popup so the header stays on one row.
 
 The server caches forecasts for 15 minutes, so requests never hit Open-Meteo per page load. When Open-Meteo is unreachable the last cached forecast is served marked as stale; without a cache the header chip stays hidden, the card shows *Unavailable*, and calendars keep working.
+
+## Travel
+
+The right-column Travel card (below weather) shows the driving time with live traffic from your home address to every saved destination, plus how many minutes traffic adds when that is two or more. Tapping a row opens Google Maps directions. In Google Cloud, enable the **Routes API**, create an API key (restrict it to that API), put it in `GOOGLE_MAPS_API_KEY` and restart. Then enable Settings > Travel, enter the home address and add destinations (a name like "Work" plus a free-text address; up to 20).
+
+The server makes one `computeRouteMatrix` request for all destinations and caches it for 10 minutes, so a wall display left on all day uses about 144 matrix calls (one element per destination each). When Google fails the last result is shown marked *Last known*; a destination Google cannot route shows *No route*.
 
 ## Meals (PantryPal)
 

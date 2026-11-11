@@ -139,7 +139,8 @@ export function CalendarScreen() {
   // on one row at 768px.
   const chipFits = useMediaQuery("(min-width: 960px)");
   const modules = settings?.modules;
-  const hasWidgets = modules?.weather === true || modules?.meals === true || modules?.music === true;
+  const hasWidgets =
+    modules?.weather === true || modules?.meals === true || modules?.music === true || modules?.travel === true;
   const widgetColumn = wide && hasWidgets;
   const showWeatherChip = !widgetColumn && chipFits && modules?.weather === true;
   const { data: calendars = [] } = useCalendars();

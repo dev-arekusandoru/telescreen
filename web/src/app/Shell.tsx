@@ -53,8 +53,9 @@ export function Shell() {
   const tabs = visibleTabs(settings?.modules);
   useWakeLock(settings?.keepAwake ?? true);
   // Right column (>= 1280px, SPEC §8): only exists while a module that fills it is enabled.
+  const modules = settings?.modules;
   const showSide =
-    settings?.modules.weather === true || settings?.modules.meals === true || settings?.modules.music === true;
+    modules?.weather === true || modules?.meals === true || modules?.music === true || modules?.travel === true;
   return (
     <div className={styles.app} data-side={showSide ? "on" : undefined}>
       <nav className={styles.rail} aria-label="Primary">
