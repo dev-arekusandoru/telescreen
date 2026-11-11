@@ -4,7 +4,9 @@ import { useSyncExternalStore } from "react";
 const KEY = "homehub.dev.seasonalTheme";
 const listeners = new Set<() => void>();
 
+// Production builds ignore any stored override (it could be left over from a dev session on this origin).
 const read = () => {
+  if (!import.meta.env.DEV) return "auto";
   try {
     return localStorage.getItem(KEY) ?? "auto";
   } catch {

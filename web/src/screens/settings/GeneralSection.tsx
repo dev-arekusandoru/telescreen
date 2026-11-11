@@ -215,9 +215,11 @@ export function GeneralSection() {
         />
       </Row>
 
-      <Row icon={Wrench} title="Developer: seasonal theme" hint="Preview a theme on this device regardless of date">
-        <Select label="Seasonal theme" value={devTheme} onValueChange={setDevTheme} options={DEV_THEME_OPTIONS} />
-      </Row>
+      {import.meta.env.DEV ? (
+        <Row icon={Wrench} title="Developer: seasonal theme" hint="Preview a theme on this device regardless of date">
+          <Select label="Seasonal theme" value={devTheme} onValueChange={setDevTheme} options={DEV_THEME_OPTIONS} />
+        </Row>
+      ) : null}
     </section>
   );
 }
