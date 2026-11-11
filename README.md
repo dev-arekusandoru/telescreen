@@ -105,7 +105,7 @@ The server caches forecasts for 15 minutes, so requests never hit Open-Meteo per
 
 ## Travel
 
-The right-column Travel card (below weather) shows the driving time with live traffic from your home address to every saved destination, plus how many minutes traffic adds when that is two or more. Tapping a row opens Google Maps directions. In Google Cloud, enable the **Routes API**, create an API key (restrict it to that API), put it in `GOOGLE_MAPS_API_KEY` and restart. Then enable Settings > Travel, enter the home address and add destinations (a name like "Work" plus a free-text address; up to 20).
+The right-column Travel card (below weather) shows the driving time with live traffic from your home address to every saved destination, plus the arrival time and a Clear, Slow or Heavy status (traffic is "slow" at 10% over free-flow and "heavy" at 30%, ignoring delays under 5 minutes). Each destination has an icon and optionally a person, whose color tints the icon. Tapping a row opens Google Maps directions. In Google Cloud, enable the **Routes API**, create an API key (restrict it to that API), put it in `GOOGLE_MAPS_API_KEY` and restart. Then enable Settings > Travel, enter the home address and add destinations (a name like "Work" plus a free-text address; up to 20), choosing an icon and person for each.
 
 The server makes one `computeRouteMatrix` request for all destinations and caches it for 10 minutes, so a wall display left on all day uses about 144 matrix calls (one element per destination each). When Google fails the last result is shown marked *Last known*; a destination Google cannot route shows *No route*.
 

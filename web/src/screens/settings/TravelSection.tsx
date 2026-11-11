@@ -2,15 +2,19 @@ import { Car, House, Key, MapPin, Plus, Trash } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { errorMessage } from "@/api/errors";
-import { useSettings, useUpdateSettings, type UpdateSettings } from "@/features/queries";
-import { newDestinationId, travelKeys, useTravelStatus, type TravelSettings } from "@/features/travel";
-import { Switch } from "@/ui";
+import { useMembers, useSettings, useUpdateSettings, type UpdateSettings } from "@/features/queries";
+import { newDestinationId, travelKeys, useTravelStatus, type TravelDestination, type TravelSettings } from "@/features/travel";
+import { TRAVEL_ICONS, type TravelIcon } from "@/screens/travel/icons";
+import { Select, Switch, memberColorStyle, type SelectOption } from "@/ui";
 import { cx } from "@/ui/cx";
 import styles from "./Settings.module.css";
 import layout from "./TravelSection.module.css";
 
 /** Mirrors the server cap (`MAX_TRAVEL_DESTINATIONS`). */
 const MAX_DESTINATIONS = 20;
+
+const ICON_OPTIONS: SelectOption[] = Object.entries(TRAVEL_ICONS).map(([value, { label }]) => ({ value, label }));
+const NO_MEMBER = "none";
 
 /**
  * Text field that commits trimmed text on blur/Enter. Empty text commits `null` when
@@ -62,6 +66,7 @@ function CommitInput({
 /** Settings > Travel: enable, home address and any number of destinations (driving times via Google). */
 export function TravelSection() {
   const { data: settings } = useSettings();
+  const { data: members = [] } = useMembers();
   const { data: status } = useTravelStatus();
   const update = useUpdateSettings();
   const queryClient = useQueryClient();
@@ -77,8 +82,12 @@ export function TravelSection() {
   const saveTravel = (patch: Partial<TravelSettings>) => travel && save({ travel: { ...travel, ...patch } });
 
   const destinations = travel?.destinations ?? [];
-  const editDestination = (id: string, patch: { label?: string; address?: string }) =>
+  const editDestination = (id: string, patch: Partial<Pick<TravelDestination, "label" | "address" | "icon" | "memberId">>) =>
     saveTravel({ destinations: destinations.map((d) => (d.id === id ? { ...d, ...patch } : d)) });
+  const memberOptions: SelectOption[] = [
+    { value: NO_MEMBER, label: "No one", dot: memberColorStyle(null) },
+    ...members.map((m) => ({ value: m.id, label: m.name, dot: memberColorStyle(m.colorToken) })),
+  ];
 
   const canAdd = !busy && newLabel.trim() !== "" && newAddress.trim() !== "";
   const addDestination = () => {
@@ -87,7 +96,7 @@ export function TravelSection() {
       {
         travel: {
           ...travel,
-          destinations: [...destinations, { id: newDestinationId(), label: newLabel.trim(), address: newAddress.trim() }],
+          destinations: [...destinations, { id: newDestinationId(), label: newLabel.trim(), address: newAddress.trim(), icon: "pin", memberId: null }],
         },
       },
       {
@@ -154,7 +163,7 @@ export function TravelSection() {
       </div>
 
       {destinations.map((destination) => (
-        <div key={destination.id} className={styles.row}>
+        <div key={destination.id} className={cx(styles.row, layout.dest)}>
           <MapPin aria-hidden />
           <div className={layout.fields}>
             <CommitInput
@@ -172,6 +181,22 @@ export function TravelSection() {
               maxLength={200}
               className={layout.address}
               onCommit={(address) => address && !busy && editDestination(destination.id, { address })}
+            />
+          </div>
+          <div className={layout.picks}>
+            <Select
+              label={`${destination.label} icon`}
+              value={destination.icon}
+              options={ICON_OPTIONS}
+              disabled={busy}
+              onValueChange={(icon) => editDestination(destination.id, { icon: icon as TravelIcon })}
+            />
+            <Select
+              label={`${destination.label} person`}
+              value={destination.memberId ?? NO_MEMBER}
+              options={memberOptions}
+              disabled={busy}
+              onValueChange={(id) => editDestination(destination.id, { memberId: id === NO_MEMBER ? null : id })}
             />
           </div>
           <button

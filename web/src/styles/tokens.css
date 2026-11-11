@@ -17,6 +17,9 @@
   --shadow: 0 2px 0 var(--line), 0 10px 24px -14px rgba(60, 40, 10, 0.35);
   --shadow-pop: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
 
+  /* Traffic status on the Travel card (text on --surface). */
+  --traffic-slow: #9a6a10;
+  --traffic-heavy: #b3342a;
   /* Member palette (SPEC §8). Keys match `MEMBER_COLORS` on the server. */
   --member-terracotta: #a84c2a;
   --member-sage: #557f61;
@@ -62,6 +65,8 @@
   --on-accent: #1b1510;
   --scrim: rgba(0, 0, 0, 0.6);
   --shadow: 0 0 0 1px var(--line), 0 12px 28px -16px rgba(0, 0, 0, 0.7);
+  --traffic-slow: #e5b44f;
+  --traffic-heavy: #ef7b70;
   --member-terracotta: #e58d66;
   --member-sage: #8fbf9c;
   --member-ochre: #e0b04f;
@@ -85,6 +90,8 @@
     --on-accent: #1b1510;
     --scrim: rgba(0, 0, 0, 0.6);
     --shadow: 0 0 0 1px var(--line), 0 12px 28px -16px rgba(0, 0, 0, 0.7);
+    --traffic-slow: #e5b44f;
+    --traffic-heavy: #ef7b70;
     --member-terracotta: #e58d66;
     --member-sage: #8fbf9c;
     --member-ochre: #e0b04f;

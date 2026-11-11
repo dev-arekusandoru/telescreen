@@ -64,13 +64,36 @@
   border-radius: 8px;
 }
 
-.label {
+.glyph {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  color: var(--c);
+}
+
+/* Name and arrival (left) mirror duration and status (right): two lines each, so the rows align. */
+.text {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-width: 0;
+}
+
+.label {
   font-size: 15px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.text small,
+.time small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .time {
@@ -82,10 +105,15 @@
   white-space: nowrap;
 }
 
-.delay {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--accent);
+/* Color only when traffic is a problem; the status word carries it for everyone else. */
+.time[data-level="slow"] b,
+.time[data-level="slow"] small {
+  color: var(--traffic-slow);
+}
+
+.time[data-level="heavy"] b,
+.time[data-level="heavy"] small {
+  color: var(--traffic-heavy);
 }
 
 .none,

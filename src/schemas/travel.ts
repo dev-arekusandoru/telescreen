@@ -3,11 +3,16 @@ import { z } from "@hono/zod-openapi";
 /** Routes API allows 50 elements per matrix request with address waypoints; one origin keeps us far below. */
 export const MAX_TRAVEL_DESTINATIONS = 20;
 
+/** Curated icon keys; the web maps each to a glyph. */
+export const TRAVEL_ICONS = ["pin", "home", "work", "school", "shop", "airport", "gym"] as const;
+
 export const travelDestinationSchema = z
   .object({
     id: z.string().min(1).max(40).describe("Client-generated stable id."),
     label: z.string().trim().min(1).max(40).describe('Short name shown in the widget, e.g. "Work".'),
     address: z.string().trim().min(1).max(200).describe("Free-text address; Google resolves it."),
+    icon: z.enum(TRAVEL_ICONS).default("pin").describe("Glyph shown beside the label."),
+    memberId: z.string().nullable().default(null).describe("Whose destination this is (tints the icon); null = neutral."),
   })
   .openapi("TravelDestination");
 

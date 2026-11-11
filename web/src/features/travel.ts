@@ -42,6 +42,24 @@ export function trafficDelayMinutes(route: TravelRoute): number {
   return delay >= 2 ? delay : 0;
 }
 
+export type TrafficLevel = "clear" | "slow" | "heavy";
+
+/** Clear under 5 extra minutes or 10% over free-flow; slow under 30%; heavy beyond. Null when unknown. */
+export function trafficLevel(route: TravelRoute): TrafficLevel | null {
+  if (route.durationSeconds === null || route.staticDurationSeconds === null || route.staticDurationSeconds <= 0) return null;
+  const extra = route.durationSeconds - route.staticDurationSeconds;
+  const ratio = extra / route.staticDurationSeconds;
+  if (extra < 5 * 60 || ratio < 0.1) return "clear";
+  return ratio < 0.3 ? "slow" : "heavy";
+}
+
+/** "10:37pm" in the given zone. */
+export function arrivalTime(at: Date, timeZone: string | undefined): string {
+  return at
+    .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", ...(timeZone ? { timeZone } : {}) })
+    .replace(/\s?(AM|PM)$/, (m) => m.trim().toLowerCase());
+}
+
 /** Google Maps driving directions for one destination (universal URL, opens the app on phones). */
 export function directionsUrl(home: string, address: string): string {
   const params = new URLSearchParams({ api: "1", origin: home, destination: address, travelmode: "driving" });

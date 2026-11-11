@@ -7,9 +7,9 @@ import { makeTestApp } from "./helpers.js";
 const REQUEST: TravelRequest = {
   home: "1 Home St",
   destinations: [
-    { id: "d1", label: "Work", address: "2 Work Rd" },
-    { id: "d2", label: "Gym", address: "3 Gym Ave" },
-    { id: "d3", label: "Island", address: "Nowhere" },
+    { id: "d1", label: "Work", address: "2 Work Rd", icon: "work", memberId: null },
+    { id: "d2", label: "Gym", address: "3 Gym Ave", icon: "gym", memberId: null },
+    { id: "d3", label: "Island", address: "Nowhere", icon: "pin", memberId: null },
   ],
 };
 
@@ -145,6 +145,14 @@ describe("GET /travel", () => {
     const got = await t.request<{ weekMode: string; modules: Record<string, boolean> }>("GET", "/api/v1/settings");
     expect(got.body.weekMode).toBe("fixed");
     expect(got.body.modules).toEqual({ weather: true, meals: false, music: false, travel: false });
+  });
+
+  it("loads destinations stored before icons and people existed", async () => {
+    const t = makeTestApp();
+    const legacy = JSON.stringify({ home: "h", destinations: [{ id: "x", label: "Work", address: "a" }] });
+    t.db.insert(settings).values({ key: "travel", valueJson: legacy }).onConflictDoUpdate({ target: settings.key, set: { valueJson: legacy } }).run();
+    const got = await t.request<{ travel: { destinations: unknown[] } }>("GET", "/api/v1/settings");
+    expect(got.body.travel.destinations).toEqual([{ id: "x", label: "Work", address: "a", icon: "pin", memberId: null }]);
   });
 
   it("rejects invalid destinations", async () => {

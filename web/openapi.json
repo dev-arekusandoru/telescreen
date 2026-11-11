@@ -470,6 +470,28 @@
             "minLength": 1,
             "maxLength": 200,
             "description": "Free-text address; Google resolves it."
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "pin",
+              "home",
+              "work",
+              "school",
+              "shop",
+              "airport",
+              "gym"
+            ],
+            "default": "pin",
+            "description": "Glyph shown beside the label."
+          },
+          "memberId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "description": "Whose destination this is (tints the icon); null = neutral."
           }
         },
         "required": [

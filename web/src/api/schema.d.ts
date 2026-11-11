@@ -2231,6 +2231,17 @@ export interface components {
             label: string;
             /** @description Free-text address; Google resolves it. */
             address: string;
+            /**
+             * @description Glyph shown beside the label.
+             * @default pin
+             * @enum {string}
+             */
+            icon: "pin" | "home" | "work" | "school" | "shop" | "airport" | "gym";
+            /**
+             * @description Whose destination this is (tints the icon); null = neutral.
+             * @default null
+             */
+            memberId: string | null;
         };
         UpdateSettingsInput: {
             /**

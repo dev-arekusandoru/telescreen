@@ -4,11 +4,27 @@
   width: 320px;
 }
 
+/* Destination rows wrap: name + address first, then the icon/person pickers, then the trash button. */
+.dest {
+  flex-wrap: wrap;
+}
+
 .fields {
   display: flex;
   gap: 8px;
-  flex: 1;
+  flex: 1 1 320px;
   min-width: 0;
+}
+
+.picks {
+  display: flex;
+  gap: 8px;
+  flex: 0 1 auto;
+}
+
+.picks > button {
+  flex: 1 1 0;
+  min-width: 120px;
 }
 
 .name {
