@@ -228,7 +228,6 @@ export function CalendarScreen() {
 
   useIdleReturn(settings?.idleReturnMinutes ?? 2, () => {
     setSheet(null);
-    setView("week");
     goToday();
   });
 

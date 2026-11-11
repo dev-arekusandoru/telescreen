@@ -2163,7 +2163,7 @@ export interface components {
              * @enum {string}
              */
             weekMode: "rolling" | "fixed";
-            /** @description Idle minutes before returning to today's Week view; 0 disables. */
+            /** @description Idle minutes before returning to today in the selected view; 0 disables. */
             idleReturnMinutes: number;
             /** @description Calendar poll interval. */
             syncIntervalMinutes: number;
@@ -2233,7 +2233,7 @@ export interface components {
              * @enum {string}
              */
             weekMode?: "rolling" | "fixed";
-            /** @description Idle minutes before returning to today's Week view; 0 disables. */
+            /** @description Idle minutes before returning to today in the selected view; 0 disables. */
             idleReturnMinutes?: number;
             /** @description Calendar poll interval. */
             syncIntervalMinutes?: number;

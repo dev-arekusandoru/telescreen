@@ -247,7 +247,7 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 240,
-            "description": "Idle minutes before returning to today's Week view; 0 disables."
+            "description": "Idle minutes before returning to today in the selected view; 0 disables."
           },
           "syncIntervalMinutes": {
             "type": "integer",
@@ -488,7 +488,7 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 240,
-            "description": "Idle minutes before returning to today's Week view; 0 disables."
+            "description": "Idle minutes before returning to today in the selected view; 0 disables."
           },
           "syncIntervalMinutes": {
             "type": "integer",

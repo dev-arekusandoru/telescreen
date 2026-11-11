@@ -60,6 +60,29 @@ test("theme override applies and persists across reload", async ({ page }) => {
   expect(lightBg).not.toBe(darkBg);
 });
 
+test("calendar keeps the selected view after idle, navigation and reload", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/calendar");
+  const month = page.getByRole("radio", { name: "Month", exact: true });
+  await month.click();
+  await expect(page.locator(".fc-dayGridMonth-view")).toBeVisible();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Today", exact: true })).toBeVisible();
+
+  await page.clock.fastForward(2 * 60_000 + 1);
+  await expect(page.getByRole("button", { name: "Today", exact: true })).toHaveCount(0);
+  await expect(month).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".fc-dayGridMonth-view")).toBeVisible();
+
+  const nav = page.getByRole("navigation", { name: "Primary" }).filter({ visible: true });
+  await nav.getByRole("link", { name: "Chores" }).click();
+  await nav.getByRole("link", { name: "Calendar" }).click();
+  await expect(month).toHaveAttribute("aria-checked", "true");
+  await page.reload();
+  await expect(month).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".fc-dayGridMonth-view")).toBeVisible();
+});
+
 test("settings: household name and members can be edited", async ({ page }) => {
   await page.goto("/settings");
   const name = page.getByRole("textbox", { name: "Household name" });

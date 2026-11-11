@@ -69,7 +69,7 @@ chevrons, range, member chips, weather, view switcher) down to 768px, wrapping b
 1280px the weather chip stands in for the hidden right column, and a single "At a glance" button
 opens the other right-column widgets in a popup (below 960px weather folds into that popup so the
 header stays on one row); the last view mode is remembered per device. Idle for 2 min returns to
-today's Week view (wall-display behavior; setting).
+today in the selected view without changing the remembered view mode (wall-display behavior; setting).
 
 **Meals in the week/day grid**: when the Meals module is on and the visible range has planned meals,
 a fixed-height rail sits under the day columns (outside the scrolling grid, so it never overlaps
