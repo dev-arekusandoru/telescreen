@@ -63,55 +63,172 @@
   }
 }
 
-/* Current conditions stay above the Daily/Hourly switch. */
-.scope {
+/* Hero: current conditions */
+.hero {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
-/* Five-day strip */
-.strip {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
+.heroIcon {
+  font-size: 40px;
+  color: var(--accent);
+  flex: none;
+}
+
+.heroTemp {
+  font-family: var(--display);
+  font-size: 52px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.heroSide {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-left: auto;
+  text-align: right;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.heroLabel {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Next sun event or rain, plus the UV chip */
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.line svg {
+  vertical-align: -2px;
+  color: var(--accent);
+}
+
+.uv {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface2);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Daily rows: day, icon, rain, low, range bar on the week's shared scale, high */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.day {
-  display: flex;
-  flex-direction: column;
+.row {
+  display: grid;
+  grid-template-columns: 40px 22px 32px 28px minmax(0, 1fr) 28px;
   align-items: center;
-  gap: 3px;
-  padding: 8px 2px;
-  border-radius: 12px;
+  gap: 5px;
+  padding: 6px 4px;
   font-size: var(--fs-small);
 }
 
-.day:first-child {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+.rowDay {
+  color: var(--muted);
+  font-size: 12px;
 }
 
-.dayName {
+.rowIcon {
+  font-size: 20px;
+}
+
+.rowRain {
   color: var(--muted);
   font-size: 11px;
-  letter-spacing: 0.02em;
+  text-align: right;
 }
 
-.dayIcon {
-  font-size: 24px;
-  margin: 2px 0;
+.rowLow {
+  color: var(--muted);
+  text-align: right;
+}
+
+.track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface2);
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: left 400ms var(--ease), width 400ms var(--ease);
+}
+
+/* Tapping the forecast swaps Daily/Hourly; the visually hidden button is the keyboard path. */
+.forecast {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+  transition: height 250ms var(--ease);
+}
+
+.view {
+  position: absolute;
+  inset: 0 0 auto;
+  transition: opacity 200ms ease-out;
+}
+
+.view:not([data-active]) {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease-out, visibility 0s linear 200ms;
+}
+
+.swapIn {
+  animation: swapIn 300ms ease-out;
+}
+
+@keyframes swapIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.forecast:has(.swap:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.swap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .high {
   font-weight: 600;
   color: var(--ink);
-}
-
-.low {
-  color: var(--muted);
 }
 
 .precip {
@@ -130,14 +247,16 @@
 .hours {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 54px;
+  grid-auto-columns: calc((100% - 16px) / 5);
   gap: 4px;
   list-style: none;
-  margin: 0 -2px;
-  padding: 0 2px 6px;
+  margin: 0;
+  padding: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  /* The fade is the scroll cue now that the scrollbar is hidden. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
 
 .hour {
@@ -145,13 +264,9 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 8px 2px;
+  padding: 2px 0;
   border-radius: 12px;
   font-size: var(--fs-small);
-}
-
-.hour:first-child {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .hourTime {
@@ -188,44 +303,6 @@
   margin-bottom: 8px;
 }
 
-.place {
-  color: var(--muted);
-  font-family: var(--font);
-  font-size: var(--fs-small);
-  font-weight: 400;
-  margin-left: auto;
-}
-
-.now {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--fs-base);
-  margin-bottom: 10px;
-}
-
-.nowIcon {
-  font-size: 26px;
-  color: var(--accent);
-  flex: none;
-}
-
-.now b {
-  font-family: var(--display);
-  font-size: 24px;
-  line-height: 1;
-}
-
-.now span {
-  color: var(--muted);
-  font-size: var(--fs-small);
-}
-
-.nowRange {
-  margin-left: auto;
-  white-space: nowrap;
-}
-
 .unavailable {
   color: var(--muted);
   font-size: var(--fs-small);
@@ -233,6 +310,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chip,
+  .forecast,
+  .fill,
   .pop[data-state="open"] {
     animation: none;
     transition: none;

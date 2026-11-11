@@ -99,7 +99,7 @@ Start playback once in the Spotify app on your phone, speaker or computer; HomeH
 
 ## Weather
 
-Weather uses [Open-Meteo](https://open-meteo.com) (free, no API key or account) for the location set in Settings > Weather: click **Use this device's location** (needs HTTPS, e.g. the tailscale URL) or enter latitude/longitude, pick °C/°F and an optional place label. At 1280px and wider the right column shows a weather card with a Daily/Hourly switch; below that the calendar header gets a temperature chip (tap for the same card) plus an **At a glance** button that opens the hidden right-column widgets. Below 960px the chip folds into that popup so the header stays on one row.
+Weather uses [Open-Meteo](https://open-meteo.com) (free, no API key or account) for the location set in Settings > Weather: click **Use this device's location** (needs HTTPS, e.g. the tailscale URL) or enter latitude/longitude, pick °C/°F, an optional place label and an optional UV index chip. At 1280px and wider the right column shows a weather card (tap the forecast to swap Daily and Hourly); below that the calendar header gets a temperature chip (tap for the same card) plus an **At a glance** button that opens the hidden right-column widgets. Below 960px the chip folds into that popup so the header stays on one row.
 
 The server caches forecasts for 15 minutes, so requests never hit Open-Meteo per page load. When Open-Meteo is unreachable the last cached forecast is served marked as stale; without a cache the header chip stays hidden, the card shows *Unavailable*, and calendars keep working.
 
