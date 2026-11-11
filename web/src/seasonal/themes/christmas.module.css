@@ -25,22 +25,54 @@
 
 @keyframes twinkle { to { opacity: .25; } }
 
-.tree {
+
+.largeTree {
   position: absolute;
-  width: 38px;
-  opacity: .78;
+  right: 10px;
+  bottom: calc(var(--floor) - 16px);
+  width: 120px;
 }
 
-.leftTree { top: 16px; left: 12px; }
-.rightTree { top: 16px; right: 12px; transform: scaleX(-1); }
-
-.wreath {
-  position: absolute;
-  left: 7px;
-  top: 275px;
-  width: 48px;
-  opacity: .9;
+.logoWreath {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
 }
+
+.holly {
+  position: absolute;
+  width: 40px;
+  height: 34px;
+}
+
+/* Rail dead space above the sync button (same perch as the other themes). */
+.hollyRail { left: 20px; bottom: calc(var(--floor) + 70px); }
+.hollyTree { right: 128px; bottom: calc(var(--floor) + 2px); transform: scaleX(-1); }
+
+.holly i {
+  position: absolute;
+  width: 23px;
+  height: 12px;
+  background: #286640;
+  border-radius: 100% 0 100% 0;
+}
+
+.holly i:nth-child(1) { left: 3px; top: 8px; transform: rotate(-25deg); }
+.holly i:nth-child(2) { left: 19px; top: 4px; transform: rotate(24deg); }
+.holly i:nth-child(3) { left: 13px; top: 22px; transform: rotate(52deg); }
+.holly::after {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 15px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d94b48;
+  box-shadow: 7px 5px #d94b48, -3px 8px #d94b48;
+}
+
 
 .flake {
   position: absolute;
@@ -83,11 +115,10 @@
   to { transform: translateX(-45px); }
 }
 
+/* Phones: the + button sits bottom-right above the tab bar, so skip the tree and its holly. */
 @media (max-width: 599px) {
-  .tree { width: 30px; }
-  .leftTree { left: 5px; }
-  .rightTree { right: 5px; }
-  .wreath { top: 160px; left: 3px; width: 44px; }
+  .largeTree, .hollyTree { display: none; }
+  .hollyRail { left: 12px; bottom: calc(var(--floor) + 82px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -43,6 +43,8 @@ export function Valentines({ syncedAt }: ThemeProps) {
     } as React.CSSProperties} onAnimationEnd={(event) => {
       if (event.target === event.currentTarget) setItems((old) => old.filter((item) => item.id !== heart.id));
     }}><img src={heart.src} alt="" /></span>)}
-    <img className={styles.letter} src={loveLetter} alt="" />
   </>;
+}
+export function ValentinesLogo() {
+  return <img className={styles.logo} src={loveLetter} alt="" />;
 }

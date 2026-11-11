@@ -4,7 +4,7 @@
   left: -48px;
   width: 34px;
   height: 34px;
-  opacity: .56;
+  opacity: .88;
   animation: bat-cross var(--duration) linear var(--delay) infinite;
   will-change: transform;
 }
@@ -26,11 +26,14 @@
   top: 0;
   right: 16%;
   width: 1px;
-  height: 150px;
+  height: 120px;
   background: linear-gradient(#5b4651, #5b465100);
   animation: spider-drop 8s ease-in-out infinite;
 }
 .thread img { position: absolute; bottom: 0; left: -16px; width: 32px; height: 32px; }
+.thread1 { left: 16%; right: auto; animation-delay: -2.7s; }
+.thread2 { left: 50%; right: auto; animation-delay: -5.3s; }
+
 
 .pumpkin {
   position: absolute;
@@ -89,12 +92,12 @@
 }
 @keyframes ghost-rise {
   0% { opacity: 0; transform: translateY(0) scale(.7); }
-  18% { opacity: .48; }
+  18% { opacity: .82; }
   100% { opacity: 0; transform: translateY(-78vh) scale(1); }
 }
 @keyframes spider-drop {
-  0%, 12%, 72%, 100% { height: 42px; }
-  38%, 52% { height: 150px; }
+  0%, 12%, 72%, 100% { height: 36px; }
+  38%, 52% { height: 120px; }
 }
 @keyframes pumpkin-walk {
   from { transform: translateX(0); }

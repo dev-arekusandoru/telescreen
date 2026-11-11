@@ -1,4 +1,4 @@
-import { Seasonal } from "@/seasonal/Seasonal";
+import { Seasonal, useActiveTheme } from "@/seasonal/Seasonal";
 import { ArrowsClockwise } from "@phosphor-icons/react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { ago } from "@/app/dates";
@@ -54,13 +54,15 @@ export function Shell() {
   const tabs = visibleTabs(settings?.modules);
   useWakeLock(settings?.keepAwake ?? true);
   // Right column (>= 1280px, SPEC §8): only exists while a module that fills it is enabled.
+  const seasonalLogo = useActiveTheme()?.Logo;
+  const Logo = (settings?.seasonalDecor ?? true) ? seasonalLogo : undefined;
   const showSide =
     settings?.modules.weather === true || settings?.modules.meals === true || settings?.modules.music === true;
   return (
     <div className={styles.app} data-side={showSide ? "on" : undefined}>
       <nav className={styles.rail} aria-label="Primary">
         <div className={styles.logo} aria-hidden="true">
-          H
+          {Logo ? <Logo /> : "H"}
         </div>
         <NavLinks tabs={tabs} />
         <SyncButton />

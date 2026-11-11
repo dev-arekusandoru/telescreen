@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import reindeer from "../art/christmas/reindeer.svg";
-import wreath from "../art/christmas/wreath.svg";
 import snowflake from "../art/christmas/snowflake.svg";
 import tree from "../art/christmas/tree.svg";
+import wreath from "../art/christmas/wreath.png";
 import styles from "./christmas.module.css";
 import type { ThemeProps } from "../types";
 
@@ -50,9 +50,9 @@ export function Christmas({ syncedAt }: ThemeProps) {
       <div className={styles.lights} aria-hidden="true">
         {lights.map((i) => <i key={i} style={{ "--i": i } as React.CSSProperties} />)}
       </div>
-      <img src={tree} alt="" className={`${styles.tree} ${styles.leftTree}`} />
-      <img src={tree} alt="" className={`${styles.tree} ${styles.rightTree}`} />
-      <img src={wreath} alt="" className={styles.wreath} />
+      <img src={tree} alt="" className={styles.largeTree} />
+      <div className={`${styles.holly} ${styles.hollyRail}`} aria-hidden="true"><i /><i /><i /></div>
+      <div className={`${styles.holly} ${styles.hollyTree}`} aria-hidden="true"><i /><i /><i /></div>
       {flakes.map((flake) => (
         <span key={flake.id} className={`${styles.flake} ${styles[`shape${flake.shape}`]} ${flake.landed ? styles.landed : ""} ${gust && flake.landed ? styles.gust : ""}`}
           onAnimationEnd={(event) => {
@@ -67,4 +67,8 @@ export function Christmas({ syncedAt }: ThemeProps) {
       <img src={reindeer} alt="" className={styles.walker} />
     </>
   );
+}
+
+export function ChristmasLogo() {
+  return <img src={wreath} className={styles.logoWreath} alt="" />;
 }

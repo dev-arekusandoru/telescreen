@@ -15,4 +15,6 @@ export interface ThemeDef {
   /** Local date test; the first matching theme in the registry wins, so specific events come before broad seasons. */
   active: (d: Date) => boolean;
   Component: ComponentType<ThemeProps>;
+  /** Optional replacement for the "H" mark at the top of the side rail; renders inside a 48x48 box. */
+  Logo?: ComponentType;
 }

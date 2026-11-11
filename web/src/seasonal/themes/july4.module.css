@@ -1,93 +1,74 @@
-.launch {
+.fw {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: 2px;
-  height: 2px;
-  animation: launch 7.8s linear var(--delay) infinite;
-  animation-fill-mode: backwards;
+  width: 0;
+  height: 0;
 }
 
-.trail {
+.rocket {
   position: absolute;
-  left: 0;
+  left: -2px;
   top: 0;
-  width: 2px;
-  height: 30px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: linear-gradient(to top, transparent, #f4c75a);
-  transform: translateY(0);
-  animation: trail 7.8s linear var(--delay) infinite;
+  background: #f5cb52;
+  /* Trail: soft glows stacked below the head. */
+  box-shadow: 0 10px 6px -1px rgb(245 203 82 / 0.6), 0 20px 8px -2px rgb(245 203 82 / 0.3);
+  opacity: 0;
+  animation: rise 8s ease-out var(--delay) infinite;
 }
 
-.explosion, .finalBurst {
-  position: absolute;
-  inset: 0;
-  color: #ef5350;
-  animation: spark 7.8s linear var(--delay) infinite;
+@keyframes rise {
+  0% { transform: translateY(170px); opacity: 0; }
+  2% { opacity: 1; }
+  14% { transform: translateY(0); opacity: 1; }
+  15%, 100% { transform: translateY(0); opacity: 0; }
 }
 
-.explosion i, .finalBurst i {
+.p {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 3px;
-  height: 3px;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 5px currentColor;
-  transform: rotate(var(--angle)) translateY(-2px);
-  animation: ray 7.8s ease-out var(--delay) infinite;
+  background: var(--pc);
+  box-shadow: 0 0 7px 1px var(--pc);
+  opacity: 0;
+  animation: burst 8s cubic-bezier(0.1, 0.7, 0.3, 1) var(--delay) infinite;
 }
 
-.explosion i:nth-child(3n), .finalBurst i:nth-child(3n) { color: #fff; }
-.explosion i:nth-child(3n + 1), .finalBurst i:nth-child(3n + 1) { color: #f5cb52; }
-.explosion i:nth-child(3n + 2), .finalBurst i:nth-child(3n + 2) { color: #477ac0; }
-.explosion i:nth-child(1), .finalBurst i:nth-child(1) { --angle: 0deg; }
-.explosion i:nth-child(2), .finalBurst i:nth-child(2) { --angle: 36deg; }
-.explosion i:nth-child(3), .finalBurst i:nth-child(3) { --angle: 72deg; }
-.explosion i:nth-child(4), .finalBurst i:nth-child(4) { --angle: 108deg; }
-.explosion i:nth-child(5), .finalBurst i:nth-child(5) { --angle: 144deg; }
-.explosion i:nth-child(6), .finalBurst i:nth-child(6) { --angle: 180deg; }
-.explosion i:nth-child(7), .finalBurst i:nth-child(7) { --angle: 216deg; }
-.explosion i:nth-child(8), .finalBurst i:nth-child(8) { --angle: 252deg; }
-.explosion i:nth-child(9), .finalBurst i:nth-child(9) { --angle: 288deg; }
-.explosion i:nth-child(10), .finalBurst i:nth-child(10) { --angle: 324deg; }
+.p:nth-child(4n + 1) { --pc: #d94b48; }
+.p:nth-child(4n + 2) { --pc: #3f6fb8; }
+.p:nth-child(4n + 3) { --pc: #f0b429; }
+.p:nth-child(4n) { --pc: #ffffff; box-shadow: 0 0 7px 2px #7b8fb5; }
 
-@keyframes launch {
-  0%, 3% { transform: translateY(34px); opacity: 0; }
-  8% { opacity: .68; }
-  17%, 100% { transform: translateY(0); opacity: 0; }
+@keyframes burst {
+  0%, 14% { transform: rotate(var(--a)) translateX(0) scale(0.4); opacity: 0; }
+  16% { opacity: 1; }
+  32% { transform: rotate(var(--a)) translateX(58px) scale(1); opacity: 0.95; }
+  42%, 100% { transform: rotate(var(--a)) translateX(68px) scale(0.5); opacity: 0; }
 }
 
-@keyframes trail {
-  0%, 3% { transform: translateY(0) scaleY(0); opacity: 0; }
-  8% { transform: translateY(-25px) scaleY(1); opacity: .65; }
-  17%, 100% { transform: translateY(-25px) scaleY(.2); opacity: 0; }
+/* Sync finale: same particles, one shot, no rocket. */
+.once { position: absolute; inset: 0; }
+.once .p { animation: burstOnce 1.8s cubic-bezier(0.1, 0.7, 0.3, 1) var(--delay) both; }
+
+@keyframes burstOnce {
+  0% { transform: rotate(var(--a)) translateX(0) scale(0.4); opacity: 0; }
+  10% { opacity: 1; }
+  60% { transform: rotate(var(--a)) translateX(60px) scale(1); opacity: 0.95; }
+  100% { transform: rotate(var(--a)) translateX(72px) scale(0.5); opacity: 0; }
 }
 
-@keyframes spark {
-  0%, 17% { opacity: 0; }
-  19% { opacity: .72; }
-  25%, 100% { opacity: 0; }
-}
-
-@keyframes ray {
-  0%, 18% { transform: rotate(var(--angle)) translateY(-2px) scale(.2); opacity: 0; }
-  20% { opacity: .8; }
-  25%, 100% { transform: rotate(var(--angle)) translateY(-22px) scale(.7); opacity: 0; }
-}
-
-.flag {
-  position: absolute;
-  width: 32px;
+.logo {
+  width: 44px;
   height: auto;
-  opacity: .72;
-  transform-origin: top left;
   animation: wave 3s ease-in-out infinite alternate;
+  transform-origin: 50% 50%;
 }
-.flagLeft { top: 10px; left: 10px; }
-.flagRight { top: 10px; right: 12px; transform-origin: top right; animation-delay: -1.5s; }
 
 @keyframes wave { to { transform: rotate(7deg); } }
 
@@ -101,25 +82,13 @@
   color: #f5cb52;
   background: currentColor;
   box-shadow: 0 0 6px 2px currentColor, 8px -4px 2px -1px #fff, -6px -7px 3px -1px #fff;
-  animation: glint .8s steps(2, end) infinite alternate;
+  animation: glint 0.8s steps(2, end) infinite alternate;
 }
 
-@keyframes glint { to { opacity: .28; transform: scale(.7); } }
-
-.finale { position: absolute; inset: 0; pointer-events: none; }
-.finalBurst {
-  left: var(--x);
-  top: var(--y);
-  animation: finale .95s ease-out var(--delay) both;
-}
-.finalBurst i { animation: finaleRay .95s ease-out var(--delay) both; }
-@keyframes finale { 0% { opacity: 0; } 15% { opacity: .8; } 100% { opacity: 0; } }
-@keyframes finaleRay { from { transform: rotate(calc(var(--n) * 36deg)) translateY(-2px); } to { transform: rotate(calc(var(--n) * 36deg)) translateY(-34px); opacity: 0; } }
+@keyframes glint { to { opacity: 0.28; transform: scale(0.7); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .launch, .trail, .explosion, .explosion i, .flag, .sparkler { animation: none; }
-  .launch, .trail, .explosion { opacity: 0; }
-  .flag { transform: none; }
-  .sparkler { opacity: .7; }
-  .finale { display: none; }
+  .fw, .once { display: none; }
+  .logo { animation: none; }
+  .sparkler { animation: none; opacity: 0.7; }
 }

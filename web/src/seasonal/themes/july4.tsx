@@ -3,39 +3,56 @@ import flag from "../art/july4/flag.svg";
 import styles from "./july4.module.css";
 import type { ThemeProps } from "../types";
 
-const BURST_COUNT = 10;
-const bursts = [
-  { x: 18, y: 24, delay: "0s" },
-  { x: 48, y: 39, delay: "2.7s" },
-  { x: 78, y: 20, delay: "5.1s" },
+const PARTICLES = 14;
+// 8s cycle each; staggered so a burst is on screen most of the time. Kept out of the header (top ~60px).
+const BURSTS = [
+  { x: 24, y: 28, delay: 0 },
+  { x: 60, y: 22, delay: 2 },
+  { x: 40, y: 42, delay: 4 },
+  { x: 80, y: 36, delay: 6 },
 ];
+const FINALE = [
+  { x: 20, y: 26, delay: 0 },
+  { x: 50, y: 20, delay: 0.25 },
+  { x: 78, y: 28, delay: 0.5 },
+  { x: 36, y: 44, delay: 0.75 },
+  { x: 66, y: 46, delay: 1 },
+];
+
+const Sparks = () =>
+  Array.from({ length: PARTICLES }, (_, i) => <i key={i} className={styles.p} style={{ "--a": `${(i * 360) / PARTICLES}deg` } as React.CSSProperties} />);
 
 export function July4({ syncedAt }: ThemeProps) {
   const [finale, setFinale] = useState(0);
   const lastSync = useRef(syncedAt);
   useEffect(() => {
-    if (lastSync.current !== syncedAt) {
-      lastSync.current = syncedAt;
-      setFinale((n) => n + 1);
-    }
+    if (lastSync.current === syncedAt) return;
+    lastSync.current = syncedAt;
+    setFinale((n) => n + 1);
   }, [syncedAt]);
 
   return (
     <>
-      {bursts.map((burst, index) => (
-        <div key={index} className={styles.launch} style={{ "--x": `${burst.x}%`, "--y": `${burst.y}%`, "--delay": burst.delay } as React.CSSProperties}>
-          <i className={styles.trail} />
-          <div className={styles.explosion}>
-            {Array.from({ length: BURST_COUNT }, (_, particle) => <i key={particle} />)}
-          </div>
+      {BURSTS.map((b, i) => (
+        <div key={i} className={styles.fw} style={{ "--x": `${b.x}%`, "--y": `${b.y}%`, "--delay": `${b.delay}s` } as React.CSSProperties}>
+          <i className={styles.rocket} />
+          <Sparks />
         </div>
       ))}
-      {finale > 0 && <div key={finale} className={styles.finale}>
-        {Array.from({ length: 3 }, (_, index) => <div key={index} className={styles.finalBurst} style={{ "--x": `${20 + index * 30}%`, "--y": `${25 + (index % 2) * 18}%`, "--delay": `${index * 180}ms` } as React.CSSProperties}>{Array.from({ length: BURST_COUNT }, (_, particle) => <i key={particle} />)}</div>)}
-      </div>}
-      <img src={flag} alt="" className={`${styles.flag} ${styles.flagLeft}`} />
-      <img src={flag} alt="" className={`${styles.flag} ${styles.flagRight}`} />
+      {finale > 0 && (
+        <div key={finale} className={styles.once}>
+          {FINALE.map((b, i) => (
+            <div key={i} className={styles.fw} style={{ "--x": `${b.x}%`, "--y": `${b.y}%`, "--delay": `${b.delay}s` } as React.CSSProperties}>
+              <Sparks />
+            </div>
+          ))}
+        </div>
+      )}
       <div className={styles.sparkler} />
     </>
   );
+}
+
+export function July4Logo() {
+  return <img src={flag} alt="" className={styles.logo} />;
 }

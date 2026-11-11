@@ -23,11 +23,10 @@
 .scatter { animation: scatter 1s ease-out forwards; }
 @keyframes scatter { to { transform: translate(var(--scatter), -70px) rotate(150deg); opacity: 0; } }
 @keyframes glint { to { filter: brightness(1.2); } }
-.rainbow { position: absolute; width: 210px; height: 105px; top: -48px; right: -8px; opacity: .14; animation: fade 7s ease-in-out infinite alternate; }
-@keyframes fade { to { opacity: .28; } }
+.logo { display: block; width: 44px; height: 44px; }
 .pot { position: absolute; right: 13px; bottom: calc(var(--floor) + 11px); font-size: 32px; color: #d7a52e; filter: drop-shadow(0 2px 1px #664b18); }
 @media (max-width: 599px) { .pot { right: 12px; bottom: calc(var(--floor) + 8px); font-size: 27px; } }
 @media (prefers-reduced-motion: reduce) {
-  .drop, .piledCoin, .rainbow { animation: none; }
+  .drop, .piledCoin { animation: none; }
   .drop { display: none; }
 }

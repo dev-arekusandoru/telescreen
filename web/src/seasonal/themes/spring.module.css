@@ -2,8 +2,8 @@
   position: absolute;
   left: var(--x);
   bottom: var(--floor);
-  width: 38px;
-  height: 104px;
+  width: calc(38px * var(--size, 1));
+  height: calc(104px * var(--size, 1));
   transform-origin: center bottom;
   animation: grow 1.4s cubic-bezier(.2,.8,.3,1) var(--grow) both, sway var(--sway) ease-in-out calc(var(--grow) + 1.4s) infinite alternate;
 }
@@ -51,8 +51,10 @@
 .bee { top: 48%; width: 23px; height: 23px; }
 
 @keyframes grow {
-  from { transform: scaleY(.04); }
-  to { transform: scaleY(1); }
+  /* opacity 0 in `from` hides the flower during its staggered delay (backwards fill); otherwise a flat sliver shows. */
+  from { transform: scaleY(.04); opacity: 0; }
+  15% { opacity: 1; }
+  to { transform: scaleY(1); opacity: 1; }
 }
 
 @keyframes sway {
@@ -74,7 +76,7 @@
 }
 
 @media (max-width: 599px) {
-  .flower { width: 30px; height: 80px; }
+  .flower { width: calc(30px * var(--size, 1)); height: calc(80px * var(--size, 1)); }
   .flower img { width: 30px; height: 30px; bottom: 38px; }
   .flower i { left: 14px; height: 49px; }
   .petal { top: 38%; }

@@ -40,7 +40,7 @@ export function Halloween({ syncedAt }: ThemeProps) {
       <div className={styles.webRight} aria-hidden="true" />
       {bats.map((item) => <img key={item.id} src={bat} alt="" className={`${styles.bat} ${finale ? styles.scatter : ""}`} style={{ "--y": `${item.y}vh`, "--delay": `${item.delay}s`, "--duration": `${item.duration}s` } as React.CSSProperties} />)}
       {ghosts.map((item) => <img key={item.id} src={ghost} alt="" className={styles.ghost} style={{ "--x": `${item.x}%`, "--delay": `${item.delay}s` } as React.CSSProperties} />)}
-      <span className={styles.thread} aria-hidden="true"><img src={spider} alt="" /></span>
+      {[0, 1, 2].map((i) => <span key={i} className={`${styles.thread} ${styles[`thread${i}`]}`} aria-hidden="true"><img src={spider} alt="" /></span>)}
       <img src={pumpkin} alt="" className={styles.pumpkin} />
       <img src={pumpkin} alt="" className={styles.walker} />
       <span key={finale} className={styles.syncFlock} aria-hidden="true">{finale > 0 && <>{[0, 1, 2, 3, 4].map((n) => <img key={n} src={bat} alt="" style={{ "--n": n } as React.CSSProperties} />)}</>}</span>

@@ -3,17 +3,20 @@
 .lights i { position: absolute; top: 10px; width: 7px; height: 9px; border-radius: 50%; background: #f4c84e; box-shadow: 0 0 8px 2px #f4c84e80; animation: twinkle 2.5s ease-in-out infinite alternate; }
 .lights i:nth-child(3n) { background: #fff4d0; box-shadow: 0 0 8px 2px #fff4d080; }
 .lights i:nth-child(3n + 1) { background: #7e91c3; box-shadow: 0 0 8px 2px #7e91c380; }
-.piece { position: absolute; top: -20px; opacity: .62; animation: driftDown linear infinite; }
+.piece { position: absolute; top: -20px; opacity: .95; background: currentColor; animation: driftDown linear forwards; }
+.landed { top: auto; opacity: .95; animation: none; transform: rotate(var(--tilt, 0deg)); }
 .kind0 { border-radius: 1px; }
 .kind1 { border-radius: 50%; }
-.kind2 { width: 3px !important; background: currentColor; border-radius: 5px; }
-.pile { position: absolute; bottom: var(--floor); left: 0; right: 0; height: 24px; }
-.pile i { position: absolute; width: 11px; height: 5px; border-radius: 1px; opacity: .55; }
-.balloons { position: absolute; right: 6%; top: 36%; width: 90px; height: 150px; opacity: .34; }
-.balloons i { position: absolute; bottom: 0; width: 32px; height: 42px; border-radius: 50% 50% 46% 46%; background: #d7b65c; animation: rise 8s ease-in-out infinite; }
-.balloons i::after { content: ""; position: absolute; top: 41px; left: 15px; height: 48px; border-left: 1px solid #a38648; }
-.balloons i:nth-child(2) { left: 30px; background: #9aa8ce; animation-delay: -3s; transform: scale(.8); }
-.balloons i:nth-child(3) { left: 58px; background: #f1e7c4; animation-delay: -5s; transform: scale(.7); }
+.kind2 { width: 3px !important; border-radius: 5px; }
+.kind0:nth-of-type(3n) { --tilt: 38deg; }
+.kind0:nth-of-type(3n + 1) { --tilt: -27deg; }
+.kind1 { transform: rotate(0); }
+.balloons { position: absolute; right: 6%; top: 34%; width: 150px; height: 210px; opacity: .58; }
+.balloons i { position: absolute; bottom: 0; width: 58px; height: 76px; border-radius: 50% 50% 46% 46%; background: radial-gradient(ellipse at 30% 24%, #fff8d8 0 5%, #f1cc64 18%, #c99e3e 100%); animation: rise 11s ease-in-out infinite; }
+.balloons i::before { content: ""; position: absolute; left: 27px; bottom: -5px; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 7px solid #c99e3e; }
+.balloons i::after { content: ""; position: absolute; left: 30px; top: 78px; width: 25px; height: 72px; border-left: 1px solid #a38648; border-radius: 0 0 0 100%; transform: rotate(-12deg); }
+.balloons i:nth-child(2) { left: 48px; bottom: 30px; background: radial-gradient(ellipse at 30% 24%, #fff 0 5%, #aab9e0 18%, #6577aa 100%); animation-delay: -3s; }
+.balloons i:nth-child(3) { left: 96px; bottom: 5px; background: radial-gradient(ellipse at 30% 24%, #fff 0 5%, #f1e7c4 18%, #c3b58f 100%); animation-delay: -5s; }
 .pop, .burst { position: absolute; top: 17%; width: 2px; height: 2px; animation: pop 1.2s ease-out both; }
 .pop i, .burst i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #e8c45c; box-shadow: 0 0 7px #e8c45c; }
 .pop i:nth-child(1), .burst i:nth-child(1) { --x: 25px; --y: 0px; }
@@ -27,7 +30,7 @@
 .burst { left: 50%; top: 26%; animation-duration: 1.8s; }
 .burst i:nth-child(n + 9) { --x: 0px; --y: 0px; }
 .pop i, .burst i { animation: spark 1s ease-out both; }
-@keyframes driftDown { from { transform: translateY(-5vh) rotate(0); } to { transform: translateY(110vh) rotate(360deg); } }
+@keyframes driftDown { from { transform: translateY(-5vh) rotate(0); } to { transform: translateY(calc(100vh - var(--floor) + 20px)) rotate(360deg); } }
 @keyframes twinkle { to { opacity: .28; } }
 @keyframes pop { from { opacity: 1; } to { opacity: 0; } }
 @keyframes spark { to { transform: translate(var(--x), var(--y)); opacity: 0; } }

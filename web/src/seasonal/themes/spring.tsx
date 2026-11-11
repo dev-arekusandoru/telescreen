@@ -11,7 +11,7 @@ import tulip from "../art/spring/1f337.svg";
 import styles from "./spring.module.css";
 import type { ThemeProps } from "../types";
 
-const FLOWERS = [tulip, blossom, daisy, sunflower, hibiscus, rose, hyacinth];
+const FLOWERS = [tulip, blossom, daisy, sunflower, hibiscus, rose, hyacinth, rose, tulip, sunflower, blossom, hyacinth, daisy, hibiscus];
 const PETALS = Array.from({ length: 7 }, (_, id) => id);
 const BUGS = [butterfly, butterfly, bee];
 
@@ -23,7 +23,7 @@ export function Spring({ syncedAt }: ThemeProps) {
   return (
     <>
       {FLOWERS.map((src, id) => (
-        <span key={`${garden}-${id}`} className={styles.flower} style={{ "--x": `${4 + id * 14}%`, "--grow": `${id * 5.5}s`, "--sway": `${id % 2 ? 2.8 : 3.5}s` } as React.CSSProperties}>
+        <span key={`${garden}-${id}`} className={styles.flower} style={{ "--x": `${2 + id * (96 / (FLOWERS.length - 1))}%`, "--grow": `${(id * 3.1) % 28}s`, "--sway": `${id % 2 ? 2.8 : 3.5}s`, "--size": `${id % 3 === 0 ? 1 : id % 3 === 1 ? 0.78 : 0.9}`, "--floor": `${id % 4 === 0 ? 0 : id % 4 === 1 ? 3 : id % 4 === 2 ? 1 : 4}px` } as React.CSSProperties}>
           <i />
           <img src={src} alt="" />
         </span>
