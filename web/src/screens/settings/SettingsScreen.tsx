@@ -1,61 +1,16 @@
-import { SunHorizon } from "@phosphor-icons/react";
-import { useTheme, type ThemePreference } from "@/app/theme";
+import { useState } from "react";
 import { useMembers } from "@/features/queries";
-import { PageHeader, SegmentedControl } from "@/ui";
-import { AccountsSection } from "./AccountsSection";
-import { CalendarsSection } from "./CalendarsSection";
-import { GeneralSection } from "./GeneralSection";
-import { MealsSection } from "./MealsSection";
-import { MembersSection } from "./MembersSection";
-import { MusicSection } from "./MusicSection";
-import { TravelSection } from "./TravelSection";
-import { WeatherSection } from "./WeatherSection";
-import styles from "./Settings.module.css";
-
-const THEMES: Array<{ value: ThemePreference; label: string }> = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-];
+import { PageHeader } from "@/ui";
+import { Tiles } from "./Tiles";
 
 export function SettingsScreen() {
-  const { theme, setTheme } = useTheme();
   const { data: members = [] } = useMembers();
-
+  const [id, setId] = useState<string | null>(null);
+  const subtitle = !id && members.length ? `Household · ${members.map((m) => m.name).join(" & ")}` : undefined;
   return (
     <>
-      <PageHeader title="Settings" subtitle={members.length ? `Household · ${members.map((m) => m.name).join(" & ")}` : undefined} />
-      <div className={styles.set}>
-        <section className={styles.sec}>
-          <h2>Appearance</h2>
-          <div className={styles.row}>
-            <SunHorizon aria-hidden />
-            <div>
-              <b>Theme</b>
-              <small>System follows this device</small>
-            </div>
-            <div className={styles.end}>
-              <SegmentedControl label="Theme" value={theme} onChange={setTheme} options={THEMES} />
-            </div>
-          </div>
-        </section>
-
-        <GeneralSection />
-
-        <MembersSection />
-
-        <AccountsSection />
-
-        <CalendarsSection />
-
-        <WeatherSection />
-
-        <TravelSection />
-
-        <MealsSection />
-
-        <MusicSection />
-      </div>
+      <PageHeader title="Settings" subtitle={subtitle} onBack={id ? () => setId(null) : undefined} />
+      <Tiles id={id} onOpen={setId} />
     </>
   );
 }

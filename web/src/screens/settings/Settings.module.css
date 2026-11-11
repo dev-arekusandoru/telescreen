@@ -1,11 +1,5 @@
-.set {
-  flex: 1;
-  overflow-y: auto;
-  max-width: 760px;
-  padding-bottom: 30px;
-}
-
 .sec {
+  min-width: 0;
   margin-bottom: 22px;
 }
 
@@ -58,6 +52,10 @@
 @media (max-width: 599px) {
   .row {
     flex-wrap: wrap;
+  }
+
+  .row > .addIcon {
+    display: none;
   }
 }
 
@@ -176,4 +174,135 @@
     flex: 1 1 100%;
     overflow-x: auto;
   }
+}
+
+/* Tile launcher: one tile per section, tapping opens it full width. */
+.tiles {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  grid-auto-rows: minmax(140px, auto);
+  gap: 16px;
+  align-content: start;
+  /* overflow clips shadows and focus rings; pad the scroller, pull it back with a negative margin */
+  padding: 8px 8px 32px;
+  margin: -8px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  padding: 20px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .tile:hover {
+    background: var(--surface2);
+  }
+}
+
+.tile {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: scale, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+.tile:active {
+  scale: 0.96;
+}
+
+/* Entrances run once per mount: tiles stagger in, an opened section fades and scales in. */
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.tile {
+  animation: pop 300ms ease-out backwards;
+  animation-delay: calc(var(--i) * 40ms);
+}
+
+/* Each heading/card in an opened section staggers in; delay is capped so long lists don't drag. */
+.detailInner > section > * {
+  animation: pop 250ms ease-out backwards;
+  animation-delay: calc(min(var(--n, 0), 8) * 40ms);
+}
+
+.detailInner > section > :nth-child(2) { --n: 1; }
+.detailInner > section > :nth-child(3) { --n: 2; }
+.detailInner > section > :nth-child(4) { --n: 3; }
+.detailInner > section > :nth-child(5) { --n: 4; }
+.detailInner > section > :nth-child(6) { --n: 5; }
+.detailInner > section > :nth-child(7) { --n: 6; }
+.detailInner > section > :nth-child(n + 8) { --n: 7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .detailInner > section > * {
+    animation-name: fade;
+  }
+
+  .tile:active {
+    scale: 1;
+  }
+}
+
+.tile svg {
+  font-size: 34px;
+  color: var(--accent);
+  margin-bottom: auto;
+}
+
+.tile b {
+  font-size: 18px;
+}
+
+.tile small {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 8px 0;
+  margin: -8px;
+}
+
+.detailInner {
+  max-width: 880px;
+  padding-bottom: 30px;
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

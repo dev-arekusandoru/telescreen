@@ -47,9 +47,14 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
+/** Settings opens on a tile launcher; tap the tile to reach a section. */
+async function openSection(name: string) {
+  renderAt("/settings");
+  await userEvent.click(await screen.findByRole("button", { name: new RegExp(`^${name}`) }));
+}
 describe("Settings: accounts and calendars", () => {
   it("lists accounts with status badges and last errors", async () => {
-    renderAt("/settings");
+    await openSection("Accounts");
     const accounts = await screen.findByRole("region", { name: "Accounts" });
     expect(await within(accounts).findByText("Home iCloud")).toBeInTheDocument();
     expect(within(accounts).getByText("Connected")).toBeInTheDocument();
@@ -60,7 +65,7 @@ describe("Settings: accounts and calendars", () => {
   });
 
   it("syncs and removes an account", async () => {
-    renderAt("/settings");
+    await openSection("Accounts");
     await userEvent.click(await screen.findByRole("button", { name: "Sync Home iCloud now" }));
     await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/accounts/acc_i/sync", body: undefined }));
 
@@ -72,7 +77,7 @@ describe("Settings: accounts and calendars", () => {
   });
 
   it("adds an iCloud account and surfaces a rejected password", async () => {
-    renderAt("/settings");
+    await openSection("Accounts");
     await userEvent.click(await screen.findByRole("button", { name: "Add iCloud" }));
     const dialog = await screen.findByRole("dialog", { name: "Add iCloud" });
     await userEvent.type(within(dialog).getByLabelText("Apple ID"), "apple@example.com");
@@ -91,7 +96,7 @@ describe("Settings: accounts and calendars", () => {
   });
 
   it("shows calendars per account with writable/read-only and toggles visibility", async () => {
-    renderAt("/settings");
+    await openSection("Calendars");
     const section = await screen.findByRole("region", { name: "Calendars" });
     const icloud = await within(section).findByRole("group", { name: "Home iCloud" });
     expect(within(icloud).getByText("Home")).toBeInTheDocument();
@@ -109,7 +114,7 @@ describe("Settings: accounts and calendars", () => {
   });
 
   it("offers per-member default write calendars (writable + enabled only)", async () => {
-    renderAt("/settings");
+    await openSection("Calendars");
     expect(await screen.findByRole("combobox", { name: "Default calendar for Alex" })).toHaveTextContent("Ask each time");
     expect(screen.getByRole("combobox", { name: "Default calendar for Vale" })).toBeInTheDocument();
   });

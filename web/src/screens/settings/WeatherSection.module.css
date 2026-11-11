@@ -52,6 +52,7 @@
 
   .coord {
     flex: 1;
+    min-width: 0; /* number inputs otherwise keep their intrinsic width and overflow the row */
     width: auto;
   }
 }

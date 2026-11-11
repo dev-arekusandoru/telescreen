@@ -95,7 +95,7 @@ export function MembersSection() {
           add();
         }}
       >
-        <Plus aria-hidden />
+        <Plus aria-hidden className={styles.addIcon} />
         <input className={styles.input} aria-label="New member name" placeholder="Add a member" value={newName} onChange={(e) => setNewName(e.target.value)} />
         <button type="submit" className={cx(styles.btn, styles.end)} disabled={!newName.trim() || create.isPending}>
           Add

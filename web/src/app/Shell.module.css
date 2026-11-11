@@ -122,7 +122,9 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 16px 20px 16px 0;
+    /* overflow clips the cards' shadow on the left; pad it and pull the column back */
+    padding: 16px 20px 16px 8px;
+    margin-inline-start: -8px;
     min-height: 0;
     overflow-y: auto;
   }
