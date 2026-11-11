@@ -45,6 +45,7 @@ const FORECAST = {
     weather_code: HOURLY_TIME.map((_, i) => (i % 3 === 0 ? 0 : 3)),
     precipitation_probability: HOURLY_TIME.map((_, i) => (i % 4 === 0 ? 25 : 0)),
     is_day: HOURLY_TIME.map((_, i) => (i >= 8 && i < 18 ? 1 : 0)),
+    uv_index: HOURLY_TIME.map((_, i) => (i === 12 ? 3.4 : 0)),
   },
 };
 
@@ -107,7 +108,7 @@ describe("getWeather", () => {
     const payload = await getWeather(REQUEST, { now: () => Date.parse("2026-11-03T12:00:00.000Z"), fetch: fetchMock });
 
     const url = new URL(String(vi.mocked(fetchMock).mock.calls[0]?.[0]));
-    expect(url.searchParams.get("hourly")).toBe("temperature_2m,weather_code,precipitation_probability,is_day");
+    expect(url.searchParams.get("hourly")).toBe("temperature_2m,weather_code,precipitation_probability,is_day,uv_index");
 
     expect(payload.hours).toHaveLength(24);
     expect(payload.hours[0]).toEqual({
@@ -118,6 +119,7 @@ describe("getWeather", () => {
       temperature: 7.2,
       isDay: true,
       precipProbability: 25,
+      uvIndex: 3.4,
     });
     expect(payload.hours[23]).toMatchObject({ time: "2026-11-04T11:00", code: 3, isDay: false, precipProbability: 0 });
   });

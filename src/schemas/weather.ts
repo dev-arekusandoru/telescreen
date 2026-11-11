@@ -27,6 +27,7 @@ export const weatherSettingsSchema = z
     longitude: z.number().min(-180).max(180).nullable().describe("Null until a location is set."),
     units: weatherUnitsSchema,
     place: z.string().max(80).nullable().describe("Optional label shown next to the forecast."),
+    showUv: z.boolean().default(false).describe("Show the UV index chip on the weather card."),
   })
   .openapi("WeatherSettings");
 
@@ -61,6 +62,7 @@ export const weatherHourSchema = z
     temperature: z.number(),
     isDay: z.boolean(),
     precipProbability: z.number().nullable(),
+    uvIndex: z.number().nullable().describe("UV index for this hour; null when upstream omits it."),
   })
   .openapi("WeatherHour");
 

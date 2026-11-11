@@ -19,7 +19,7 @@ export function defaultSettings() {
     seasonalDecor: true,
     modules: { weather: false, meals: false, music: false, travel: false },
     defaultWriteCalendarId: {},
-    weather: { latitude: null, longitude: null, units: "celsius", place: null },
+    weather: { latitude: null, longitude: null, units: "celsius", place: null, showUv: false },
     musicPins: [],
     travel: { home: null, destinations: [] },
   };

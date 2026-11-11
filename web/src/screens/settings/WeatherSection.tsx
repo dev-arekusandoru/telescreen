@@ -1,4 +1,4 @@
-import { CloudSun, Crosshair, MapPin, Tag, Thermometer } from "@phosphor-icons/react";
+import { CloudSun, Crosshair, MapPin, Sun, Tag, Thermometer } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { errorMessage } from "@/api/errors";
@@ -226,6 +226,22 @@ export function WeatherSection() {
             value={weatherSettings?.units ?? "celsius"}
             options={UNITS}
             onChange={(units) => !busy && saveLocation({ units })}
+          />
+        </div>
+      </div>
+
+      <div className={styles.row}>
+        <Sun aria-hidden />
+        <div>
+          <b>UV index</b>
+          <small>Show the current UV level under the temperature</small>
+        </div>
+        <div className={styles.end}>
+          <Switch
+            label="UV index"
+            checked={weatherSettings?.showUv ?? false}
+            disabled={busy}
+            onCheckedChange={(showUv) => saveLocation({ showUv })}
           />
         </div>
       </div>

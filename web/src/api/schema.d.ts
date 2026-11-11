@@ -2197,6 +2197,11 @@ export interface components {
             units: components["schemas"]["WeatherUnits"];
             /** @description Optional label shown next to the forecast. */
             place: string | null;
+            /**
+             * @description Show the UV index chip on the weather card.
+             * @default false
+             */
+            showUv: boolean;
         };
         /** @enum {string} */
         WeatherUnits: "celsius" | "fahrenheit";
@@ -2719,6 +2724,8 @@ export interface components {
             temperature: number;
             isDay: boolean;
             precipProbability: number | null;
+            /** @description UV index for this hour; null when upstream omits it. */
+            uvIndex: number | null;
         };
         WeatherError: {
             error: {

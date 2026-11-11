@@ -123,6 +123,7 @@ const openMeteoSchema = z.object({
       weather_code: z.array(z.number()).optional(),
       precipitation_probability: z.array(z.number().nullable()).optional(),
       is_day: z.array(z.number()).optional(),
+      uv_index: z.array(z.number().nullable()).optional(),
     })
     .optional(),
 });
@@ -136,7 +137,7 @@ function buildUrl(req: WeatherRequest): URL {
     "daily",
     "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
   );
-  url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability,is_day");
+  url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability,is_day,uv_index");
   url.searchParams.set("timezone", req.timezone);
   url.searchParams.set("forecast_days", String(FORECAST_DAYS));
   url.searchParams.set("temperature_unit", req.units === "fahrenheit" ? "fahrenheit" : "celsius");
@@ -165,6 +166,7 @@ function buildHours(data: z.infer<typeof openMeteoSchema>): WeatherHour[] {
       temperature: hourly.temperature_2m?.[i] ?? 0,
       isDay: (hourly.is_day?.[i] ?? 1) === 1,
       precipProbability: hourly.precipitation_probability?.[i] ?? null,
+      uvIndex: hourly.uv_index?.[i] ?? null,
     };
   });
 }

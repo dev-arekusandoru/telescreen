@@ -14,7 +14,7 @@ describe("settings", () => {
       seasonalDecor: true,
       modules: { weather: false, meals: false, music: false, travel: false },
       defaultWriteCalendarId: {},
-      weather: { latitude: null, longitude: null, units: "celsius", place: null },
+      weather: { latitude: null, longitude: null, units: "celsius", place: null, showUv: false },
     });
 
     const put = await t.request<Record<string, unknown>>("PUT", "/api/v1/settings", {

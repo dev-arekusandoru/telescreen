@@ -359,6 +359,11 @@
             ],
             "maxLength": 80,
             "description": "Optional label shown next to the forecast."
+          },
+          "showUv": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show the UV index chip on the weather card."
           }
         },
         "required": [
@@ -2429,6 +2434,13 @@
               "number",
               "null"
             ]
+          },
+          "uvIndex": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "UV index for this hour; null when upstream omits it."
           }
         },
         "required": [
@@ -2438,7 +2450,8 @@
           "group",
           "temperature",
           "isDay",
-          "precipProbability"
+          "precipProbability",
+          "uvIndex"
         ]
       },
       "WeatherError": {
