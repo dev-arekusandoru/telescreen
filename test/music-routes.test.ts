@@ -46,7 +46,7 @@ function seedConnection(db: Db, secret: Record<string, unknown> = {}) {
     .values({
       id: "mus_test",
       provider: "spotify",
-      label: "Alex",
+      label: "Mara",
       secretEncrypted: encryptSecret(
         JSON.stringify({ refreshToken: "rt-1", accessToken: "at-1", expiresAt: FUTURE, ...secret }),
       ),
@@ -112,7 +112,7 @@ describe("Spotify OAuth (PKCE)", () => {
         return { status: 200, body: { access_token: "at-new", refresh_token: "rt-new", expires_in: 3600 } };
       }
       if (req.url.hostname === "api.spotify.com" && req.url.pathname === "/v1/me") {
-        return { status: 200, body: { display_name: "Alex" } };
+        return { status: 200, body: { display_name: "Mara" } };
       }
       return undefined;
     });
@@ -148,7 +148,7 @@ describe("Spotify OAuth (PKCE)", () => {
       "GET",
       "/api/v1/music/connection",
     );
-    expect(connection.body).toMatchObject({ connected: true, configured: true, label: "Alex", status: "ok" });
+    expect(connection.body).toMatchObject({ connected: true, configured: true, label: "Mara", status: "ok" });
 
     const row = t.db.select().from(musicConnections).all()[0]!;
     const secret = JSON.parse(decryptSecret(row.secretEncrypted)) as { refreshToken: string; accessToken: string };
@@ -419,7 +419,7 @@ describe("library routes", () => {
       if (req.url.pathname === "/v1/me/playlists") {
         return { status: 200, body: { items: [{ uri: "spotify:playlist:p1", name: "Dinner", images: [], tracks: { total: 2 } }] } };
       }
-      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "alex" } };
+      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "mara" } };
       return undefined;
     });
     const { body } = await t.request<{ items: Array<{ uri: string }> }>("GET", "/api/v1/music/recent");
@@ -469,7 +469,7 @@ describe("library routes", () => {
           },
         };
       }
-      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "alex" } };
+      if (req.url.pathname === "/v1/me") return { status: 200, body: { id: "mara" } };
       return undefined;
     });
     const { body } = await t.request<{ items: Array<{ title: string; subtitle: string | null; imageUrl: string | null; uri: string }> }>(
@@ -477,7 +477,7 @@ describe("library routes", () => {
       "/api/v1/music/playlists",
     );
     expect(body.items.map((i) => i.title)).toEqual(["Liked Songs", "Dinner", "One"]);
-    expect(body.items[0]!.uri).toBe("spotify:user:alex:collection");
+    expect(body.items[0]!.uri).toBe("spotify:user:mara:collection");
     expect(body.items[1]).toMatchObject({ subtitle: "12 songs", imageUrl: null });
     expect(body.items[2]).toMatchObject({ subtitle: "1 song", imageUrl: "https://img/p2.jpg" });
   });

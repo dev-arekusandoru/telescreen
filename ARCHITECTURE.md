@@ -5,7 +5,7 @@ pnpm workspace: root = server (`src/`), `web/` = React app (`@telescreen/web`). 
 ## Server layout (`src/`)
 | Path | Role |
 |---|---|
-| `server.ts` | Boot: open DB in `TELESCREEN_DATA_DIR`, auto-migrate, seed household + Alex/Vale, serve API + built web |
+| `server.ts` | Boot: open DB in `TELESCREEN_DATA_DIR`, auto-migrate, seed household + Mara/Theo, serve API + built web |
 | `app.ts` | `createApp({ db, trustNetwork, webDir })`: error mapping, auth, `/api/v1`, `/openapi.json`, SPA |
 | `config.ts` | Env readers (`dataDir`, `dbPath`, `trustNetwork`) |
 | `db/schema.ts` | **All tables (SPEC §7)** + `api_token`. `db/client.ts`: `openDb`, `runMigrations` |

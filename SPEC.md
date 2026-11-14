@@ -21,7 +21,7 @@ push notifications, photos/lists/sleep screens (Skylight extras), public-interne
 
 | | |
 |---|---|
-| Users | Two adults (Alex, Vale; placeholder names). Data model allows N members; UI is tuned for 2 to 4. |
+| Users | Two adults (Mara, Theo; placeholder names). Data model allows N members; UI is tuned for 2 to 4. |
 | Primary device | iPad or larger, landscape, Safari, installed as a PWA, left on (iPadOS Guided Access optional). |
 | Secondary | Phone, portrait. Not required for MVP, but layouts must not break below 600px (see §8). |
 | Network | Tailscale only. `tailscale serve --bg <port>` gives HTTPS (needed for the screen wake lock). |
@@ -130,7 +130,7 @@ A **chore** is a template; an **occurrence** is one due instance with a status.
   for a single occurrence.
 - **Either**: shows in a "Shared" group; whoever completes it gets credit.
 - **Completion**: tap > confirmation sheet with the assignee pre-selected (one tap to confirm); for
-  `either` chores pick Alex or Vale. No login. Undo for 10 s via toast and from the occurrence later.
+  `either` chores pick Mara or Theo. No login. Undo for 10 s via toast and from the occurrence later.
 - **Missed**: an open occurrence is marked `missed` when the chore's next occurrence is generated
   (daily chores expire at day's end; weekly ones at week's end). Missed items stay visible, dimmed, on
   the previous day in history; they never pile up on Today. (Open Question 4.)
@@ -177,7 +177,7 @@ not in the DB.
 
 - **Personality**: calm magazine. Paper surfaces, serif display type, soft raised cards, restrained color; a family-planner you would be happy to look at all day.
 - **Theme**: tokens in `web/src/styles/tokens.css`. **Light** (cream paper) and **Dark** (warm charcoal-brown, not blue-black). Follows `prefers-color-scheme` by default; **Settings > Appearance: System / Light / Dark** overrides it per device.
-- **Color**: one color per member (Alex terracotta, Vale sage by default, user-selectable from a curated palette that passes contrast in both themes). Events = tinted fill + 3px solid left bar in the member color; Family = ink-on-paper neutral. Accent = terracotta.
+- **Color**: one color per member (Mara terracotta, Theo sage by default, user-selectable from a curated palette that passes contrast in both themes). Events = tinted fill + 3px solid left bar in the member color; Family = ink-on-paper neutral. Accent = terracotta.
 - **Type**: display serif (candidate: Fraunces Variable) for headings/dates; humanist sans (Inter Variable) for UI. Minimum text 13px on wall display; event titles 14px+; touch targets >= 44px.
 - **Icons**: Phosphor. Regular weight at rest, fill/duotone on active/selected. 24px nav, 20px inline.
 - **Shape/motion**: 18px card radius, 10px event radius; 150-250ms ease-out; tap feedback via scale 0.98; check-off animates fill + strike. Respect `prefers-reduced-motion`.
@@ -228,7 +228,7 @@ OAuth callback routes live at `/auth/google/callback` (server-rendered, not part
 1. **Google OAuth**: keep it as simple as works. Try the Tailscale HTTPS URL as the redirect; if Google rejects it, use a localhost redirect (one-time setup from a phone/laptop via the server host is acceptable). Consent screen set to "In production" so tokens do not expire in 7 days.
 2. **Recurring events**: edit/delete "this event" or "all events" only; "this and following" is later.
 3. **Missed chores**: drop off Today when the next occurrence generates; visible in history.
-4. **Names**: Alex and Vale (placeholders). Member names and colors are editable in Settings > Members.
+4. **Names**: Mara and Theo (placeholders). Member names and colors are editable in Settings > Members.
 5. **Chores on the calendar**: follow Skylight, i.e. chores are **not** shown as calendar events; they live on the Chores tab with per-member progress bars in the calendar header (as in the mockup).
 6. **Spotify**: Premium confirmed, so playback control is feasible (M7).
 

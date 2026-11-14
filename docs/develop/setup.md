@@ -51,7 +51,7 @@ pnpm dev       # API on http://127.0.0.1:4000
 pnpm web:dev   # Vite on http://127.0.0.1:4001, proxies /api
 ```
 
-`pnpm dev` runs `tsx watch src/server.ts`. On boot the server opens the SQLite file, applies pending migrations, seeds a household with Alex and Vale when the database is empty, starts the calendar sync scheduler and the 15-minute chore tick, then listens.
+`pnpm dev` runs `tsx watch src/server.ts`. On boot the server opens the SQLite file, applies pending migrations, seeds a household with Mara and Theo when the database is empty, starts the calendar sync scheduler and the 15-minute chore tick, then listens.
 
 `pnpm web:dev` serves the SPA with hot reload. Vite proxies `/api` to `http://127.0.0.1:4000`; set `TELESCREEN_API_URL` to point the proxy at another instance.
 

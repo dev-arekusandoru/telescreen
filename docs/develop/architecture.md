@@ -14,7 +14,7 @@ Design rules: [SPEC.md](https://github.com/dev-arekusandoru/telescreen/blob/main
 
 ## Server
 
-Boot order in [`src/server.ts`](https://github.com/dev-arekusandoru/telescreen/blob/main/src/server.ts): load `.env`, open SQLite from `TELESCREEN_DATA_DIR` (WAL mode), apply migrations, seed a household with Alex and Vale when the database is empty, build the app, run the chore tick (every 15 minutes), start the sync scheduler, then listen. `SIGTERM` and `SIGINT` stop the scheduler, close the socket and close SQLite.
+Boot order in [`src/server.ts`](https://github.com/dev-arekusandoru/telescreen/blob/main/src/server.ts): load `.env`, open SQLite from `TELESCREEN_DATA_DIR` (WAL mode), apply migrations, seed a household with Mara and Theo when the database is empty, build the app, run the chore tick (every 15 minutes), start the sync scheduler, then listen. `SIGTERM` and `SIGINT` stop the scheduler, close the socket and close SQLite.
 
 [`src/app.ts`](https://github.com/dev-arekusandoru/telescreen/blob/main/src/app.ts) builds an OpenAPI-aware Hono app: domain errors map to `{ error: { code, message, details } }`, Zod failures to a 400, anything else to a logged 500. Bearer auth guards `/api/v1/*` except `/api/v1/health`. The OpenAPI 3.1 document is served at `/openapi.json`, the OAuth callbacks are mounted outside `/api/v1`, and static web serving is registered last.
 

@@ -91,8 +91,8 @@ test("settings: household name and members can be edited", async ({ page }) => {
   await page.reload();
   await expect(page.getByRole("textbox", { name: "Household name" })).toHaveValue("Casa Test");
 
-  await page.getByRole("radiogroup", { name: "Color for Alex" }).getByRole("radio", { name: "plum" }).click();
-  await expect(page.getByRole("radiogroup", { name: "Color for Alex" }).getByRole("radio", { name: "plum" })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radiogroup", { name: "Color for Mara" }).getByRole("radio", { name: "plum" }).click();
+  await expect(page.getByRole("radiogroup", { name: "Color for Mara" }).getByRole("radio", { name: "plum" })).toHaveAttribute("aria-checked", "true");
 });
 
 test("manifest and icons are served", async ({ request }) => {

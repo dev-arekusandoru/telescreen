@@ -6,8 +6,8 @@ import { createAppRouter } from "@/app/router";
 import { createQueryClient } from "@/api";
 
 export const MEMBERS = [
-  { id: "mem_a", householdId: "hh", name: "Alex", colorToken: "terracotta", initial: "A", sort: 0 },
-  { id: "mem_b", householdId: "hh", name: "Vale", colorToken: "sage", initial: "V", sort: 1 },
+  { id: "mem_a", householdId: "hh", name: "Mara", colorToken: "terracotta", initial: "A", sort: 0 },
+  { id: "mem_b", householdId: "hh", name: "Theo", colorToken: "sage", initial: "V", sort: 1 },
 ];
 
 export function defaultSettings() {

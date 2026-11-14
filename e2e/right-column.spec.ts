@@ -53,7 +53,7 @@ const MEALS = {
   stale: false,
 };
 
-const CONNECTION = { connected: true, configured: true, label: "Alex", status: "ok", lastError: null };
+const CONNECTION = { connected: true, configured: true, label: "Mara", status: "ok", lastError: null };
 const NOW_PLAYING = {
   track: {
     id: "track-1",

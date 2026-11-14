@@ -85,7 +85,7 @@ counting from the highest retained occurrence so the order still advances.
 The assignee of occurrence *n* is the member at position *n* modulo the size of
 the rotation list, counted from the schedule anchor. Skipping or missing an
 occurrence does not change the index of the others, so the order stays stable:
-skipping Alex's turn still gives the next occurrence to Vale. Reordering the
+skipping Mara's turn still gives the next occurrence to Theo. Reordering the
 rotation takes effect for occurrences generated afterwards, and reassigning a
 single occurrence changes only that one.
 

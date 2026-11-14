@@ -10,13 +10,13 @@ interface Member {
 }
 
 describe("members", () => {
-  it("seeds Alex and Vale", async () => {
+  it("seeds Mara and Theo", async () => {
     const t = makeTestApp();
     const res = await t.request<Member[]>("GET", "/api/v1/members");
     expect(res.status).toBe(200);
     expect(res.body.map((m) => [m.name, m.colorToken, m.initial])).toEqual([
-      ["Alex", "terracotta", "A"],
-      ["Vale", "sage", "V"],
+      ["Mara", "terracotta", "M"],
+      ["Theo", "sage", "T"],
     ]);
   });
 

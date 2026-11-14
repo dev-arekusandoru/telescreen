@@ -116,7 +116,7 @@ with the provider, override it with `GOOGLE_REDIRECT_URI` or
 ## First boot
 
 Open the tailnet URL. You should see the calendar for the seeded household with
-the tab bar or left rail, and Alex and Vale in the member chips. Continue with
+the tab bar or left rail, and Mara and Theo in the member chips. Continue with
 [First run](first-run).
 
 ## Portainer and other stacks

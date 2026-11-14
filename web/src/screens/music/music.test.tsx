@@ -38,7 +38,7 @@ const RECENT = [
   { uri: "spotify:album:a2", kind: "album", title: "Neon Orchard", subtitle: "Citrus Hotel", imageUrl: null },
 ];
 const PLAYLISTS = [
-  { uri: "spotify:user:alex:collection", kind: "collection", title: "Liked Songs", subtitle: null, imageUrl: null },
+  { uri: "spotify:user:mara:collection", kind: "collection", title: "Liked Songs", subtitle: null, imageUrl: null },
   { uri: "spotify:playlist:p1", kind: "playlist", title: "Dinner Party", subtitle: "12 songs", imageUrl: null },
 ];
 
@@ -74,7 +74,7 @@ beforeEach(() => {
   Element.prototype.releasePointerCapture = vi.fn();
   const base = globalThis.fetch;
   player = { track: TRACK, device: KITCHEN };
-  connection = { connected: true, configured: true, label: "Alex", status: "ok", lastError: null };
+  connection = { connected: true, configured: true, label: "Mara", status: "ok", lastError: null };
   nowPlayingError = null;
   musicEnabled = false;
   libraryError = null;
@@ -351,7 +351,7 @@ describe("Settings > Music", () => {
     await userEvent.click(await screen.findByRole("button", { name: /^Music/ }));
     const section = await screen.findByRole("region", { name: "Music" });
     expect(await within(section).findByText(/Connected/)).toBeInTheDocument();
-    expect(within(section).getByText(/Alex/)).toBeInTheDocument();
+    expect(within(section).getByText(/Mara/)).toBeInTheDocument();
 
     await userEvent.click(within(section).getByRole("button", { name: "Disconnect" }));
     await userEvent.click(within(section).getByRole("button", { name: "Disconnect" }));

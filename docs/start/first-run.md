@@ -12,7 +12,7 @@ When the database is empty, Telescreen seeds:
 | --- | --- |
 | Household name | `Our Home`, or `TELESCREEN_HOUSEHOLD_NAME` if set |
 | Household time zone | `TELESCREEN_TIMEZONE`, else the server's system zone |
-| Members | Alex (`terracotta`) and Vale (`sage`) |
+| Members | Mara (`terracotta`) and Theo (`sage`) |
 | Week view | Next 7 days (rolling, today in the first column) |
 | Week starts on | Sunday |
 | Modules | Weather, Travel, Meals, Music all off |
@@ -36,7 +36,7 @@ decorations) have sensible defaults; leave them for now.
 
 ## Name the people
 
-**Settings > Household > Members** lists Alex and Vale. Rename them, pick a color
+**Settings > Household > Members** lists Mara and Theo. Rename them, pick a color
 per person, and reorder them with the arrows. The color drives the member chips
 in the calendar header and the ring around that person's events.
 

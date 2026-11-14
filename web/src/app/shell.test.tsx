@@ -14,8 +14,8 @@ describe("app shell", () => {
     renderAt("/");
     expect(await screen.findByRole("button", { name: "Add event" })).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Home" })).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /^Alex: \d+ of \d+ chores/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Vale: \d+ of \d+ chores/ })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /^Mara: \d+ of \d+ chores/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Theo: \d+ of \d+ chores/ })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Show everyone on the calendar" })).toBeNull();
   });
 

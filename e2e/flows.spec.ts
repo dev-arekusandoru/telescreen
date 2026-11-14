@@ -33,18 +33,18 @@ test("chores: tap a chore to complete it, progress updates, undo reverts", async
 
   await page.goto("/chores");
   const chore = page.getByRole("button", { name: "Take out trash" });
-  const alexProgress = page.locator("em", { hasText: /^\d+\/\d+$/ }).first();
+  const maraProgress = page.locator("em", { hasText: /^\d+\/\d+$/ }).first();
   await expect(chore).toHaveAttribute("aria-pressed", "false");
-  await expect(alexProgress).toHaveText("0/1");
+  await expect(maraProgress).toHaveText("0/1");
 
   await chore.click();
-  await page.getByRole("dialog").getByRole("button", { name: "Mark done for Alex" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Mark done for Mara" }).click();
   await expect(page.getByRole("button", { name: "Take out trash, done" })).toHaveAttribute("aria-pressed", "true");
-  await expect(alexProgress).toHaveText("1/1");
+  await expect(maraProgress).toHaveText("1/1");
 
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("button", { name: "Take out trash" })).toHaveAttribute("aria-pressed", "false");
-  await expect(alexProgress).toHaveText("0/1");
+  await expect(maraProgress).toHaveText("0/1");
 });
 
 test("calendar: create an event from the + sheet", async ({ page }, testInfo) => {

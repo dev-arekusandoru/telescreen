@@ -132,8 +132,8 @@ export function seedIfEmpty(db: Db, env: NodeJS.ProcessEnv = process.env): House
       .get();
     tx.insert(members)
       .values([
-        { id: newId("mem"), householdId: household.id, name: "Alex", colorToken: "terracotta", initial: "A", sort: 0 },
-        { id: newId("mem"), householdId: household.id, name: "Vale", colorToken: "sage", initial: "V", sort: 1 },
+        { id: newId("mem"), householdId: household.id, name: "Mara", colorToken: "terracotta", initial: "M", sort: 0 },
+        { id: newId("mem"), householdId: household.id, name: "Theo", colorToken: "sage", initial: "T", sort: 1 },
       ])
       .run();
     return household;

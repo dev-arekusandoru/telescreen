@@ -5,7 +5,7 @@ import { renderAt, stubApi } from "@/test/api";
 
 const ACCOUNTS = [
   { id: "acc_i", provider: "icloud", label: "Home iCloud", status: "ok", lastError: null },
-  { id: "acc_g", provider: "google", label: "alex@example.com", status: "error", lastError: "Family: HTTP 503" },
+  { id: "acc_g", provider: "google", label: "mara@example.com", status: "error", lastError: "Family: HTTP 503" },
 ];
 const CALENDARS = [
   { id: "cal_1", accountId: "acc_i", name: "Home", color: "#aa0000", writable: true, enabled: true, memberId: null, lastSyncedAt: new Date().toISOString(), lastError: null },
@@ -102,7 +102,7 @@ describe("Settings: accounts and calendars", () => {
     expect(within(icloud).getByText("Home")).toBeInTheDocument();
     expect(within(icloud).getByText("Read-only")).toBeInTheDocument();
     expect(within(icloud).getByText(/Can create events/)).toBeInTheDocument();
-    const google = within(section).getByRole("group", { name: "alex@example.com" });
+    const google = within(section).getByRole("group", { name: "mara@example.com" });
     expect(within(google).getByText("HTTP 503")).toBeInTheDocument();
 
     expect(within(icloud).getByRole("switch", { name: "Show Holidays" })).not.toBeChecked();
@@ -110,12 +110,12 @@ describe("Settings: accounts and calendars", () => {
     await waitFor(() => expect(calls).toContainEqual({ method: "PATCH", path: "/calendars/cal_2", body: { enabled: true } }));
     // Person mapping shows the current member.
     expect(within(icloud).getByRole("combobox", { name: "Person for Home" })).toHaveTextContent("Family / Both");
-    expect(within(icloud).getByRole("combobox", { name: "Person for Holidays" })).toHaveTextContent("Alex");
+    expect(within(icloud).getByRole("combobox", { name: "Person for Holidays" })).toHaveTextContent("Mara");
   });
 
   it("offers per-member default write calendars (writable + enabled only)", async () => {
     await openSection("Calendars");
-    expect(await screen.findByRole("combobox", { name: "Default calendar for Alex" })).toHaveTextContent("Ask each time");
-    expect(screen.getByRole("combobox", { name: "Default calendar for Vale" })).toBeInTheDocument();
+    expect(await screen.findByRole("combobox", { name: "Default calendar for Mara" })).toHaveTextContent("Ask each time");
+    expect(screen.getByRole("combobox", { name: "Default calendar for Theo" })).toBeInTheDocument();
   });
 });

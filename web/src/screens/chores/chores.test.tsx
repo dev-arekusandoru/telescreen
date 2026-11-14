@@ -104,24 +104,24 @@ afterEach(() => vi.unstubAllGlobals());
 describe("chores today", () => {
   it("groups by member and Shared and hides missed chores", async () => {
     renderAt("/chores");
-    const alex = await screen.findByRole("region", { name: "Alex" });
-    expect(within(alex).getByRole("button", { name: "Dishes" })).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: "Vale" })).getByRole("button", { name: "Bins" })).toBeInTheDocument();
+    const mara = await screen.findByRole("region", { name: "Mara" });
+    expect(within(mara).getByRole("button", { name: "Dishes" })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Theo" })).getByRole("button", { name: "Bins" })).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Shared" })).getByRole("button", { name: "Water plants" })).toBeInTheDocument();
     expect(screen.queryByText("Old missed")).toBeNull();
-    expect(within(alex).getByText("Rotating · next: Vale")).toBeInTheDocument();
+    expect(within(mara).getByText("Rotating · next: Theo")).toBeInTheDocument();
   });
 
   it("confirms with the assignee preselected, checks off, and undoes from the toast", async () => {
     renderAt("/chores");
     await userEvent.click(await screen.findByRole("button", { name: "Dishes" }));
 
-    const confirm = await screen.findByRole("button", { name: "Mark done for Alex" });
+    const confirm = await screen.findByRole("button", { name: "Mark done for Mara" });
     await userEvent.click(confirm);
 
     await waitFor(() => expect(calls).toEqual([{ path: "/chore-occurrences/o1/complete", body: { completedBy: "mem_a" } }]));
     expect(await screen.findByRole("button", { name: "Dishes, done" })).toHaveAttribute("aria-pressed", "true");
-    expect(await screen.findByText("Alex completed “Dishes”")).toBeInTheDocument();
+    expect(await screen.findByText("Mara completed “Dishes”")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Undo" }));
     await waitFor(() => expect(calls.at(-1)).toEqual({ path: "/chore-occurrences/o1/undo", body: {} }));
@@ -131,17 +131,17 @@ describe("chores today", () => {
   it("lets the other member take credit, and either chores complete with one pick", async () => {
     renderAt("/chores");
     await userEvent.click(await screen.findByRole("button", { name: "Bins" }));
-    await userEvent.click(await screen.findByRole("button", { name: "Alex" }));
-    await userEvent.click(screen.getByRole("button", { name: "Mark done for Alex" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Mara" }));
+    await userEvent.click(screen.getByRole("button", { name: "Mark done for Mara" }));
     await waitFor(() => expect(calls[0]).toEqual({ path: "/chore-occurrences/o2/complete", body: { completedBy: "mem_a" } }));
 
     await userEvent.click(await screen.findByRole("button", { name: "Water plants" }));
     // No preselection and no confirm button: choosing a person completes it.
     expect(screen.queryByRole("button", { name: /Mark done/ })).toBeNull();
-    await userEvent.click(await screen.findByRole("button", { name: "Vale" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Theo" }));
     await waitFor(() => expect(calls[1]).toEqual({ path: "/chore-occurrences/o3/complete", body: { completedBy: "mem_b" } }));
-    const vale = screen.getByRole("region", { name: "Vale" });
-    expect(await within(vale).findByRole("button", { name: "Water plants, done" })).toBeInTheDocument();
+    const theo = screen.getByRole("region", { name: "Theo" });
+    expect(await within(theo).findByRole("button", { name: "Water plants, done" })).toBeInTheDocument();
   });
 
   it("tapping a done chore undoes it", async () => {

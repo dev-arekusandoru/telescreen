@@ -133,15 +133,15 @@ describe("GET /events: recurrence expansion", () => {
 
   it("filters by member via the calendar mapping, and hides disabled calendars", async () => {
     const s = setup();
-    const alex = s.db.select({ id: members.id }).from(members).orderBy(members.sort).limit(1).get()!;
-    const other = addCalendar(s.db, s.accountId, { memberId: alex.id, name: "Alex" });
+    const mara = s.db.select({ id: members.id }).from(members).orderBy(members.sort).limit(1).get()!;
+    const other = addCalendar(s.db, s.accountId, { memberId: mara.id, name: "Mara" });
     s.load("a.ics", ics([vevent(["UID:fam", "DTSTART:20261103T100000Z", "DTEND:20261103T110000Z", "SUMMARY:Family thing"])]));
-    replaceResource(s.db, other, "b.ics", parseResource(ics([vevent(["UID:alex", "DTSTART:20261103T120000Z", "DTEND:20261103T130000Z", "SUMMARY:Alex thing"])]), { remoteId: "b.ics", etag: null, defaultTz: "UTC" }));
+    replaceResource(s.db, other, "b.ics", parseResource(ics([vevent(["UID:mara", "DTSTART:20261103T120000Z", "DTEND:20261103T130000Z", "SUMMARY:Mara thing"])]), { remoteId: "b.ics", etag: null, defaultTz: "UTC" }));
     const q = (m?: string) => s.events("2026-11-03T00:00:00Z", "2026-11-04T00:00:00Z", m ? `&members=${m}` : "");
-    expect((await q()).map((e) => e.title)).toEqual(["Family thing", "Alex thing"]);
-    expect((await q(alex.id)).map((e) => [e.title, e.memberId])).toEqual([["Alex thing", alex.id]]);
+    expect((await q()).map((e) => e.title)).toEqual(["Family thing", "Mara thing"]);
+    expect((await q(mara.id)).map((e) => [e.title, e.memberId])).toEqual([["Mara thing", mara.id]]);
     expect((await q("family")).map((e) => e.title)).toEqual(["Family thing"]);
-    expect((await q(`family,${alex.id}`)).length).toBe(2);
+    expect((await q(`family,${mara.id}`)).length).toBe(2);
     await s.request("PATCH", `/api/v1/calendars/${other}`, { enabled: false });
     expect((await q()).map((e) => e.title)).toEqual(["Family thing"]);
   });

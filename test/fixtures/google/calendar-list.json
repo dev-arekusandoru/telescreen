@@ -1,7 +1,7 @@
 {
   "kind": "calendar#calendarList",
   "items": [
-    { "id": "alex@example.com", "summary": "alex@example.com", "primary": true, "accessRole": "owner", "backgroundColor": "#9fe1e7" },
+    { "id": "mara@example.com", "summary": "mara@example.com", "primary": true, "accessRole": "owner", "backgroundColor": "#9fe1e7" },
     { "id": "family@group.calendar.google.com", "summary": "Family", "summaryOverride": "Family (shared)", "accessRole": "writer", "backgroundColor": "#f83a22" },
     { "id": "holidays@group.v.calendar.google.com", "summary": "Holidays", "accessRole": "reader", "backgroundColor": "#16a765" }
   ]

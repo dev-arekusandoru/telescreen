@@ -19,7 +19,7 @@ on a private network, and installs to an iPad or tablet as a PWA.
 
 ## Who it is for
 
-A household of two adults (the seeded members are Alex and Vale) that wants a
+A household of two adults (the seeded members are Mara and Theo) that wants a
 shared day view without a subscription, a cloud account, or telemetry. A tablet
 in landscape is the primary device; phones get a narrower layout with bottom
 tabs. The data model allows more members, and the UI is tuned for two to four.

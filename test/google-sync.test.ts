@@ -15,7 +15,7 @@ interface Recorded {
   body: unknown;
 }
 
-const PRIMARY = "alex@example.com";
+const PRIMARY = "mara@example.com";
 const eventsPath = (cal: string, id = "") => `/calendar/v3/calendars/${encodeURIComponent(cal)}/events${id ? `/${encodeURIComponent(id)}` : ""}`;
 
 /** Fetch stub: routes Google endpoints; `eventsHandler` answers primary-calendar event lists. */

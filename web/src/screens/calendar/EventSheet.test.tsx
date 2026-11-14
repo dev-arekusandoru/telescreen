@@ -9,7 +9,7 @@ const TZ = "Europe/Berlin";
 
 const CALENDARS: CalendarInfo[] = [
   { id: "cal_a", accountId: "acc", name: "Personal", color: "#c4623f", writable: true, enabled: true, memberId: "mem_a", lastSyncedAt: null, lastError: null },
-  { id: "cal_b", accountId: "acc", name: "Vale", color: "#5f8a6b", writable: true, enabled: true, memberId: "mem_b", lastSyncedAt: null, lastError: null },
+  { id: "cal_b", accountId: "acc", name: "Theo", color: "#5f8a6b", writable: true, enabled: true, memberId: "mem_b", lastSyncedAt: null, lastError: null },
   { id: "cal_ro", accountId: "acc", name: "Holidays", color: "#888888", writable: false, enabled: true, memberId: null, lastSyncedAt: null, lastError: null },
 ];
 
@@ -61,7 +61,7 @@ describe("EventSheet", () => {
 
     await user.type(screen.getByLabelText("Title"), "Lunch");
     await user.selectOptions(screen.getByLabelText("Repeat"), "weekly");
-    await user.click(screen.getByRole("button", { name: /Add to Vale/ }));
+    await user.click(screen.getByRole("button", { name: /Add to Theo/ }));
 
     expect(props.onCreate).toHaveBeenCalledWith({
       calendarId: "cal_b",

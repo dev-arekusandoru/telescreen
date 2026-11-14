@@ -12,7 +12,7 @@ export const FIXED_NOW = new Date("2026-11-03T12:00:00.000Z");
 export interface TestContext {
   db: Db;
   ctx: Ctx;
-  /** Seeded household (Alex + Vale). */
+  /** Seeded household (Mara + Theo). */
   household: Household;
   /** Plaintext bearer token for this household. */
   token: string;
