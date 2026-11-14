@@ -31,7 +31,7 @@ function RemoveDialog({ account, onClose }: { account: Account | null; onClose: 
             <X aria-hidden />
           </Dialog.Close>
           <Dialog.Description className={styles.desc}>
-            HomeHub forgets this account and its cached events. Nothing is deleted from {account ? PROVIDERS[account.provider].label : "the provider"}.
+            Telescreen forgets this account and its cached events. Nothing is deleted from {account ? PROVIDERS[account.provider].label : "the provider"}.
           </Dialog.Description>
           {remove.error ? (
             <p className={styles.error} role="alert">

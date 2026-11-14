@@ -60,7 +60,7 @@ export function MealsSection() {
               </small>
             </>
           ) : (
-            <small>Not configured. Set PANTRYPAL_URL in the environment and restart HomeHub.</small>
+            <small>Not configured. Set PANTRYPAL_URL in the environment and restart Telescreen.</small>
           )}
         </div>
         <div className={styles.end}>

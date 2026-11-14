@@ -63,7 +63,7 @@ let t: TestApp;
 beforeEach(() => {
   process.env.GOOGLE_CLIENT_ID = "client-id";
   process.env.GOOGLE_CLIENT_SECRET = "client-secret";
-  process.env.HOMEHUB_PUBLIC_URL = "https://hub.example.ts.net";
+  process.env.TELESCREEN_PUBLIC_URL = "https://hub.example.ts.net";
   delete process.env.GOOGLE_REDIRECT_URI;
   t = makeTestApp();
 });
@@ -71,7 +71,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.GOOGLE_CLIENT_ID;
   delete process.env.GOOGLE_CLIENT_SECRET;
-  delete process.env.HOMEHUB_PUBLIC_URL;
+  delete process.env.TELESCREEN_PUBLIC_URL;
 });
 
 const list = async (start = "2026-11-01T00:00:00Z", end = "2026-12-01T00:00:00Z", extra = "") =>

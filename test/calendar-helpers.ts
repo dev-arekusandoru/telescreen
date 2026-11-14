@@ -4,7 +4,7 @@ import { encryptSecret } from "../src/lib/crypto.js";
 import { newId } from "../src/lib/ids.js";
 import type { Db } from "../src/db/client.js";
 
-process.env.HOMEHUB_SECRET_KEY ||= randomBytes(32).toString("hex");
+process.env.TELESCREEN_SECRET_KEY ||= randomBytes(32).toString("hex");
 
 export function addAccount(
   db: Db,

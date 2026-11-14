@@ -28,7 +28,7 @@ export function mountGoogleCallback(app: OpenAPIHono<AppEnv>, deps: { db: Db; no
       return c.redirect("/settings", 302);
     } catch (e) {
       const message = isAppError(e) ? e.message : "Could not finish connecting Google.";
-      if (!isAppError(e)) console.error("[homehub] google callback failed:", e);
+      if (!isAppError(e)) console.error("[telescreen] google callback failed:", e);
       return c.html(oauthPage("Could not connect Google", message), isAppError(e) ? e.status === 400 ? 400 : 502 : 500);
     }
   });

@@ -6,7 +6,7 @@ import { decryptSecret, encryptSecret } from "../src/lib/crypto.js";
 import { codeChallenge } from "../src/music/spotify.js";
 import { makeTestApp, type TestApp } from "./helpers.js";
 
-process.env.HOMEHUB_SECRET_KEY ||= randomBytes(32).toString("hex");
+process.env.TELESCREEN_SECRET_KEY ||= randomBytes(32).toString("hex");
 
 const PUBLIC_URL = "https://hub.example.ts.net";
 /** Fixed clock in helpers.ts is 2026-11-03T12:00:00.000Z. */
@@ -78,7 +78,7 @@ let t: TestApp;
 beforeEach(() => {
   process.env.SPOTIFY_CLIENT_ID = "client-id";
   process.env.SPOTIFY_CLIENT_SECRET = "client-secret";
-  process.env.HOMEHUB_PUBLIC_URL = PUBLIC_URL;
+  process.env.TELESCREEN_PUBLIC_URL = PUBLIC_URL;
   delete process.env.SPOTIFY_REDIRECT_URI;
   t = makeTestApp();
 });
@@ -86,7 +86,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.SPOTIFY_CLIENT_ID;
   delete process.env.SPOTIFY_CLIENT_SECRET;
-  delete process.env.HOMEHUB_PUBLIC_URL;
+  delete process.env.TELESCREEN_PUBLIC_URL;
   delete process.env.SPOTIFY_REDIRECT_URI;
 });
 

@@ -128,7 +128,7 @@ export function startSyncScheduler(ctx: Ctx, options: { initialDelayMs?: number 
     try {
       await syncAll(ctx);
     } catch (e) {
-      console.error("[homehub] sync failed:", e);
+      console.error("[telescreen] sync failed:", e);
     }
     schedule(Math.max(1, getSettings(ctx.db).syncIntervalMinutes) * 60_000);
   };

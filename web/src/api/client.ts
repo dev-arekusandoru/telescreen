@@ -8,7 +8,7 @@ const trackedFetch: typeof fetch = async (input, init) => {
     return await fetch(input, init);
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
-    throw new NetworkError("Can't reach HomeHub", { cause });
+    throw new NetworkError("Can't reach Telescreen", { cause });
   }
 };
 

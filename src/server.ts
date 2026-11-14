@@ -38,10 +38,10 @@ const choreTimer = setInterval(choreTick, 15 * 60_000);
 choreTimer.unref();
 
 if (trust) {
-  console.log("HOMEHUB_TRUST_NETWORK is on: /api/v1 requests without a token act as the household.");
+  console.log("TELESCREEN_TRUST_NETWORK is on: /api/v1 requests without a token act as the household.");
 }
 if (!hasSecretKey()) {
-  console.warn("HOMEHUB_SECRET_KEY is not set or invalid: connecting calendar accounts will fail until it is.");
+  console.warn("TELESCREEN_SECRET_KEY is not set or invalid: connecting calendar accounts will fail until it is.");
 }
 console.log(
   serveWeb
@@ -52,7 +52,7 @@ console.log(
 const stopSync = startSyncScheduler(makeCtx(db, household.id));
 
 const server = serve({ fetch: app.fetch, port, hostname }, (info) => {
-  console.log(`HomeHub listening on http://${hostname}:${info.port} (${household.name}, ${household.timezone})`);
+  console.log(`Telescreen listening on http://${hostname}:${info.port} (${household.name}, ${household.timezone})`);
   console.log(`Database: ${file}`);
 });
 

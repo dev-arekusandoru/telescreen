@@ -98,7 +98,7 @@ function safeExpand(master: EventRow, range: ExpandRange, tz: string): Occurrenc
       tz,
     );
   } catch (e) {
-    console.warn(`[homehub] could not expand recurring event ${master.id}:`, e);
+    console.warn(`[telescreen] could not expand recurring event ${master.id}:`, e);
     return [];
   }
 }

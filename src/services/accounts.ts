@@ -101,7 +101,7 @@ export function startGoogleAuth(ctx: Ctx): { authUrl: string } {
   if (!config) {
     throw new AppError(
       "unprocessable",
-      "Google is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (see the README).",
+      "Google is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (see the documentation).",
     );
   }
   const nowMs = ctx.now().getTime();

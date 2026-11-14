@@ -177,7 +177,7 @@ export function MusicScreen() {
           <section className={styles.notice} aria-label="Reconnect Spotify">
             <b>Reconnect Spotify to browse your music</b>
             <p>
-              HomeHub now needs permission to read your recently played and playlists.{" "}
+              Telescreen now needs permission to read your recently played and playlists.{" "}
               <Link to="/settings" className={styles.linkBtn}>Open Settings</Link>
             </p>
           </section>

@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
- * Full HomeHub schema (SPEC §7). After editing run `pnpm db:generate`; migrations
+ * Full Telescreen schema (SPEC §7). After editing run `pnpm db:generate`; migrations
  * in `drizzle/` are applied automatically on boot.
  *
  * Conventions: text primary keys from `newId(prefix)`, timestamps as ISO-8601

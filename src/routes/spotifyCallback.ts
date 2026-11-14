@@ -29,7 +29,7 @@ export function mountSpotifyCallback(app: OpenAPIHono<AppEnv>, deps: { db: Db; n
       return c.redirect("/settings", 302);
     } catch (e) {
       const message = isAppError(e) ? e.message : "Could not finish connecting Spotify.";
-      if (!isAppError(e)) console.error("[homehub] spotify callback failed:", e);
+      if (!isAppError(e)) console.error("[telescreen] spotify callback failed:", e);
       return c.html(oauthPage("Could not connect Spotify", message), isAppError(e) ? (e.status === 400 ? 400 : 502) : 500);
     }
   });

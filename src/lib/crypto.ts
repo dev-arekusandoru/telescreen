@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 /**
  * AES-256-GCM helper for provider secrets (OAuth tokens, app passwords) stored
- * in `account.secret_encrypted`. The key comes from `HOMEHUB_SECRET_KEY`:
+ * in `account.secret_encrypted`. The key comes from `TELESCREEN_SECRET_KEY`:
  * 32 bytes encoded as 64 hex characters or as base64 (`openssl rand -hex 32`).
  *
  * Blob format: `v1.<iv>.<tag>.<ciphertext>` with base64url parts.
@@ -16,12 +16,12 @@ const KEY_BYTES = 32;
 export function parseSecretKey(raw: string | undefined): Buffer {
   const value = raw?.trim();
   if (!value) {
-    throw new Error("HOMEHUB_SECRET_KEY is not set. Generate one with `openssl rand -hex 32`.");
+    throw new Error("TELESCREEN_SECRET_KEY is not set. Generate one with `openssl rand -hex 32`.");
   }
   const key = /^[0-9a-fA-F]{64}$/.test(value) ? Buffer.from(value, "hex") : Buffer.from(value, "base64");
   if (key.length !== KEY_BYTES) {
     throw new Error(
-      `HOMEHUB_SECRET_KEY must be 32 bytes (64 hex characters or base64). Generate one with \`openssl rand -hex 32\`.`,
+      `TELESCREEN_SECRET_KEY must be 32 bytes (64 hex characters or base64). Generate one with \`openssl rand -hex 32\`.`,
     );
   }
   return key;
@@ -30,15 +30,15 @@ export function parseSecretKey(raw: string | undefined): Buffer {
 /** True when the environment carries a usable key (for startup warnings). */
 export function hasSecretKey(env: NodeJS.ProcessEnv = process.env): boolean {
   try {
-    parseSecretKey(env.HOMEHUB_SECRET_KEY);
+    parseSecretKey(env.TELESCREEN_SECRET_KEY);
     return true;
   } catch {
     return false;
   }
 }
 
-/** Encrypt `plaintext`. `key` defaults to `HOMEHUB_SECRET_KEY`. */
-export function encryptSecret(plaintext: string, key: Buffer = parseSecretKey(process.env.HOMEHUB_SECRET_KEY)): string {
+/** Encrypt `plaintext`. `key` defaults to `TELESCREEN_SECRET_KEY`. */
+export function encryptSecret(plaintext: string, key: Buffer = parseSecretKey(process.env.TELESCREEN_SECRET_KEY)): string {
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const data = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
@@ -47,7 +47,7 @@ export function encryptSecret(plaintext: string, key: Buffer = parseSecretKey(pr
 }
 
 /** Decrypt a blob from {@link encryptSecret}. Throws if the key is wrong or the blob was altered. */
-export function decryptSecret(blob: string, key: Buffer = parseSecretKey(process.env.HOMEHUB_SECRET_KEY)): string {
+export function decryptSecret(blob: string, key: Buffer = parseSecretKey(process.env.TELESCREEN_SECRET_KEY)): string {
   const [version, iv, tag, data] = blob.split(".");
   if (version !== VERSION || !iv || !tag || data === undefined) {
     throw new Error("Unrecognized secret format");

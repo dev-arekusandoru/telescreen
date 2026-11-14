@@ -11,13 +11,13 @@ describe("auth", () => {
   it("requires a token by default", async () => {
     const t = makeTestApp();
     expect((await t.app.request("/api/v1/members")).status).toBe(401);
-    expect((await t.app.request("/api/v1/members", { headers: { authorization: "Bearer hh_bad" } })).status).toBe(401);
+    expect((await t.app.request("/api/v1/members", { headers: { authorization: "Bearer ts_bad" } })).status).toBe(401);
   });
 
   it("trust-network allows tokenless requests but still verifies sent tokens", async () => {
     const { db } = makeTestCtx();
     const app = createApp({ db, trustNetwork: true });
     expect((await app.request("/api/v1/members")).status).toBe(200);
-    expect((await app.request("/api/v1/members", { headers: { authorization: "Bearer hh_bad" } })).status).toBe(401);
+    expect((await app.request("/api/v1/members", { headers: { authorization: "Bearer ts_bad" } })).status).toBe(401);
   });
 });

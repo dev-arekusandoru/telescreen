@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 /** Dev-only per-device override of the date-driven theme: "auto" or a theme id. */
-const KEY = "homehub.dev.seasonalTheme";
+const KEY = "telescreen.dev.seasonalTheme";
 const listeners = new Set<() => void>();
 
 // Production builds ignore any stored override (it could be left over from a dev session on this origin).

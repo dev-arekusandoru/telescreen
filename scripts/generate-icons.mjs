@@ -19,7 +19,7 @@ const SAGE = "#557f61";
 /** `corner`: rounded radius in 1024-space (0 = full bleed for maskable / apple-touch). */
 const svg = (size, corner) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" rx="${corner}" fill="${PAPER}"/>
-  <text x="512" y="650" text-anchor="middle" font-family="Fraunces Variable" font-weight="700" font-size="560" fill="${TERRACOTTA}">H</text>
+  <text x="512" y="650" text-anchor="middle" font-family="Fraunces Variable" font-weight="700" font-size="560" fill="${TERRACOTTA}">T</text>
   <rect x="352" y="716" width="320" height="14" rx="7" fill="${TERRACOTTA}" opacity="0.35"/>
   <circle cx="462" cy="792" r="26" fill="${TERRACOTTA}"/>
   <circle cx="562" cy="792" r="26" fill="${SAGE}"/>

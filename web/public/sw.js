@@ -1,12 +1,12 @@
 /*
- * HomeHub service worker: installability + app-shell caching only (SPEC non-goal: offline mode).
+ * Telescreen service worker: installability + app-shell caching only (SPEC non-goal: offline mode).
  * - Hashed /assets/* are cache-first (immutable).
  * - Navigations are network-first; the cached shell is only a fallback so the app opens
  *   (and shows its own error states) when the server is briefly unreachable.
  * - API, OpenAPI, health and auth paths are never touched.
  * Bump CACHE when this file's strategy changes; old caches are deleted on activate.
  */
-const CACHE = "homehub-shell-v1";
+const CACHE = "telescreen-shell-v1";
 const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 const BYPASS = ["/api/", "/openapi.json", "/health", "/auth/"];
 

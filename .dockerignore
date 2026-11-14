@@ -15,5 +15,6 @@ data
 .idea
 .DS_Store
 mockups
-docs
+docs/*
+!docs/package.json
 test

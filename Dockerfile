@@ -21,6 +21,9 @@ WORKDIR /app
 # The workspace file carries `allowBuilds` for better-sqlite3/esbuild.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY web/package.json ./web/package.json
+# The docs workspace is not built in the image, but pnpm needs its manifest to
+# resolve the lockfile importers.
+COPY docs/package.json ./docs/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json tsconfig.build.json ./
@@ -39,7 +42,7 @@ RUN pnpm prune --prod
 FROM node:22-bookworm-slim AS runtime
 
 ENV NODE_ENV=production \
-    HOMEHUB_DATA_DIR=/data \
+    TELESCREEN_DATA_DIR=/data \
     PORT=8788 \
     HOST=0.0.0.0
 

@@ -6,10 +6,10 @@ import { localPublicUrl } from "../config.js";
  *
  * OAuth is Authorization Code **with PKCE** (`SPOTIFY_CLIENT_ID`, optional
  * `SPOTIFY_CLIENT_SECRET`), server-side. Spotify returns both an access token
- * (1 h) and a refresh token; HomeHub stores the refresh token encrypted and
+ * (1 h) and a refresh token; Telescreen stores the refresh token encrypted and
  * refreshes access tokens on the server, so the browser never sees a token.
  *
- * Also supports the 127.0.0.1 fallback redirect (see README "Spotify").
+ * Also supports the 127.0.0.1 fallback redirect (see docs/connect/spotify.md).
  */
 
 export const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
@@ -41,7 +41,7 @@ export interface SpotifyConfig {
 export function spotifyConfig(env: NodeJS.ProcessEnv = process.env): SpotifyConfig | null {
   const clientId = env.SPOTIFY_CLIENT_ID?.trim();
   if (!clientId) return null;
-  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
+  const publicUrl = (env.TELESCREEN_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
   const redirectUri = env.SPOTIFY_REDIRECT_URI?.trim() || `${publicUrl}/auth/spotify/callback`;
   return { clientId, clientSecret: env.SPOTIFY_CLIENT_SECRET?.trim() || null, redirectUri };
 }

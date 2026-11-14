@@ -1,19 +1,19 @@
 # Architecture (short)
 
-pnpm workspace: root = server (`src/`), `web/` = React app (`@homehub/web`). Design/behavior: `SPEC.md`.
+pnpm workspace: root = server (`src/`), `web/` = React app (`@telescreen/web`). Design/behavior: `SPEC.md`.
 
 ## Server layout (`src/`)
 | Path | Role |
 |---|---|
-| `server.ts` | Boot: open DB in `HOMEHUB_DATA_DIR`, auto-migrate, seed household + Alex/Vale, serve API + built web |
+| `server.ts` | Boot: open DB in `TELESCREEN_DATA_DIR`, auto-migrate, seed household + Alex/Vale, serve API + built web |
 | `app.ts` | `createApp({ db, trustNetwork, webDir })`: error mapping, auth, `/api/v1`, `/openapi.json`, SPA |
 | `config.ts` | Env readers (`dataDir`, `dbPath`, `trustNetwork`) |
 | `db/schema.ts` | **All tables (SPEC §7)** + `api_token`. `db/client.ts`: `openDb`, `runMigrations` |
 | `routes/*.ts` | One file per API area, each exports `register<Area>Routes(app: ApiApp)`; `routes/index.ts` lists them |
 | `schemas/*.ts` | zod schemas (request/response, `.openapi("Name")`) |
 | `services/*.ts` | Business logic taking `Ctx` (`{ db, householdId, now() }`) or `Db`; throw `AppError` (`lib/errors.ts`) |
-| `auth/` | Bearer tokens (`hh_…`, sha256-hashed) and middleware; `HOMEHUB_TRUST_NETWORK=1` allows tokenless requests |
-| `lib/crypto.ts` | `encryptSecret` / `decryptSecret` (AES-256-GCM, key `HOMEHUB_SECRET_KEY`) for `account.secret_encrypted` |
+| `auth/` | Bearer tokens (`ts_…`, sha256-hashed) and middleware; `TELESCREEN_TRUST_NETWORK=1` allows tokenless requests |
+| `lib/crypto.ts` | `encryptSecret` / `decryptSecret` (AES-256-GCM, key `TELESCREEN_SECRET_KEY`) for `account.secret_encrypted` |
 | `lib/ids.ts` | `newId("prefix")` text ids |
 | `web.ts` | Static serving of `web/dist` with SPA fallback |
 
@@ -76,7 +76,7 @@ Web: `features/music.ts` (adaptive polling: 5 s playing, 20 s idle, 60 s hidden;
 
 ## Meals (PantryPal)
 
-`services/meals.ts` reads PantryPal server-to-server and normalizes its plan grid into `MealDay[]` (`GET /meals/current` → this week + `tonight`). `GET /meals/plan?start&end` serves the calendar's visible range: because PantryPal's plan weeks need not start on HomeHub's `weekStart`, it lists plans overlapping `[start, end)` (`/plans?from&to`) and reads each by id instead of computing a week start, then merges the days. `GET /meals/board?start&end` builds on the same range fetch but keeps each slot's left-over provenance (`isLeftover`, `cookEvent.cookDate`) and adds recipe details (`/api/v1/recipes/{id}` → `imageUrl`, `totalMinutes`, `cuisine`): lookups are deduplicated per request and cached in memory for an hour, and a failing recipe yields null fields rather than failing the board. Relative `imageUrl`s resolve against `publicUrl`. `GET /meals/kitchen` is a read-only kitchen snapshot: the newest `shopping` list (else `draft`) from `/shopping-lists`, current-plan pantry gaps from `/pantry/availability?mealPlanId=`, and pantry rows expiring within five days from `/pantry`; each section is fetched independently so one failure degrades to empty. All meals endpoints cache the last good response for 5 minutes and serve it as `stale` when PantryPal is down; 404 = module off, 503 = unreachable with no cache.
+`services/meals.ts` reads PantryPal server-to-server and normalizes its plan grid into `MealDay[]` (`GET /meals/current` → this week + `tonight`). `GET /meals/plan?start&end` serves the calendar's visible range: because PantryPal's plan weeks need not start on Telescreen's `weekStart`, it lists plans overlapping `[start, end)` (`/plans?from&to`) and reads each by id instead of computing a week start, then merges the days. `GET /meals/board?start&end` builds on the same range fetch but keeps each slot's left-over provenance (`isLeftover`, `cookEvent.cookDate`) and adds recipe details (`/api/v1/recipes/{id}` → `imageUrl`, `totalMinutes`, `cuisine`): lookups are deduplicated per request and cached in memory for an hour, and a failing recipe yields null fields rather than failing the board. Relative `imageUrl`s resolve against `publicUrl`. `GET /meals/kitchen` is a read-only kitchen snapshot: the newest `shopping` list (else `draft`) from `/shopping-lists`, current-plan pantry gaps from `/pantry/availability?mealPlanId=`, and pantry rows expiring within five days from `/pantry`; each section is fetched independently so one failure degrades to empty. All meals endpoints cache the last good response for 5 minutes and serve it as `stale` when PantryPal is down; 404 = module off, 503 = unreachable with no cache.
 
 Web: `features/meals.ts` (`useMeals` for Tonight/Meals, `useMealsPlan(range)` for the calendar, `pantrypalWeekUrl` for week deep links). `screens/meals/` is the tab + right-column card; `screens/calendar/MealRail.tsx` + `mealRail.ts` render the fixed-height meal strip under the Week/Day columns and own the per-day grouping/collapsing rules. Recipe links use the server-built `url`; week links use PantryPal's `/?week=YYYY-MM-DD` search param.
 

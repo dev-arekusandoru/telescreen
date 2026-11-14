@@ -1,10 +1,10 @@
 {
-  "name": "homehub",
+  "name": "telescreen",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Self-hosted family wall-calendar and chores for two people.",
+  "description": "Self-hosted family wall calendar: Google and iCloud calendars, chores, weather, travel, meals and music.",
   "engines": {
     "node": ">=22"
   },
@@ -13,17 +13,20 @@
     "build": "pnpm build:server && pnpm web:build",
     "start": "node dist/server.js",
     "cli": "tsx src/cli.ts",
-    "typecheck": "tsc --noEmit && pnpm --filter @homehub/web typecheck",
+    "typecheck": "tsc --noEmit && pnpm --filter @telescreen/web typecheck",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "build:server": "tsc -p tsconfig.build.json",
-    "test:web": "pnpm --filter @homehub/web test",
+    "test:web": "pnpm --filter @telescreen/web test",
     "test:all": "vitest run && pnpm test:web",
-    "openapi": "tsx scripts/openapi.ts && pnpm --filter @homehub/web openapi:types",
-    "web:dev": "pnpm --filter @homehub/web dev",
-    "web:build": "pnpm --filter @homehub/web build",
+    "openapi": "tsx scripts/openapi.ts && pnpm --filter @telescreen/web openapi:types",
+    "web:dev": "pnpm --filter @telescreen/web dev",
+    "web:build": "pnpm --filter @telescreen/web build",
     "e2e": "pnpm web:build && playwright test",
-    "e2e:install": "playwright install chromium"
+    "e2e:install": "playwright install chromium",
+    "docs:dev": "pnpm --filter @telescreen/docs dev",
+    "docs:build": "pnpm --filter @telescreen/docs build",
+    "docs:serve": "pnpm --filter @telescreen/docs serve"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
@@ -44,5 +47,6 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
-  }
+  },
+  "packageManager": "pnpm@12.18.0"
 }

@@ -11,7 +11,7 @@ const manifest = JSON.parse(readFileSync(pub("manifest.webmanifest"), "utf8")) a
 
 describe("PWA", () => {
   it("manifest is installable", () => {
-    expect(manifest.name).toBe("HomeHub");
+    expect(manifest.name).toBe("Telescreen");
     expect(manifest.display).toBe("standalone");
     expect(manifest.icons.some((i) => i.sizes === "192x192")).toBe(true);
     expect(manifest.icons.some((i) => i.sizes === "512x512")).toBe(true);

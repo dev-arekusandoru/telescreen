@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 export type ThemePreference = "light" | "dark" | "system";
 
 /** Keep in sync with the inline script in index.html (applies the theme before first paint). */
-export const THEME_STORAGE_KEY = "homehub.theme";
+export const THEME_STORAGE_KEY = "telescreen.theme";
 
 const listeners = new Set<() => void>();
 

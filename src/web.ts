@@ -12,9 +12,9 @@ const DEFAULT_CACHE_CONTROL = "no-cache";
 /** Paths owned by the API; never answered by the web app. */
 const RESERVED_PATHS = ["/api", "/health", "/openapi.json"];
 
-/** Directory of the built web app: `HOMEHUB_WEB_DIR`, else `web/dist` under the package root. */
+/** Directory of the built web app: `TELESCREEN_WEB_DIR`, else `web/dist` under the package root. */
 export function defaultWebDir(env: NodeJS.ProcessEnv = process.env): string {
-  const configured = env.HOMEHUB_WEB_DIR?.trim();
+  const configured = env.TELESCREEN_WEB_DIR?.trim();
   return configured ? path.resolve(configured) : path.join(packageRoot(), "web", "dist");
 }
 

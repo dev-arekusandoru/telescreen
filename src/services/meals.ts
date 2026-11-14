@@ -89,7 +89,7 @@ export interface MealsTestResult {
 }
 
 export interface PantryPalConfig {
-  /** HomeHub → PantryPal API base URL, no trailing slash. */
+  /** Telescreen → PantryPal API base URL, no trailing slash. */
   url: string;
   /** Browser-facing base URL for recipe deep links, no trailing slash. */
   publicUrl: string;
@@ -170,7 +170,7 @@ export function weekStartFor(date: string, weekStart: number): string {
 }
 
 /**
- * Turn PantryPal's plan grid into the flat day → meals list HomeHub renders.
+ * Turn PantryPal's plan grid into the flat day → meals list Telescreen renders.
  * Empty meal types are omitted; malformed entries are skipped rather than failing the week.
  */
 export function normalizePlan(
@@ -308,7 +308,7 @@ async function fetchPlan(
  * Plans overlapping `[start, end)`.
  *
  * PantryPal's plan week starts on its own household setting (Monday by default), which need not
- * match HomeHub's `weekStart`, so the week start is never computed here: the list endpoint is asked
+ * match Telescreen's `weekStart`, so the week start is never computed here: the list endpoint is asked
  * for plans overlapping the range and each plan is read by id.
  */
 async function fetchRangePlans(
@@ -796,7 +796,7 @@ export async function testPantryPal(options: MealsServiceOptions = {}): Promise<
   const env = options.env ?? process.env;
   const config = pantrypalConfig(env);
   if (!config) {
-    return { ok: false, message: "PANTRYPAL_URL is not set. Add it to the environment and restart HomeHub.", weekStart: null };
+    return { ok: false, message: "PANTRYPAL_URL is not set. Add it to the environment and restart Telescreen.", weekStart: null };
   }
   try {
     const raw = await fetchPlan(config, options.fetch ?? fetch);

@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "HomeHub",
+    "title": "Telescreen",
     "version": "0.1.0",
-    "description": "Self-hosted family wall-calendar and chores. /api/v1 routes need a bearer token unless the server runs with HOMEHUB_TRUST_NETWORK=1."
+    "description": "Self-hosted family wall-calendar and chores. /api/v1 routes need a bearer token unless the server runs with TELESCREEN_TRUST_NETWORK=1."
   },
   "tags": [
     {

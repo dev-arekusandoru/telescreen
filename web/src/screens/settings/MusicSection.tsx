@@ -73,9 +73,9 @@ export function MusicSection() {
           {connected ? (
             <small>{connection?.label ?? "Spotify"} · playback control on your Connect device</small>
           ) : configured ? (
-            <small>Not connected. HomeHub only controls an already-open Spotify app.</small>
+            <small>Not connected. Telescreen only controls an already-open Spotify app.</small>
           ) : (
-            <small>Not configured. Set SPOTIFY_CLIENT_ID in the environment and restart HomeHub.</small>
+            <small>Not configured. Set SPOTIFY_CLIENT_ID in the environment and restart Telescreen.</small>
           )}
           {connection?.lastError ? (
             <small className={layout.warn} role="status">
@@ -123,7 +123,7 @@ export function MusicSection() {
 
       <p className={layout.hint}>
         Playback control requires Spotify Premium and a device that already plays Spotify (phone, speaker,
-        computer). HomeHub never plays audio itself.
+        computer). Telescreen never plays audio itself.
       </p>
     </section>
   );

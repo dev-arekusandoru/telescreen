@@ -248,7 +248,7 @@ export function serializeWithTimezones(vcal: ICAL.Component): string {
 function wrap(ve: ICAL.Component): ICAL.Component {
   const vcal = new ICAL.Component("vcalendar");
   vcal.addPropertyWithValue("version", "2.0");
-  vcal.addPropertyWithValue("prodid", "-//HomeHub//EN");
+  vcal.addPropertyWithValue("prodid", "-//Telescreen//EN");
   vcal.addSubcomponent(ve);
   return vcal;
 }

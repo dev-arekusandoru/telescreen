@@ -21,22 +21,24 @@ describe("app shell", () => {
 
   it("hides Meals and Music until their module is enabled", async () => {
     renderAt("/settings");
-    await screen.findByText("Theme");
+    await screen.findByRole("button", { name: /^Members/ });
     // Rail + tab bar render the same links.
     expect(screen.getAllByRole("link", { name: "Calendar" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Chores" })).toHaveLength(2);
     expect(screen.queryByRole("link", { name: "Meals" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Music" })).toBeNull();
 
-    await userEvent.click(screen.getByRole("switch", { name: "Meals" }));
+    await userEvent.click(screen.getByRole("button", { name: /^Meals/ }));
+    await userEvent.click(await screen.findByRole("switch", { name: "Meals" }));
     await waitFor(() => expect(screen.getAllByRole("link", { name: "Meals" })).toHaveLength(2));
     expect(screen.queryByRole("link", { name: "Music" })).toBeNull();
   });
 
   it("switches the theme and persists it", async () => {
     renderAt("/settings");
+    await userEvent.click(await screen.findByRole("button", { name: /^Appearance/ }));
     await userEvent.click(await screen.findByRole("radio", { name: "Dark" }));
     expect(document.documentElement.dataset.theme).toBe("dark");
-    expect(localStorage.getItem("homehub.theme")).toBe("dark");
+    expect(localStorage.getItem("telescreen.theme")).toBe("dark");
   });
 });

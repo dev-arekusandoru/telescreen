@@ -20,9 +20,9 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
-/** `hh_` + 32 random hex characters. */
+/** `ts_` + 32 random hex characters. */
 export function generateToken(): string {
-  return `hh_${randomBytes(16).toString("hex")}`;
+  return `ts_${randomBytes(16).toString("hex")}`;
 }
 
 function toSummary(row: ApiToken): ApiTokenSummary {
@@ -92,7 +92,7 @@ export function verifyToken(
   plaintext: string,
 ): { householdId: string; tokenId: string } | null {
   const token = plaintext.trim();
-  if (token === "" || !token.startsWith("hh_")) return null;
+  if (token === "" || !token.startsWith("ts_")) return null;
 
   const row = db
     .select()

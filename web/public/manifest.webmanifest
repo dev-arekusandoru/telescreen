@@ -1,6 +1,6 @@
 {
-  "name": "HomeHub",
-  "short_name": "HomeHub",
+  "name": "Telescreen",
+  "short_name": "Telescreen",
   "description": "Family wall-calendar and chores.",
   "id": "/",
   "start_url": "/calendar",

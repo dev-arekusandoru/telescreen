@@ -183,7 +183,7 @@ export class CaldavProvider implements Provider {
       rows = parseResource(ics, { remoteId, etag, defaultTz: ctx.defaultTz });
     } catch (e) {
       // A single unparsable resource must not fail the whole calendar.
-      console.warn(`[homehub] skipping unparsable calendar object ${remoteId}:`, e);
+      console.warn(`[telescreen] skipping unparsable calendar object ${remoteId}:`, e);
       return;
     }
     replaceResource(ctx.db, calendarId, remoteId, rows);

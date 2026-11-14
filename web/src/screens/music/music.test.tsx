@@ -331,7 +331,7 @@ describe("right column widget", () => {
     const { card, view } = await widget();
     expect(await view.findByText("Connect Spotify")).toBeInTheDocument();
     fireEvent.click(card); // bare click = touch tap (no mouse hover)
-    expect(await screen.findByRole("region", { name: "Music" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /^Music/ })).toBeInTheDocument();
   });
 });
 
@@ -339,14 +339,16 @@ describe("Settings > Music", () => {
   it("connects Spotify through the OAuth start endpoint", async () => {
     connection = { connected: false, configured: true, label: null, status: null, lastError: null };
     renderAt("/settings");
+    await userEvent.click(await screen.findByRole("button", { name: /^Music/ }));
     const section = await screen.findByRole("region", { name: "Music" });
-    expect(within(section).getByText(/Not connected/i)).toBeInTheDocument();
+    expect(within(section).getAllByText(/Not connected/i).length).toBeGreaterThan(0);
     await userEvent.click(within(section).getByRole("button", { name: /Connect Spotify/ }));
     await waitFor(() => expect(calls).toContainEqual({ method: "POST", path: "/music/connect/start", body: undefined }));
   });
 
   it("shows the connected account and disconnects after confirming", async () => {
     renderAt("/settings");
+    await userEvent.click(await screen.findByRole("button", { name: /^Music/ }));
     const section = await screen.findByRole("region", { name: "Music" });
     expect(await within(section).findByText(/Connected/)).toBeInTheDocument();
     expect(within(section).getByText(/Alex/)).toBeInTheDocument();
@@ -359,6 +361,7 @@ describe("Settings > Music", () => {
   it("disables connecting when the server has no client id", async () => {
     connection = { connected: false, configured: false, label: null, status: null, lastError: null };
     renderAt("/settings");
+    await userEvent.click(await screen.findByRole("button", { name: /^Music/ }));
     const section = await screen.findByRole("region", { name: "Music" });
     expect(within(section).getByText(/SPOTIFY_CLIENT_ID/)).toBeInTheDocument();
     expect(within(section).getByRole("button", { name: /Connect Spotify/ })).toBeDisabled();

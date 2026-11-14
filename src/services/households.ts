@@ -17,9 +17,9 @@ function assertTimezone(tz: string): void {
   }
 }
 
-/** System time zone, overridable with `HOMEHUB_TIMEZONE`. */
+/** System time zone, overridable with `TELESCREEN_TIMEZONE`. */
 export function defaultTimezone(env: NodeJS.ProcessEnv = process.env): string {
-  return env.HOMEHUB_TIMEZONE?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  return env.TELESCREEN_TIMEZONE?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
 export function getHousehold(db: Db, householdId: string): Household {
@@ -124,8 +124,8 @@ export function seedIfEmpty(db: Db, env: NodeJS.ProcessEnv = process.env): House
     const household = tx
       .insert(households)
       .values({
-        id: newId("hh"),
-        name: env.HOMEHUB_HOUSEHOLD_NAME?.trim() || "Our Home",
+        id: newId("home"),
+        name: env.TELESCREEN_HOUSEHOLD_NAME?.trim() || "Our Home",
         timezone: defaultTimezone(env),
       })
       .returning()

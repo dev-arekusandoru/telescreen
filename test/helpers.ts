@@ -27,7 +27,7 @@ export interface TestApp extends TestContext {
 export function makeTestCtx(): TestContext {
   const { db } = openDb(":memory:");
   runMigrations(db);
-  const household = seedIfEmpty(db, { HOMEHUB_TIMEZONE: "Europe/Berlin" });
+  const household = seedIfEmpty(db, { TELESCREEN_TIMEZONE: "Europe/Berlin" });
   const ctx = makeCtx(db, household.id, () => new Date(FIXED_NOW));
   const { token } = createToken(db, household.id, "test");
   return { db, ctx, household, token };

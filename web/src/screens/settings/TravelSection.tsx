@@ -140,7 +140,7 @@ export function TravelSection() {
           <small>
             {status?.configured
               ? "Using GOOGLE_MAPS_API_KEY from the environment"
-              : "Not configured. Set GOOGLE_MAPS_API_KEY (Routes API enabled) and restart HomeHub."}
+              : "Not configured. Set GOOGLE_MAPS_API_KEY (Routes API enabled) and restart Telescreen."}
           </small>
         </div>
       </div>

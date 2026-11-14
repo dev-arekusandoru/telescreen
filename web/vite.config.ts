@@ -12,8 +12,8 @@ export default defineConfig({
     port: 4001,
     proxy: {
       // The Hono server (`pnpm dev` at the repo root) listens on 4000.
-      // Override with HOMEHUB_API_URL to point at another instance.
-      "/api": process.env.HOMEHUB_API_URL ?? "http://127.0.0.1:4000",
+      // Override with TELESCREEN_API_URL to point at another instance.
+      "/api": process.env.TELESCREEN_API_URL ?? "http://127.0.0.1:4000",
     },
   },
   build: {

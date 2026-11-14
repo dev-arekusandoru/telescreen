@@ -1,10 +1,10 @@
-# HomeHub: spec
+# Telescreen: spec
 
-Status: draft 1 (planning). Working title: **HomeHub**. License: **MIT**.
+Status: draft 1 (planning). License: **MIT**.
 Design reference: [`mockups/editorial.html`](mockups/editorial.html) (open in a browser; try Week/Day/Month/Schedule, the "+" sheet, chore tap-to-complete, Settings > Theme, and a narrow window for phone). It is a frozen look-and-feel reference, not a behavior spec.
 
 A self-hosted family wall-calendar for two people. Big calendar, chores, later weather, Spotify and
-meals (via [PantryPal](../pantrypal)). Inspired by Skylight, without the subscription, rewards, or cloud.
+meals (via [PantryPal](https://github.com/dev-arekusandoru/pantry-pal)). Inspired by Skylight, without the subscription, rewards, or cloud.
 
 ## 1. Goals and non-goals
 
@@ -44,9 +44,9 @@ push notifications, photos/lists/sleep screens (Skylight extras), public-interne
 | Deploy | One Docker image, `docker-compose.yml`, `./data` volume. Dev: `pnpm dev` + `pnpm web:dev` |
 
 Auth is network access, same as PantryPal: if you can reach it over the tailnet you are in.
-Opt-in `HOMEHUB_TRUST_NETWORK=1` (default off) lets `/api/v1/*` act as the household with no token;
+Opt-in `TELESCREEN_TRUST_NETWORK=1` (default off) lets `/api/v1/*` act as the household with no token;
 a token, when sent, is still verified. Provider secrets (OAuth tokens, app passwords) are stored
-server-side only, never returned by the API. Encryption key via `HOMEHUB_SECRET_KEY` (AES-GCM at rest).
+server-side only, never returned by the API. Encryption key via `TELESCREEN_SECRET_KEY` (AES-GCM at rest).
 
 ## 4. Calendar
 
@@ -233,4 +233,4 @@ OAuth callback routes live at `/auth/google/callback` (server-rendered, not part
 6. **Spotify**: Premium confirmed, so playback control is feasible (M7).
 
 ## 13. Still open
-- Project name (HomeHub is a placeholder). Skylight extras confirmed out of scope for v1.
+- Skylight extras confirmed out of scope for v1.

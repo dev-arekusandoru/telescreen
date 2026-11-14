@@ -94,7 +94,7 @@ export async function withSpotify<T>(ctx: Ctx, fn: (client: SpotifyClient) => Pr
   if (!config) {
     throw new AppError(
       "unprocessable",
-      "Spotify is not configured. Set SPOTIFY_CLIENT_ID and restart HomeHub (see the README).",
+      "Spotify is not configured. Set SPOTIFY_CLIENT_ID and restart Telescreen (see the documentation).",
       { reason: "not_configured" },
     );
   }
@@ -138,7 +138,7 @@ export function startSpotifyAuth(ctx: Ctx): { authUrl: string } {
   if (!config) {
     throw new AppError(
       "unprocessable",
-      "Spotify is not configured. Set SPOTIFY_CLIENT_ID and restart HomeHub (see the README).",
+      "Spotify is not configured. Set SPOTIFY_CLIENT_ID and restart Telescreen (see the documentation).",
       { reason: "not_configured" },
     );
   }
@@ -183,7 +183,7 @@ export async function completeSpotifyAuth(ctx: Ctx, code: string, state: string)
   if (!tokens.refreshToken) {
     throw new AppError(
       "provider_error",
-      "Spotify did not return a refresh token. Remove HomeHub from your Spotify account's apps and connect again.",
+      "Spotify did not return a refresh token. Remove Telescreen from your Spotify account's apps and connect again.",
       { reason: "provider_error" },
     );
   }

@@ -63,7 +63,7 @@ export function Shell() {
     <div className={styles.app} data-side={showSide ? "on" : undefined}>
       <nav className={styles.rail} aria-label="Primary">
         <div className={styles.logo} aria-hidden="true">
-          {Logo ? <Logo /> : "H"}
+          {Logo ? <Logo /> : "T"}
         </div>
         <NavLinks tabs={tabs} />
         <SyncButton />

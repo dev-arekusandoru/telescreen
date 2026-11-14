@@ -5,7 +5,7 @@ export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: `${process.env.HOMEHUB_DATA_DIR ?? "./data"}/homehub.db`,
+    url: `${process.env.TELESCREEN_DATA_DIR ?? "./data"}/telescreen.db`,
   },
   strict: true,
   verbose: true,

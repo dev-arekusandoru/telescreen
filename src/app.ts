@@ -20,7 +20,7 @@ export interface CreateAppOptions {
   /** Clock used for request contexts (tests inject a fixed one). */
   now?: () => Date;
   /**
-   * `HOMEHUB_TRUST_NETWORK=1`: `/api/v1` requests without an `Authorization`
+   * `TELESCREEN_TRUST_NETWORK=1`: `/api/v1` requests without an `Authorization`
    * header act as the household. A token that is sent is still verified. Default false.
    */
   trustNetwork?: boolean;
@@ -53,7 +53,7 @@ export function createApp(options: CreateAppOptions): App {
   app.onError((err, c) => {
     if (isAppError(err)) return c.json(err.toBody(), err.status as ContentfulStatusCode);
     if (err instanceof HTTPException) return err.getResponse();
-    console.error("[homehub] unhandled error:", err);
+    console.error("[telescreen] unhandled error:", err);
     return c.json({ error: { code: "internal", message: "Internal server error" } }, 500);
   });
 
@@ -79,10 +79,10 @@ export function createApp(options: CreateAppOptions): App {
   app.doc31("/openapi.json", {
     openapi: "3.1.0",
     info: {
-      title: "HomeHub",
+      title: "Telescreen",
       version: packageVersion(),
       description:
-        "Self-hosted family wall-calendar and chores. /api/v1 routes need a bearer token unless the server runs with HOMEHUB_TRUST_NETWORK=1.",
+        "Self-hosted family wall-calendar and chores. /api/v1 routes need a bearer token unless the server runs with TELESCREEN_TRUST_NETWORK=1.",
     },
     tags: [
       { name: "meta", description: "Health and API metadata" },

@@ -58,7 +58,7 @@ const NOW_PLAYING = {
   track: {
     id: "track-1",
     title: "Right Column",
-    artists: ["HomeHub"],
+    artists: ["Telescreen"],
     album: "Smoke Test",
     albumArtUrl: null,
     durationMs: 200_000,

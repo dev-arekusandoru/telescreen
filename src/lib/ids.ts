@@ -7,7 +7,7 @@ const BODY_LENGTH = 16;
 /**
  * Random prefixed identifier, e.g. `newId("mem")` → `mem_8f3k2m9p0q1r2s3t`.
  *
- * Prefixes used across the schema: hh, mem, tok, acc, cal, ev, chore, occ.
+ * Prefixes used across the schema: home, mem, tok, acc, cal, ev, chore, occ.
  */
 export function newId(prefix: string): string {
   const bytes = randomBytes(BODY_LENGTH);

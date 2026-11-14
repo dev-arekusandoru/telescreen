@@ -36,7 +36,7 @@ export function googleConfig(env: NodeJS.ProcessEnv = process.env): GoogleConfig
   const clientId = env.GOOGLE_CLIENT_ID?.trim();
   const clientSecret = env.GOOGLE_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) return null;
-  const publicUrl = (env.HOMEHUB_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
+  const publicUrl = (env.TELESCREEN_PUBLIC_URL?.trim() || localPublicUrl(env)).replace(/\/+$/, "");
   const redirectUri = env.GOOGLE_REDIRECT_URI?.trim() || `${publicUrl}/auth/google/callback`;
   return { clientId, clientSecret, redirectUri };
 }
@@ -61,7 +61,7 @@ export async function exchangeGoogleCode(config: GoogleConfig, code: string): Pr
     throw new ProviderError(`Google rejected the authorization code: ${body.error_description ?? res.status}`);
   }
   if (!body.refresh_token) {
-    throw new ProviderError("Google did not return a refresh token. Remove HomeHub from your Google account's third-party access and connect again.");
+    throw new ProviderError("Google did not return a refresh token. Remove Telescreen from your Google account's third-party access and connect again.");
   }
   return { refreshToken: body.refresh_token, accessToken: body.access_token };
 }
@@ -152,7 +152,7 @@ export function googleToRow(ev: GEvent, remoteId = ev.id): NormEvent | null {
     rawIcs = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//HomeHub//Google//EN",
+      "PRODID:-//Telescreen//Google//EN",
       "BEGIN:VEVENT",
       `UID:${ev.id}`,
       dtLine("DTSTART", start),

@@ -52,7 +52,7 @@ export function AddIcloudDialog({ open, onOpenChange }: { open: boolean; onOpenC
           </Dialog.Close>
           <Dialog.Description className={styles.desc}>
             Create an app-specific password at appleid.apple.com (Sign-In and Security) and paste it here. Your Apple ID
-            password does not work, and HomeHub stores the app password encrypted on this server only.
+            password does not work, and Telescreen stores the app password encrypted on this server only.
           </Dialog.Description>
           <form onSubmit={submit}>
             <div className={styles.fld}>

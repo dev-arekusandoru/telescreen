@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" rx="224" fill="#f3ebdd"/>
-  <text x="512" y="650" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="560" fill="#a84c2a">H</text>
+  <text x="512" y="650" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="560" fill="#a84c2a">T</text>
   <rect x="352" y="716" width="320" height="14" rx="7" fill="#a84c2a" opacity="0.35"/>
   <circle cx="462" cy="792" r="26" fill="#a84c2a"/>
   <circle cx="562" cy="792" r="26" fill="#557f61"/>

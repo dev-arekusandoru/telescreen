@@ -74,7 +74,7 @@ describe("spotifyConfig", () => {
     expect(spotifyConfig({ SPOTIFY_CLIENT_ID: "  " } as NodeJS.ProcessEnv)).toBeNull();
   });
 
-  it("builds the redirect from HOMEHUB_PUBLIC_URL and allows an override", () => {
+  it("builds the redirect from TELESCREEN_PUBLIC_URL and allows an override", () => {
     expect(spotifyConfig({ SPOTIFY_CLIENT_ID: "id" } as NodeJS.ProcessEnv)).toEqual({
       clientId: "id",
       clientSecret: null,
@@ -87,7 +87,7 @@ describe("spotifyConfig", () => {
       spotifyConfig({
         SPOTIFY_CLIENT_ID: "id",
         SPOTIFY_CLIENT_SECRET: "secret",
-        HOMEHUB_PUBLIC_URL: "https://hub.example.ts.net:8444/",
+        TELESCREEN_PUBLIC_URL: "https://hub.example.ts.net:8444/",
       } as NodeJS.ProcessEnv),
     ).toEqual({
       clientId: "id",
